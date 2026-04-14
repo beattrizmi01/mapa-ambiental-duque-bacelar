@@ -887,18 +887,21 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 14px;
+    position: fixed;
     left: 14px;
-    z-index: 700;
-    padding: 11px 14px;
+    bottom: 126px;
+    z-index: 1100;
+    max-width: min(48vw, 220px);
+    padding: 10px 14px;
     border-radius: 999px;
     border: 1px solid rgba(154, 175, 197, 0.22);
     background: rgba(8, 16, 29, 0.88);
     color: #f4f8ff;
-    font-size: 0.86rem;
+    font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.01em;
+    line-height: 1.2;
+    text-align: center;
     box-shadow: 0 18px 30px rgba(2, 8, 17, 0.24);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -912,18 +915,18 @@ body {
 
   .mobile-map-hint {
     display: block;
-    position: absolute;
-    top: 62px;
+    position: fixed;
     left: 14px;
     right: 14px;
-    z-index: 690;
-    padding: 10px 12px;
+    bottom: 74px;
+    z-index: 1090;
+    padding: 9px 12px;
     border-radius: 16px;
     border: 1px solid rgba(154, 175, 197, 0.16);
     background: rgba(8, 16, 29, 0.84);
     color: rgba(229, 236, 247, 0.92);
-    font-size: 0.84rem;
-    line-height: 1.45;
+    font-size: 0.78rem;
+    line-height: 1.35;
     box-shadow: 0 18px 30px rgba(2, 8, 17, 0.22);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -935,18 +938,18 @@ body {
     gap: 10px;
     position: fixed;
     right: 14px;
-    bottom: 18px;
+    bottom: 126px;
     z-index: 1100;
   }
 
   .mobile-scroll-button {
-    min-width: 132px;
-    padding: 10px 14px;
+    min-width: 122px;
+    padding: 9px 13px;
     border-radius: 999px;
     border: 1px solid rgba(154, 175, 197, 0.22);
     background: rgba(8, 16, 29, 0.88);
     color: #f4f8ff;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
     box-shadow: 0 18px 30px rgba(2, 8, 17, 0.24);
     backdrop-filter: blur(12px);
