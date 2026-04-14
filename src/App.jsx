@@ -58,7 +58,6 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
   );
-  const [isMobileMapInteractive, setIsMobileMapInteractive] = useState(false);
   const [boundaryData, setBoundaryData] = useState(null);
   const [dataMode, setDataMode] = useState(hasSupabaseConfig() ? "supabase" : "local");
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
@@ -88,12 +87,9 @@ export default function App() {
     const mediaQuery = window.matchMedia("(max-width: 900px), (pointer: coarse)");
     const syncViewport = (event) => {
       setIsMobileViewport(event.matches);
-      if (!event.matches) setIsMobileMapInteractive(true);
-      if (event.matches) setIsMobileMapInteractive(false);
     };
 
     setIsMobileViewport(mediaQuery.matches);
-    if (!mediaQuery.matches) setIsMobileMapInteractive(true);
 
     if (typeof mediaQuery.addEventListener === "function") {
       mediaQuery.addEventListener("change", syncViewport);
@@ -388,9 +384,7 @@ export default function App() {
         {isMobileViewport ? (
           <>
             <MobileMapActions
-              isInteractive={isMobileMapInteractive}
               isDrawingArea={isDrawingArea}
-              onToggleInteraction={() => setIsMobileMapInteractive((current) => !current)}
               onOpenArea={() => setOpenCard("area")}
               onOpenOccurrence={() => setOpenCard("occurrence")}
               onOpenLegend={() => setOpenCard("legend")}
@@ -420,14 +414,14 @@ export default function App() {
           <MapContainer
             center={FALLBACK_CENTER}
             zoom={12}
-          scrollWheelZoom={!isMobileViewport || isMobileMapInteractive}
-          dragging={!isMobileViewport || isMobileMapInteractive}
-          touchZoom={!isMobileViewport || isMobileMapInteractive}
-          doubleClickZoom={!isMobileViewport || isMobileMapInteractive}
-          boxZoom={!isMobileViewport || isMobileMapInteractive}
-          keyboard={!isMobileViewport || isMobileMapInteractive}
-          tap={isMobileViewport ? isMobileMapInteractive : true}
-          className={`leaflet-map${isMobileViewport && !isMobileMapInteractive ? " leaflet-map--locked" : ""}`}
+          scrollWheelZoom={true}
+          dragging={true}
+          touchZoom={true}
+          doubleClickZoom={true}
+          boxZoom={true}
+          keyboard={true}
+          tap={true}
+          className="leaflet-map"
         >
           {!isMobileViewport ? (
             <LayersControl position="topright">
@@ -879,7 +873,7 @@ function LegendContent() {
   return <div className="legend-list"><div className="legend-item"><span className="legend-swatch legend-swatch--green"></span><span>Preservado</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--yellow"></span><span>Atenção</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--red"></span><span>Crítico</span></div></div>;
 }
 
-function MobileMapActions({ isInteractive, isDrawingArea, onToggleInteraction, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers }) {
+function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers }) {
   return (
     <>
       <div className="mobile-fab-dock">
@@ -896,13 +890,6 @@ function MobileMapActions({ isInteractive, isDrawingArea, onToggleInteraction, o
           <AreaIcon />
         </MobileFabButton>
       </div>
-      <button
-        type="button"
-        className={`mobile-map-toggle${isInteractive ? " is-active" : ""}${isDrawingArea ? " is-drawing" : ""}`}
-        onClick={onToggleInteraction}
-      >
-        {isInteractive ? "Bloquear mapa" : "Mover mapa"}
-      </button>
     </>
   );
 }
