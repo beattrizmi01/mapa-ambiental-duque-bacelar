@@ -54,6 +54,10 @@ const DEFAULT_AREAS = [
 export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
+  );
+  const [isMobileMapInteractive, setIsMobileMapInteractive] = useState(false);
   const [boundaryData, setBoundaryData] = useState(null);
   const [dataMode, setDataMode] = useState(hasSupabaseConfig() ? "supabase" : "local");
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
@@ -75,6 +79,27 @@ export default function App() {
     () => (draftPolygonCoords.length ? computeCentroid(draftPolygonCoords) : null),
     [draftPolygonCoords],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const mediaQuery = window.matchMedia("(max-width: 900px), (pointer: coarse)");
+    const syncViewport = (event) => {
+      setIsMobileViewport(event.matches);
+      if (!event.matches) setIsMobileMapInteractive(true);
+      if (event.matches) setIsMobileMapInteractive(false);
+    };
+
+    setIsMobileViewport(mediaQuery.matches);
+    if (!mediaQuery.matches) setIsMobileMapInteractive(true);
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncViewport);
+      return () => mediaQuery.removeEventListener("change", syncViewport);
+    }
+
+    mediaQuery.addListener(syncViewport);
+    return () => mediaQuery.removeListener(syncViewport);
+  }, []);
 
   useEffect(() => {
     fetch(duqueBacelarLimiteUrl)
@@ -355,7 +380,50 @@ export default function App() {
         onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
       />
       <main className="map-stage">
-        <MapContainer center={FALLBACK_CENTER} zoom={12} scrollWheelZoom className="leaflet-map">
+        {isMobileViewport ? (
+          <button
+            type="button"
+            className={`mobile-map-toggle${isMobileMapInteractive ? " is-active" : ""}`}
+            onClick={() => setIsMobileMapInteractive((current) => !current)}
+          >
+            {isMobileMapInteractive ? "Desativar navegação do mapa" : "Ativar navegação do mapa"}
+          </button>
+        ) : null}
+        {isMobileViewport && !isMobileMapInteractive ? (
+          <div className="mobile-map-hint">
+            Role a página normalmente. Toque no botão acima só quando quiser mover o mapa.
+          </div>
+        ) : null}
+        {isMobileViewport ? (
+          <div className="mobile-scroll-controls">
+            <button
+              type="button"
+              className="mobile-scroll-button"
+              onClick={() => window.scrollBy({ top: -420, behavior: "smooth" })}
+            >
+              Subir página
+            </button>
+            <button
+              type="button"
+              className="mobile-scroll-button"
+              onClick={() => window.scrollBy({ top: 420, behavior: "smooth" })}
+            >
+              Descer página
+            </button>
+          </div>
+        ) : null}
+        <MapContainer
+          center={FALLBACK_CENTER}
+          zoom={12}
+          scrollWheelZoom={!isMobileViewport || isMobileMapInteractive}
+          dragging={!isMobileViewport || isMobileMapInteractive}
+          touchZoom={!isMobileViewport || isMobileMapInteractive}
+          doubleClickZoom={!isMobileViewport || isMobileMapInteractive}
+          boxZoom={!isMobileViewport || isMobileMapInteractive}
+          keyboard={!isMobileViewport || isMobileMapInteractive}
+          tap={isMobileViewport ? isMobileMapInteractive : true}
+          className={`leaflet-map${isMobileViewport && !isMobileMapInteractive ? " leaflet-map--locked" : ""}`}
+        >
           <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="Satélite">
               <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />

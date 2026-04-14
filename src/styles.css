@@ -650,12 +650,35 @@ body {
   flex: 1;
   min-width: 0;
   height: 100vh;
+  position: relative;
+  padding: 14px 18px 14px 14px;
+  background: linear-gradient(180deg, #09111d 0%, #0b1322 100%);
 }
 
 .leaflet-map {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   background: #dfe7f3;
+  border: 1px solid rgba(154, 175, 197, 0.16);
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 24px 44px rgba(2, 8, 17, 0.22);
+}
+
+.leaflet-map--locked {
+  filter: saturate(0.92);
+}
+
+.mobile-map-toggle {
+  display: none;
+}
+
+.mobile-map-hint {
+  display: none;
+}
+
+.mobile-scroll-controls {
+  display: none;
 }
 
 .map-stage--empty {
@@ -846,6 +869,89 @@ body {
   .leaflet-map {
     height: calc(100vh - 40px);
     min-height: 60vh;
+  }
+
+  .map-stage {
+    padding: 0 0 18px;
+    background: transparent;
+  }
+
+  .leaflet-map {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+  }
+
+  .mobile-map-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 700;
+    padding: 11px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(154, 175, 197, 0.22);
+    background: rgba(8, 16, 29, 0.88);
+    color: #f4f8ff;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 18px 30px rgba(2, 8, 17, 0.24);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .mobile-map-toggle.is-active {
+    background: rgba(39, 174, 96, 0.94);
+    border-color: rgba(80, 216, 139, 0.44);
+    color: #f8fffb;
+  }
+
+  .mobile-map-hint {
+    display: block;
+    position: absolute;
+    top: 62px;
+    left: 14px;
+    right: 14px;
+    z-index: 690;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(154, 175, 197, 0.16);
+    background: rgba(8, 16, 29, 0.84);
+    color: rgba(229, 236, 247, 0.92);
+    font-size: 0.84rem;
+    line-height: 1.45;
+    box-shadow: 0 18px 30px rgba(2, 8, 17, 0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .mobile-scroll-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: fixed;
+    right: 14px;
+    bottom: 18px;
+    z-index: 1100;
+  }
+
+  .mobile-scroll-button {
+    min-width: 132px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(154, 175, 197, 0.22);
+    background: rgba(8, 16, 29, 0.88);
+    color: #f4f8ff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 18px 30px rgba(2, 8, 17, 0.24);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    touch-action: manipulation;
   }
 
   .field-row,
