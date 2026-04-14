@@ -54,6 +54,7 @@ const DEFAULT_AREAS = [
 export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
+  const [activeBaseMap, setActiveBaseMap] = useState("satellite");
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
   );
@@ -354,10 +355,9 @@ export default function App() {
   return (
     <div className="app-shell">
       <Sidebar
+        isMobileViewport={isMobileViewport}
         openCard={openCard}
         onToggle={(cardName) => setOpenCard((current) => (current === cardName ? null : cardName))}
-        dataMode={dataMode}
-        dataStatus={dataStatus}
         areas={areas}
         areaForm={areaForm}
         setAreaForm={setAreaForm}
@@ -386,40 +386,40 @@ export default function App() {
       />
       <main className="map-stage">
         {isMobileViewport ? (
-          <button
-            type="button"
-            className={`mobile-map-toggle${isMobileMapInteractive ? " is-active" : ""}`}
-            onClick={() => setIsMobileMapInteractive((current) => !current)}
-          >
-            {isMobileMapInteractive ? "Desativar navegação do mapa" : "Ativar navegação do mapa"}
-          </button>
+          <>
+            <MobileMapActions
+              isInteractive={isMobileMapInteractive}
+              isDrawingArea={isDrawingArea}
+              onToggleInteraction={() => setIsMobileMapInteractive((current) => !current)}
+              onOpenArea={() => setOpenCard("area")}
+              onOpenOccurrence={() => setOpenCard("occurrence")}
+              onOpenLegend={() => setOpenCard("legend")}
+              onOpenLayers={() => setOpenCard("layers")}
+            />
+            {(isDrawingArea || draftPolygonCoords.length > 0) ? (
+              <div className="mobile-drawing-bar">
+                <button
+                  type="button"
+                  className="mobile-drawing-bar__button mobile-drawing-bar__button--primary"
+                  onClick={concludeAreaDrawing}
+                  disabled={draftPolygonCoords.length < 3}
+                >
+                  Concluir área
+                </button>
+                <button
+                  type="button"
+                  className="mobile-drawing-bar__button"
+                  onClick={clearAreaDrawing}
+                >
+                  Limpar
+                </button>
+              </div>
+            ) : null}
+          </>
         ) : null}
-        {isMobileViewport && !isMobileMapInteractive ? (
-          <div className="mobile-map-hint">
-            Role a página normalmente. Toque no botão acima só quando quiser mover o mapa.
-          </div>
-        ) : null}
-        {isMobileViewport ? (
-          <div className="mobile-scroll-controls">
-            <button
-              type="button"
-              className="mobile-scroll-button"
-              onClick={() => window.scrollBy({ top: -420, behavior: "smooth" })}
-            >
-              Subir página
-            </button>
-            <button
-              type="button"
-              className="mobile-scroll-button"
-              onClick={() => window.scrollBy({ top: 420, behavior: "smooth" })}
-            >
-              Descer página
-            </button>
-          </div>
-        ) : null}
-        <MapContainer
-          center={FALLBACK_CENTER}
-          zoom={12}
+          <MapContainer
+            center={FALLBACK_CENTER}
+            zoom={12}
           scrollWheelZoom={!isMobileViewport || isMobileMapInteractive}
           dragging={!isMobileViewport || isMobileMapInteractive}
           touchZoom={!isMobileViewport || isMobileMapInteractive}
@@ -429,14 +429,20 @@ export default function App() {
           tap={isMobileViewport ? isMobileMapInteractive : true}
           className={`leaflet-map${isMobileViewport && !isMobileMapInteractive ? " leaflet-map--locked" : ""}`}
         >
-          <LayersControl position="topright">
-            <LayersControl.BaseLayer checked name="Satélite">
-              <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />
-            </LayersControl.BaseLayer>
-            <LayersControl.BaseLayer name="Mapa padrão">
-              <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
-            </LayersControl.BaseLayer>
-          </LayersControl>
+          {!isMobileViewport ? (
+            <LayersControl position="topright">
+              <LayersControl.BaseLayer checked={activeBaseMap === "satellite"} name="Satélite">
+                <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />
+              </LayersControl.BaseLayer>
+              <LayersControl.BaseLayer checked={activeBaseMap === "street"} name="Mapa padrão">
+                <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
+              </LayersControl.BaseLayer>
+            </LayersControl>
+          ) : activeBaseMap === "satellite" ? (
+            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />
+          ) : (
+            <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
+          )}
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <MapClickHandler
             drawingEnabled={isDrawingArea}
@@ -511,6 +517,75 @@ export default function App() {
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} />
           </Pane>
         </MapContainer>
+        {isMobileViewport ? (
+          <>
+            <BottomSheet
+              isOpen={openCard === "legend"}
+              title="Legenda e status"
+              onClose={() => setOpenCard(null)}
+            >
+              <LegendContent />
+            </BottomSheet>
+            <BottomSheet
+              isOpen={openCard === "layers"}
+              title="Camadas do mapa"
+              onClose={() => setOpenCard(null)}
+            >
+              <LayerSheet
+                activeBaseMap={activeBaseMap}
+                onChangeBaseMap={setActiveBaseMap}
+              />
+            </BottomSheet>
+            <BottomSheet
+              isOpen={openCard === "area"}
+              title="Nova área"
+              onClose={() => { resetAreaDraft(); setOpenCard(null); }}
+              large
+            >
+              <AreaFormPanel
+                areaForm={areaForm}
+                setAreaForm={setAreaForm}
+                areaPreview={areaPreview}
+                setAreaPreview={setAreaPreview}
+                isDrawingArea={isDrawingArea}
+                draftPolygonCoords={draftPolygonCoords}
+                onStartAreaDrawing={() => {
+                  startAreaDrawing();
+                  setOpenCard(null);
+                }}
+                onConcludeAreaDrawing={concludeAreaDrawing}
+                onClearAreaDrawing={clearAreaDrawing}
+                onSubmitArea={handleAreaSubmit}
+                isSavingArea={isSavingArea}
+                areaSuccessMessage={areaSuccessMessage}
+                areaErrorMessage={areaErrorMessage}
+                onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
+                mobile
+              />
+            </BottomSheet>
+            <BottomSheet
+              isOpen={openCard === "occurrence"}
+              title="Registrar ocorrência"
+              onClose={() => { resetOccurrenceDraft(); setOpenCard(null); }}
+              large
+            >
+              <OccurrenceFormPanel
+                areas={areas}
+                occurrenceForm={occurrenceForm}
+                setOccurrenceForm={setOccurrenceForm}
+                occurrencePreview={occurrencePreview}
+                setOccurrencePreview={setOccurrencePreview}
+                onSubmitOccurrence={handleOccurrenceSubmit}
+                isSavingOccurrence={isSavingOccurrence}
+                occurrenceSuccessMessage={occurrenceSuccessMessage}
+                occurrenceErrorMessage={occurrenceErrorMessage}
+                onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
+                occurrenceLocation={occurrenceLocation}
+                mobile
+              />
+            </BottomSheet>
+          </>
+        ) : null}
       </main>
     </div>
   );
@@ -590,155 +665,312 @@ function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLea
 }
 
 function Sidebar(props) {
-  const { openCard, onToggle, dataMode, dataStatus, areas, areaForm, setAreaForm, areaPreview, setAreaPreview, occurrenceForm, setOccurrenceForm, occurrencePreview, setOccurrencePreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, onSubmitOccurrence, isSavingArea, isSavingOccurrence, areaSuccessMessage, areaErrorMessage, occurrenceSuccessMessage, occurrenceErrorMessage, onCancelArea, onCancelOccurrence, occurrenceLocation } = props;
-  const areaReady = areaForm.polygonCoords.length >= 3 || draftPolygonCoords.length >= 3;
-  const selectedOccurrenceArea = areas.find((area) => area.id === occurrenceForm.areaId) ?? null;
+  const { isMobileViewport, openCard, onToggle, areas, areaForm, setAreaForm, areaPreview, setAreaPreview, occurrenceForm, setOccurrenceForm, occurrencePreview, setOccurrencePreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, onSubmitOccurrence, isSavingArea, isSavingOccurrence, areaSuccessMessage, areaErrorMessage, occurrenceSuccessMessage, occurrenceErrorMessage, onCancelArea, onCancelOccurrence, occurrenceLocation } = props;
+
+  if (isMobileViewport) {
+    return (
+      <aside className="sidebar sidebar--mobile">
+        <div className="sidebar__panel sidebar__panel--mobile">
+          <CompactHeader mobile />
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar__panel">
-        <header className="sidebar__header">
-          <span className="eyebrow eyebrow--with-icon">
-            <span className="eyebrow__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19.5 4.5c-5.6.2-9.6 1.9-12 5.1-2.2 2.8-3 6.3-2.5 9.9 3.6.5 7.1-.4 9.9-2.5 3.2-2.4 4.9-6.4 5.1-12Z" />
-                <path d="M8.2 15.8c2-1.6 4.1-3 6.5-4.1" />
-                <path d="M10.7 18.9c.2-1.5-.1-3.1-.8-4.5" />
-              </svg>
-            </span>
-            <span>Monitoramento Ambiental</span>
-          </span>
-          <h1>Mapa de Atenção Ambiental de Duque Bacelar</h1>
-        </header>
+        <CompactHeader />
         <LegendCard />
         <ExpandableCard kicker="Área protegida" title="Cadastrar Nova Área" isOpen={openCard === "area"} onToggle={() => onToggle("area")}>
-          <form className="dark-form" onSubmit={onSubmitArea}>
-            <Field label="Nome da área"><input required value={areaForm.name} onChange={(event) => setAreaForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Nascente do Riacho Fundo" /></Field>
-            <Field label="Categoria">
-              <CategoriaSelect
-                value={areaForm.category}
-                onChange={(value) => setAreaForm((current) => ({ ...current, category: value }))}
-              />
-            </Field>
-            <Field label="Status"><select value={areaForm.status} onChange={(event) => setAreaForm((current) => ({ ...current, status: event.target.value }))}><option value="preservado">Preservado</option><option value="atencao">Atenção</option><option value="critico">Crítico</option></select></Field>
-            <Field label="Impacto"><input required value={areaForm.impact} onChange={(event) => setAreaForm((current) => ({ ...current, impact: event.target.value }))} placeholder="Ex.: Pressão moderada por descarte irregular" /></Field>
-            <Field label="Descrição"><textarea required rows="4" value={areaForm.description} onChange={(event) => setAreaForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descreva rapidamente a situação observada." /></Field>
-            <section className="demarcation-panel">
-              <div className="demarcation-panel__header">
-                <div className="demarcation-panel__intro">
-                  <h3>Demarque a área</h3>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className={`btn btn--green btn--primary-action${!isDrawingArea ? " btn--pulse" : ""}`}
-                onClick={onStartAreaDrawing}
-              >
-                Iniciar demarcação
-              </button>
-
-              <div className="drawing-actions drawing-actions--secondary">
-                <button type="button" className="btn btn--ghost" onClick={onConcludeAreaDrawing} disabled={draftPolygonCoords.length < 3}>
-                  Concluir
-                </button>
-                <button type="button" className="btn btn--subtle" onClick={onClearAreaDrawing}>
-                  Limpar
-                </button>
-              </div>
-
-              <div className={`demarcation-status${areaReady ? " demarcation-status--success" : ""}`}>
-                {areaReady ? "Área demarcada com sucesso." : "Adicione pelo menos 3 pontos para formar a área."}
-              </div>
-            </section>
-            {areaErrorMessage ? <div className="form-feedback form-feedback--error">{areaErrorMessage}</div> : null}
-            {areaSuccessMessage ? <div className="form-feedback form-feedback--success">{areaSuccessMessage}</div> : null}
-            <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} />
-            <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingArea}>{isSavingArea ? "Salvando..." : "Salvar área"}</button><button className="btn btn--red" type="button" onClick={onCancelArea} disabled={isSavingArea}>Cancelar</button></div>
-          </form>
+          <AreaFormPanel
+            areaForm={areaForm}
+            setAreaForm={setAreaForm}
+            areaPreview={areaPreview}
+            setAreaPreview={setAreaPreview}
+            isDrawingArea={isDrawingArea}
+            draftPolygonCoords={draftPolygonCoords}
+            onStartAreaDrawing={onStartAreaDrawing}
+            onConcludeAreaDrawing={onConcludeAreaDrawing}
+            onClearAreaDrawing={onClearAreaDrawing}
+            onSubmitArea={onSubmitArea}
+            isSavingArea={isSavingArea}
+            areaSuccessMessage={areaSuccessMessage}
+            areaErrorMessage={areaErrorMessage}
+            onCancelArea={onCancelArea}
+          />
         </ExpandableCard>
         <ExpandableCard kicker="Registro de campo" title="Registrar Ocorrência" isOpen={openCard === "occurrence"} onToggle={() => onToggle("occurrence")}>
-          <form className="dark-form" onSubmit={onSubmitOccurrence}>
-            <Field label="Área vinculada"><select required value={occurrenceForm.areaId} onChange={(event) => setOccurrenceForm((current) => ({ ...current, areaId: event.target.value }))}>{areas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}</select></Field>
-            <div className="status-reference">
-              <span className="status-reference__label">Categoria da área</span>
-              <strong>{selectedOccurrenceArea ? selectedOccurrenceArea.category : "Selecione uma área"}</strong>
-            </div>
-            <div className="status-reference">
-              <span className="status-reference__label">Status atual da área</span>
-              <strong className={`impact-pill impact-pill--${selectedOccurrenceArea?.status ?? "atencao"}`}>
-                {selectedOccurrenceArea ? statusLabel(selectedOccurrenceArea.status) : "Selecione uma área"}
-              </strong>
-            </div>
-            <label className="status-toggle">
-              <input
-                type="checkbox"
-                checked={occurrenceForm.updateStatus}
-                onChange={(event) =>
-                  setOccurrenceForm((current) => ({
-                    ...current,
-                    updateStatus: event.target.checked,
-                    nextStatus: event.target.checked
-                      ? current.nextStatus || selectedOccurrenceArea?.status || "atencao"
-                      : "",
-                  }))
-                }
-              />
-              <span>Atualizar status da área nesta ocorrência</span>
-            </label>
-            {occurrenceForm.updateStatus ? (
-              <Field label="Novo status da área">
-                <select
-                  value={occurrenceForm.nextStatus}
-                  onChange={(event) =>
-                    setOccurrenceForm((current) => ({ ...current, nextStatus: event.target.value }))
-                  }
-                >
-                  <option value="preservado">Preservado</option>
-                  <option value="atencao">Em atenção</option>
-                  <option value="critico">Crítico</option>
-                </select>
-              </Field>
-            ) : null}
-            {selectedOccurrenceArea && occurrenceForm.updateStatus && occurrenceForm.nextStatus ? (
-              <div className="map-helper map-helper--selected">
-                <strong>
-                  Status atualizado: {statusUpdateLabel(selectedOccurrenceArea.status)} {"\u2192"} {statusUpdateLabel(occurrenceForm.nextStatus)}
-                </strong>
-              </div>
-            ) : null}
-            <Field label="Impacto observado"><input required value={occurrenceForm.impact} onChange={(event) => setOccurrenceForm((current) => ({ ...current, impact: event.target.value }))} placeholder="Ex.: Risco alto de contaminação do solo" /></Field>
-            <Field label="Detalhes"><textarea required rows="4" value={occurrenceForm.description} onChange={(event) => setOccurrenceForm((current) => ({ ...current, description: event.target.value }))} placeholder="Registre a ocorrência dentro do próprio card." /></Field>
-            {occurrenceLocation ? (
-              <div className="map-helper map-helper--selected">
-                <strong>
-                  Ocorrência vinculada a esta área no ponto {occurrenceLocation.latitude.toFixed(6)}, {occurrenceLocation.longitude.toFixed(6)}.
-                </strong>
-              </div>
-            ) : null}
-            {selectedOccurrenceArea ? (
-              <div className={`map-helper${selectedOccurrenceArea.statusUpdated ? " map-helper--selected" : ""}`}>
-                {selectedOccurrenceArea.statusUpdated && selectedOccurrenceArea.previousStatus ? (
-                  <strong>
-                    Última atualização alterou o status de {statusUpdateLabel(selectedOccurrenceArea.previousStatus)} para {statusUpdateLabel(selectedOccurrenceArea.status)}.
-                  </strong>
-                ) : (
-                  <span>Última ocorrência registrada manteve o status atual da área.</span>
-                )}
-              </div>
-            ) : null}
-            {occurrenceErrorMessage ? <div className="form-feedback form-feedback--error">{occurrenceErrorMessage}</div> : null}
-            {occurrenceSuccessMessage ? <div className="form-feedback form-feedback--success">{occurrenceSuccessMessage}</div> : null}
-            <UploadBox preview={occurrencePreview} onPreviewChange={setOccurrencePreview} />
-            <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingOccurrence}>{isSavingOccurrence ? "Registrando..." : "Registrar"}</button><button className="btn btn--red" type="button" onClick={onCancelOccurrence} disabled={isSavingOccurrence}>Cancelar</button></div>
-          </form>
+          <OccurrenceFormPanel
+            areas={areas}
+            occurrenceForm={occurrenceForm}
+            setOccurrenceForm={setOccurrenceForm}
+            occurrencePreview={occurrencePreview}
+            setOccurrencePreview={setOccurrencePreview}
+            onSubmitOccurrence={onSubmitOccurrence}
+            isSavingOccurrence={isSavingOccurrence}
+            occurrenceSuccessMessage={occurrenceSuccessMessage}
+            occurrenceErrorMessage={occurrenceErrorMessage}
+            onCancelOccurrence={onCancelOccurrence}
+            occurrenceLocation={occurrenceLocation}
+          />
         </ExpandableCard>
       </div>
     </aside>
   );
 }
 
+function CompactHeader({ mobile = false }) {
+  return (
+    <header className={`sidebar__header${mobile ? " sidebar__header--mobile" : ""}`}>
+      <span className="eyebrow eyebrow--with-icon">
+        <span className="eyebrow__icon" aria-hidden="true">
+          <LeafIcon />
+        </span>
+        <span>Monitoramento Ambiental</span>
+      </span>
+      <h1>Mapa de Atenção Ambiental de Duque Bacelar</h1>
+    </header>
+  );
+}
+
+function AreaFormPanel(props) {
+  const { areaForm, setAreaForm, areaPreview, setAreaPreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, isSavingArea, areaSuccessMessage, areaErrorMessage, onCancelArea, mobile = false } = props;
+  const areaReady = areaForm.polygonCoords.length >= 3 || draftPolygonCoords.length >= 3;
+
+  return (
+    <form className="dark-form" onSubmit={onSubmitArea}>
+      <Field label="Nome da área"><input required value={areaForm.name} onChange={(event) => setAreaForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Nascente do Riacho Fundo" /></Field>
+      <Field label="Categoria">
+        <CategoriaSelect
+          value={areaForm.category}
+          onChange={(value) => setAreaForm((current) => ({ ...current, category: value }))}
+        />
+      </Field>
+      <Field label="Status"><select value={areaForm.status} onChange={(event) => setAreaForm((current) => ({ ...current, status: event.target.value }))}><option value="preservado">Preservado</option><option value="atencao">Atenção</option><option value="critico">Crítico</option></select></Field>
+      <Field label="Impacto"><input required value={areaForm.impact} onChange={(event) => setAreaForm((current) => ({ ...current, impact: event.target.value }))} placeholder="Ex.: Pressão moderada por descarte irregular" /></Field>
+      <Field label="Descrição"><textarea required rows="4" value={areaForm.description} onChange={(event) => setAreaForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descreva rapidamente a situação observada." /></Field>
+      <section className={`demarcation-panel${mobile ? " demarcation-panel--mobile" : ""}`}>
+        <div className="demarcation-panel__header">
+          <div className="demarcation-panel__intro">
+            <h3>Demarque a área</h3>
+            {mobile ? <p>Marque os limites direto no mapa e volte para salvar.</p> : null}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className={`btn btn--green btn--primary-action${!isDrawingArea ? " btn--pulse" : ""}`}
+          onClick={onStartAreaDrawing}
+        >
+          Iniciar demarcação
+        </button>
+
+        {!mobile ? (
+          <div className="drawing-actions drawing-actions--secondary">
+            <button type="button" className="btn btn--ghost" onClick={onConcludeAreaDrawing} disabled={draftPolygonCoords.length < 3}>
+              Concluir
+            </button>
+            <button type="button" className="btn btn--subtle" onClick={onClearAreaDrawing}>
+              Limpar
+            </button>
+          </div>
+        ) : null}
+
+        <div className={`demarcation-status${areaReady ? " demarcation-status--success" : ""}`}>
+          {areaReady ? "Área demarcada com sucesso." : "Adicione pelo menos 3 pontos para formar a área."}
+        </div>
+      </section>
+      {areaErrorMessage ? <div className="form-feedback form-feedback--error">{areaErrorMessage}</div> : null}
+      {areaSuccessMessage ? <div className="form-feedback form-feedback--success">{areaSuccessMessage}</div> : null}
+      <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} />
+      <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingArea}>{isSavingArea ? "Salvando..." : "Salvar área"}</button><button className="btn btn--red" type="button" onClick={onCancelArea} disabled={isSavingArea}>Cancelar</button></div>
+    </form>
+  );
+}
+
+function OccurrenceFormPanel(props) {
+  const { areas, occurrenceForm, setOccurrenceForm, occurrencePreview, setOccurrencePreview, onSubmitOccurrence, isSavingOccurrence, occurrenceSuccessMessage, occurrenceErrorMessage, onCancelOccurrence, occurrenceLocation } = props;
+  const selectedOccurrenceArea = areas.find((area) => area.id === occurrenceForm.areaId) ?? null;
+
+  return (
+    <form className="dark-form" onSubmit={onSubmitOccurrence}>
+      <Field label="Área vinculada"><select required value={occurrenceForm.areaId} onChange={(event) => setOccurrenceForm((current) => ({ ...current, areaId: event.target.value }))}>{areas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}</select></Field>
+      <div className="status-reference">
+        <span className="status-reference__label">Categoria da área</span>
+        <strong>{selectedOccurrenceArea ? selectedOccurrenceArea.category : "Selecione uma área"}</strong>
+      </div>
+      <div className="status-reference">
+        <span className="status-reference__label">Status atual da área</span>
+        <strong className={`impact-pill impact-pill--${selectedOccurrenceArea?.status ?? "atencao"}`}>
+          {selectedOccurrenceArea ? statusLabel(selectedOccurrenceArea.status) : "Selecione uma área"}
+        </strong>
+      </div>
+      <label className="status-toggle">
+        <input
+          type="checkbox"
+          checked={occurrenceForm.updateStatus}
+          onChange={(event) =>
+            setOccurrenceForm((current) => ({
+              ...current,
+              updateStatus: event.target.checked,
+              nextStatus: event.target.checked
+                ? current.nextStatus || selectedOccurrenceArea?.status || "atencao"
+                : "",
+            }))
+          }
+        />
+        <span>Atualizar status da área nesta ocorrência</span>
+      </label>
+      {occurrenceForm.updateStatus ? (
+        <Field label="Novo status da área">
+          <select
+            value={occurrenceForm.nextStatus}
+            onChange={(event) =>
+              setOccurrenceForm((current) => ({ ...current, nextStatus: event.target.value }))
+            }
+          >
+            <option value="preservado">Preservado</option>
+            <option value="atencao">Em atenção</option>
+            <option value="critico">Crítico</option>
+          </select>
+        </Field>
+      ) : null}
+      {selectedOccurrenceArea && occurrenceForm.updateStatus && occurrenceForm.nextStatus ? (
+        <div className="map-helper map-helper--selected">
+          <strong>
+            Status atualizado: {statusUpdateLabel(selectedOccurrenceArea.status)} {"\u2192"} {statusUpdateLabel(occurrenceForm.nextStatus)}
+          </strong>
+        </div>
+      ) : null}
+      <Field label="Impacto observado"><input required value={occurrenceForm.impact} onChange={(event) => setOccurrenceForm((current) => ({ ...current, impact: event.target.value }))} placeholder="Ex.: Risco alto de contaminação do solo" /></Field>
+      <Field label="Detalhes"><textarea required rows="4" value={occurrenceForm.description} onChange={(event) => setOccurrenceForm((current) => ({ ...current, description: event.target.value }))} placeholder="Registre a ocorrência dentro do próprio card." /></Field>
+      {occurrenceLocation ? (
+        <div className="map-helper map-helper--selected">
+          <strong>
+            Ocorrência vinculada a esta área no ponto {occurrenceLocation.latitude.toFixed(6)}, {occurrenceLocation.longitude.toFixed(6)}.
+          </strong>
+        </div>
+      ) : null}
+      {selectedOccurrenceArea ? (
+        <div className={`map-helper${selectedOccurrenceArea.statusUpdated ? " map-helper--selected" : ""}`}>
+          {selectedOccurrenceArea.statusUpdated && selectedOccurrenceArea.previousStatus ? (
+            <strong>
+              Última atualização alterou o status de {statusUpdateLabel(selectedOccurrenceArea.previousStatus)} para {statusUpdateLabel(selectedOccurrenceArea.status)}.
+            </strong>
+          ) : (
+            <span>Última ocorrência registrada manteve o status atual da área.</span>
+          )}
+        </div>
+      ) : null}
+      {occurrenceErrorMessage ? <div className="form-feedback form-feedback--error">{occurrenceErrorMessage}</div> : null}
+      {occurrenceSuccessMessage ? <div className="form-feedback form-feedback--success">{occurrenceSuccessMessage}</div> : null}
+      <UploadBox preview={occurrencePreview} onPreviewChange={setOccurrencePreview} />
+      <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingOccurrence}>{isSavingOccurrence ? "Registrando..." : "Registrar"}</button><button className="btn btn--red" type="button" onClick={onCancelOccurrence} disabled={isSavingOccurrence}>Cancelar</button></div>
+    </form>
+  );
+}
+
 function LegendCard() {
-  return <section className="legend-card"><div className="legend-card__title-row"><h2>Legenda</h2><span className="legend-card__badge">Status</span></div><div className="legend-list"><div className="legend-item"><span className="legend-swatch legend-swatch--green"></span><span>Preservado</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--yellow"></span><span>Atenção</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--red"></span><span>Crítico</span></div></div></section>;
+  return <section className="legend-card"><div className="legend-card__title-row"><h2>Legenda</h2><span className="legend-card__badge">Status</span></div><LegendContent /></section>;
+}
+
+function LegendContent() {
+  return <div className="legend-list"><div className="legend-item"><span className="legend-swatch legend-swatch--green"></span><span>Preservado</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--yellow"></span><span>Atenção</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--red"></span><span>Crítico</span></div></div>;
+}
+
+function MobileMapActions({ isInteractive, isDrawingArea, onToggleInteraction, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers }) {
+  return (
+    <>
+      <div className="mobile-fab-dock">
+        <MobileFabButton label="Legenda" onClick={onOpenLegend}>
+          <LegendIcon />
+        </MobileFabButton>
+        <MobileFabButton label="Camadas" onClick={onOpenLayers}>
+          <LayersIcon />
+        </MobileFabButton>
+        <MobileFabButton label="Ocorrência" onClick={onOpenOccurrence}>
+          <AlertIcon />
+        </MobileFabButton>
+        <MobileFabButton label="Nova área" onClick={onOpenArea} primary>
+          <AreaIcon />
+        </MobileFabButton>
+      </div>
+      <button
+        type="button"
+        className={`mobile-map-toggle${isInteractive ? " is-active" : ""}${isDrawingArea ? " is-drawing" : ""}`}
+        onClick={onToggleInteraction}
+      >
+        {isInteractive ? "Bloquear mapa" : "Mover mapa"}
+      </button>
+    </>
+  );
+}
+
+function MobileFabButton({ label, children, onClick, primary = false }) {
+  return (
+    <button type="button" className={`mobile-fab${primary ? " mobile-fab--primary" : ""}`} onClick={onClick}>
+      <span className="mobile-fab__icon" aria-hidden="true">{children}</span>
+      <span className="mobile-fab__label">{label}</span>
+    </button>
+  );
+}
+
+function BottomSheet({ isOpen, title, onClose, children, large = false }) {
+  if (!isOpen) return null;
+  return (
+    <div className="bottom-sheet-backdrop" onClick={onClose}>
+      <section className={`bottom-sheet${large ? " bottom-sheet--large" : ""}`} onClick={(event) => event.stopPropagation()}>
+        <div className="bottom-sheet__handle" />
+        <header className="bottom-sheet__header">
+          <h2>{title}</h2>
+          <button type="button" className="bottom-sheet__close" onClick={onClose}>Fechar</button>
+        </header>
+        <div className="bottom-sheet__content">{children}</div>
+      </section>
+    </div>
+  );
+}
+
+function LayerSheet({ activeBaseMap, onChangeBaseMap }) {
+  return (
+    <div className="layer-sheet">
+      <button type="button" className={`layer-sheet__option${activeBaseMap === "satellite" ? " is-active" : ""}`} onClick={() => onChangeBaseMap("satellite")}>
+        <strong>Satélite</strong>
+        <span>Mais detalhe visual da cobertura do território.</span>
+      </button>
+      <button type="button" className={`layer-sheet__option${activeBaseMap === "street" ? " is-active" : ""}`} onClick={() => onChangeBaseMap("street")}>
+        <strong>Mapa padrão</strong>
+        <span>Melhor leitura de localidades, vias e nomes da região.</span>
+      </button>
+    </div>
+  );
+}
+
+function LeafIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19.5 4.5c-5.6.2-9.6 1.9-12 5.1-2.2 2.8-3 6.3-2.5 9.9 3.6.5 7.1-.4 9.9-2.5 3.2-2.4 4.9-6.4 5.1-12Z" />
+      <path d="M8.2 15.8c2-1.6 4.1-3 6.5-4.1" />
+      <path d="M10.7 18.9c.2-1.5-.1-3.1-.8-4.5" />
+    </svg>
+  );
+}
+
+function AreaIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M8 14h12v6H8z"/><path d="M10 8l4-2"/></svg>;
+}
+
+function AlertIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>;
+}
+
+function LegendIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="4" cy="6" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="4" cy="18" r="1.5"/></svg>;
+}
+
+function LayersIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>;
 }
 
 function BoundaryLayer({ geojson }) {
