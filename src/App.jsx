@@ -73,7 +73,9 @@ export default function App() {
   const [isSavingArea, setIsSavingArea] = useState(false);
   const [isSavingOccurrence, setIsSavingOccurrence] = useState(false);
   const [areaSuccessMessage, setAreaSuccessMessage] = useState("");
+  const [areaErrorMessage, setAreaErrorMessage] = useState("");
   const [occurrenceSuccessMessage, setOccurrenceSuccessMessage] = useState("");
+  const [occurrenceErrorMessage, setOccurrenceErrorMessage] = useState("");
   const draftPolygonReady = draftPolygonCoords.length >= 3;
   const draftPolygonCenter = useMemo(
     () => (draftPolygonCoords.length ? computeCentroid(draftPolygonCoords) : null),
@@ -147,6 +149,7 @@ export default function App() {
     setDraftPolygonCoords([]);
     setIsDrawingArea(false);
     setAreaSuccessMessage("");
+    setAreaErrorMessage("");
   }
 
   function resetOccurrenceDraft() {
@@ -154,6 +157,7 @@ export default function App() {
     setOccurrencePreview(null);
     setOccurrenceLocation(null);
     setOccurrenceSuccessMessage("");
+    setOccurrenceErrorMessage("");
   }
 
   function startAreaDrawing() {
@@ -186,6 +190,7 @@ export default function App() {
   async function handleAreaSubmit(event) {
     event.preventDefault();
     setAreaSuccessMessage("");
+    setAreaErrorMessage("");
 
     const normalizedName = normalizeAreaName(areaForm.name);
     const duplicateArea = areas.find((area) => normalizeAreaName(area.name) === normalizedName);
@@ -232,11 +237,12 @@ export default function App() {
       }).select().single();
       if (error) {
         console.error(error);
-        setDataMode("local");
-        setDataStatus("Não foi possível salvar o polígono no Supabase. A área foi salva localmente.");
-        setAreas((current) => [draft, ...current]);
-        setActiveAreaId(draft.id);
-        setAreaSuccessMessage("Área salva localmente com sucesso.");
+        setDataMode("supabase");
+        setDataStatus("Não foi possível salvar a área no Supabase.");
+        setAreaErrorMessage(`Não foi possível salvar a área. ${error.message ?? "Tente novamente."}`);
+        setIsSavingArea(false);
+        setOpenCard("area");
+        return;
       } else {
         const mapped = mapSupabaseAreaToApp(data) ?? draft;
         setDataMode("supabase");
@@ -259,6 +265,7 @@ export default function App() {
   async function handleOccurrenceSubmit(event) {
     event.preventDefault();
     setOccurrenceSuccessMessage("");
+    setOccurrenceErrorMessage("");
 
     const targetArea = areas.find((area) => area.id === occurrenceForm.areaId);
     if (!targetArea) {
@@ -295,16 +302,12 @@ export default function App() {
       const { data, error } = await supabase.from("areas").update(payload).eq("id", occurrenceForm.areaId).select().single();
       if (error) {
         console.error(error);
-        setDataMode("local");
-        setDataStatus("Não foi possível atualizar no Supabase. A ocorrência foi aplicada localmente.");
-        setAreas((current) =>
-          current.map((area) =>
-            area.id === occurrenceForm.areaId
-              ? { ...area, ...patch, image: occurrencePreview ?? area.image }
-              : area,
-          ),
-        );
-        setOccurrenceSuccessMessage("Ocorrência registrada localmente com sucesso.");
+        setDataMode("supabase");
+        setDataStatus("Não foi possível registrar a ocorrência no Supabase.");
+        setOccurrenceErrorMessage(`Não foi possível registrar a ocorrência. ${error.message ?? "Tente novamente."}`);
+        setIsSavingOccurrence(false);
+        setOpenCard("occurrence");
+        return;
       } else {
         const mapped = mapSupabaseAreaToApp(data);
         setDataMode("supabase");
@@ -374,7 +377,9 @@ export default function App() {
         isSavingArea={isSavingArea}
         isSavingOccurrence={isSavingOccurrence}
         areaSuccessMessage={areaSuccessMessage}
+        areaErrorMessage={areaErrorMessage}
         occurrenceSuccessMessage={occurrenceSuccessMessage}
+        occurrenceErrorMessage={occurrenceErrorMessage}
         onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
         occurrenceLocation={occurrenceLocation}
         onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
@@ -585,7 +590,7 @@ function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLea
 }
 
 function Sidebar(props) {
-  const { openCard, onToggle, dataMode, dataStatus, areas, areaForm, setAreaForm, areaPreview, setAreaPreview, occurrenceForm, setOccurrenceForm, occurrencePreview, setOccurrencePreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, onSubmitOccurrence, isSavingArea, isSavingOccurrence, areaSuccessMessage, occurrenceSuccessMessage, onCancelArea, onCancelOccurrence, occurrenceLocation } = props;
+  const { openCard, onToggle, dataMode, dataStatus, areas, areaForm, setAreaForm, areaPreview, setAreaPreview, occurrenceForm, setOccurrenceForm, occurrencePreview, setOccurrencePreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, onSubmitOccurrence, isSavingArea, isSavingOccurrence, areaSuccessMessage, areaErrorMessage, occurrenceSuccessMessage, occurrenceErrorMessage, onCancelArea, onCancelOccurrence, occurrenceLocation } = props;
   const areaReady = areaForm.polygonCoords.length >= 3 || draftPolygonCoords.length >= 3;
   const selectedOccurrenceArea = areas.find((area) => area.id === occurrenceForm.areaId) ?? null;
   return (
@@ -645,6 +650,7 @@ function Sidebar(props) {
                 {areaReady ? "Área demarcada com sucesso." : "Adicione pelo menos 3 pontos para formar a área."}
               </div>
             </section>
+            {areaErrorMessage ? <div className="form-feedback form-feedback--error">{areaErrorMessage}</div> : null}
             {areaSuccessMessage ? <div className="form-feedback form-feedback--success">{areaSuccessMessage}</div> : null}
             <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} />
             <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingArea}>{isSavingArea ? "Salvando..." : "Salvar área"}</button><button className="btn btn--red" type="button" onClick={onCancelArea} disabled={isSavingArea}>Cancelar</button></div>
@@ -720,6 +726,7 @@ function Sidebar(props) {
                 )}
               </div>
             ) : null}
+            {occurrenceErrorMessage ? <div className="form-feedback form-feedback--error">{occurrenceErrorMessage}</div> : null}
             {occurrenceSuccessMessage ? <div className="form-feedback form-feedback--success">{occurrenceSuccessMessage}</div> : null}
             <UploadBox preview={occurrencePreview} onPreviewChange={setOccurrencePreview} />
             <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingOccurrence}>{isSavingOccurrence ? "Registrando..." : "Registrar"}</button><button className="btn btn--red" type="button" onClick={onCancelOccurrence} disabled={isSavingOccurrence}>Cancelar</button></div>

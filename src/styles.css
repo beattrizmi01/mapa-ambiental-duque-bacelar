@@ -431,6 +431,12 @@ body {
   color: #dffcec;
 }
 
+.form-feedback--error {
+  border: 1px solid rgba(239, 107, 107, 0.34);
+  background: rgba(57, 17, 21, 0.74);
+  color: #ffe5e5;
+}
+
 .map-helper--selected strong {
   color: #dffcec;
 }
