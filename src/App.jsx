@@ -20,7 +20,10 @@ import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas";
 const FALLBACK_CENTER = [-4.1533881, -42.9459142];
-const BOUNDARY_STYLE = { color: "#3a6ae6", weight: 2, fillColor: "transparent", fillOpacity: 0 };
+const REGIONAL_CENTER = [-4.62, -43.72];
+const REGIONAL_ZOOM = 7;
+const LOCAL_ZOOM = 12;
+const BOUNDARY_STYLE = { color: "#7fb5ff", weight: 1.4, fillColor: "transparent", fillOpacity: 0 };
 const STREET_TILES = {
   url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
   attribution:
@@ -412,8 +415,8 @@ export default function App() {
           </>
         ) : null}
           <MapContainer
-            center={FALLBACK_CENTER}
-            zoom={12}
+            center={REGIONAL_CENTER}
+            zoom={isMobileViewport ? REGIONAL_ZOOM : 8}
           scrollWheelZoom={true}
           dragging={true}
           touchZoom={true}
@@ -484,29 +487,26 @@ export default function App() {
               </Tooltip>
             </CircleMarker>
           ) : null}
-          {areas.map((area) => (
-            <AreaFeature
-              key={area.id}
-              area={area}
-              drawingEnabled={isDrawingArea}
-              isHovered={hoveredAreaId === area.id}
-              isActive={activeAreaId === area.id}
-              onHover={() => setHoveredAreaId(area.id)}
-              onLeave={() => {
-                setHoveredAreaId((current) => (current === area.id ? null : current));
-                setActiveAreaId((current) => (current === area.id ? null : current));
-              }}
-              onToggle={() => setActiveAreaId((current) => current === area.id ? null : area.id)}
-              onClose={() => setActiveAreaId((current) => (current === area.id ? null : current))}
-              onAreaPointSelect={(point) => {
-                setActiveAreaId(area.id);
-                setHoveredAreaId(area.id);
-                setOccurrenceForm((current) => ({ ...current, areaId: area.id }));
-                setOccurrenceLocation(point);
-                setOpenCard("occurrence");
-              }}
-            />
-          ))}
+          <AreaLayer
+            areas={areas}
+            drawingEnabled={isDrawingArea}
+            hoveredAreaId={hoveredAreaId}
+            activeAreaId={activeAreaId}
+            onHoverArea={setHoveredAreaId}
+            onLeaveArea={(areaId) => {
+              setHoveredAreaId((current) => (current === areaId ? null : current));
+              setActiveAreaId((current) => (current === areaId ? null : current));
+            }}
+            onToggleArea={(areaId) => setActiveAreaId((current) => current === areaId ? null : areaId)}
+            onCloseArea={(areaId) => setActiveAreaId((current) => (current === areaId ? null : current))}
+            onAreaPointSelect={(area, point) => {
+              setActiveAreaId(area.id);
+              setHoveredAreaId(area.id);
+              setOccurrenceForm((current) => ({ ...current, areaId: area.id }));
+              setOccurrenceLocation(point);
+              setOpenCard("occurrence");
+            }}
+          />
           <Pane name="labels-pane" style={{ zIndex: 450, pointerEvents: "none" }}>
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} />
           </Pane>
@@ -656,6 +656,83 @@ function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLea
       ) : null}
     </>
   );
+}
+
+function AreaLayer(props) {
+  const {
+    areas,
+    drawingEnabled,
+    hoveredAreaId,
+    activeAreaId,
+    onHoverArea,
+    onLeaveArea,
+    onToggleArea,
+    onCloseArea,
+    onAreaPointSelect,
+  } = props;
+  const map = useMap();
+  const [zoom, setZoom] = useState(() => map.getZoom());
+  const clusters = useMemo(() => createAreaClusters(areas, zoom), [areas, zoom]);
+
+  useEffect(() => {
+    const syncZoom = () => setZoom(map.getZoom());
+    map.on("zoomend", syncZoom);
+    return () => map.off("zoomend", syncZoom);
+  }, [map]);
+
+  if (drawingEnabled) {
+    return areas.map((area) => (
+      <AreaFeature
+        key={area.id}
+        area={area}
+        drawingEnabled={drawingEnabled}
+        isHovered={hoveredAreaId === area.id}
+        isActive={activeAreaId === area.id}
+        onHover={() => onHoverArea(area.id)}
+        onLeave={() => onLeaveArea(area.id)}
+        onToggle={() => onToggleArea(area.id)}
+        onClose={() => onCloseArea(area.id)}
+        onAreaPointSelect={(point) => onAreaPointSelect(area, point)}
+      />
+    ));
+  }
+
+  return clusters.map((cluster) => {
+    if (cluster.areas.length === 1) {
+      const area = cluster.areas[0];
+      return (
+        <AreaFeature
+          key={area.id}
+          area={area}
+          drawingEnabled={drawingEnabled}
+          isHovered={hoveredAreaId === area.id}
+          isActive={activeAreaId === area.id}
+          onHover={() => onHoverArea(area.id)}
+          onLeave={() => onLeaveArea(area.id)}
+          onToggle={() => onToggleArea(area.id)}
+          onClose={() => onCloseArea(area.id)}
+          onAreaPointSelect={(point) => onAreaPointSelect(area, point)}
+        />
+      );
+    }
+
+    return (
+      <Marker
+        key={cluster.id}
+        position={cluster.center}
+        icon={getClusterIcon(cluster.areas)}
+        eventHandlers={{
+          click: () => {
+            map.setView(cluster.center, Math.min(map.getZoom() + 3, LOCAL_ZOOM), { animate: true });
+          },
+        }}
+      >
+        <Tooltip direction="top" offset={[0, -14]} opacity={1} className="environment-tooltip">
+          <ClusterCard areas={cluster.areas} />
+        </Tooltip>
+      </Marker>
+    );
+  });
 }
 
 function Sidebar(props) {
@@ -1018,12 +1095,6 @@ function BellIcon() {
 }
 
 function BoundaryLayer({ geojson }) {
-  const map = useMap();
-  useEffect(() => {
-    const layer = L.geoJSON(geojson);
-    const bounds = layer.getBounds();
-    if (bounds.isValid()) map.fitBounds(bounds, { padding: [24, 24] });
-  }, [geojson, map]);
   return <GeoJSON data={geojson} style={BOUNDARY_STYLE} />;
 }
 
@@ -1092,6 +1163,24 @@ function DetailCard({ area }) {
 
 function HoverCard({ area }) {
   return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div><p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
+}
+
+function ClusterCard({ areas }) {
+  const statusCounts = areas.reduce(
+    (counts, area) => ({ ...counts, [area.status]: (counts[area.status] ?? 0) + 1 }),
+    {},
+  );
+  return (
+    <article className="cluster-card">
+      <strong>{areas.length} áreas monitoradas</strong>
+      <div className="cluster-card__status">
+        <span><i className="legend-swatch legend-swatch--green"></i>{statusCounts.preservado ?? 0}</span>
+        <span><i className="legend-swatch legend-swatch--yellow"></i>{statusCounts.atencao ?? 0}</span>
+        <span><i className="legend-swatch legend-swatch--red"></i>{statusCounts.critico ?? 0}</span>
+      </div>
+      <small>Toque para aproximar</small>
+    </article>
+  );
 }
 
 function areaSeed(name, category, status, impact, description, polygonCoords) {
@@ -1182,9 +1271,55 @@ function getMarkerIcon(status) {
   return L.divIcon({
     className: "environment-marker-icon",
     html: `<span class="environment-marker environment-marker--${status}"></span>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
+    iconSize: [30, 36],
+    iconAnchor: [15, 32],
   });
+}
+
+function getClusterIcon(areas) {
+  const dominantStatus = getDominantStatus(areas);
+  const dots = ["preservado", "atencao", "critico"]
+    .filter((status) => areas.some((area) => area.status === status))
+    .map((status) => `<span class="cluster-marker__dot cluster-marker__dot--${status}"></span>`)
+    .join("");
+
+  return L.divIcon({
+    className: "cluster-marker-icon",
+    html: `<span class="cluster-marker cluster-marker--${dominantStatus}"><span class="cluster-marker__count">${areas.length}</span><span class="cluster-marker__dots">${dots}</span></span>`,
+    iconSize: [58, 58],
+    iconAnchor: [29, 29],
+  });
+}
+
+function createAreaClusters(areas, zoom) {
+  if (zoom >= LOCAL_ZOOM || areas.length <= 1) {
+    return areas.map((area) => ({
+      id: area.id,
+      center: [area.latitude, area.longitude],
+      areas: [area],
+    }));
+  }
+
+  const gridSize = zoom <= 7 ? 0.42 : zoom <= 9 ? 0.18 : 0.075;
+  const clusters = new Map();
+  areas.forEach((area) => {
+    const key = `${Math.round(area.latitude / gridSize)}:${Math.round(area.longitude / gridSize)}`;
+    const current = clusters.get(key) ?? [];
+    current.push(area);
+    clusters.set(key, current);
+  });
+
+  return Array.from(clusters.entries()).map(([key, groupedAreas]) => ({
+    id: `cluster-${key}`,
+    center: computeCentroid(groupedAreas.map((area) => [area.latitude, area.longitude])),
+    areas: groupedAreas,
+  }));
+}
+
+function getDominantStatus(areas) {
+  if (areas.some((area) => area.status === "critico")) return "critico";
+  if (areas.some((area) => area.status === "atencao")) return "atencao";
+  return "preservado";
 }
 
 function getAreaPolygonStyle(status, isHighlighted) {
@@ -1263,5 +1398,3 @@ function createId() {
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
-
-
