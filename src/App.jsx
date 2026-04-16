@@ -231,6 +231,28 @@ export default function App() {
     setAreaSuccessMessage("");
     setAreaErrorMessage("");
 
+    const requiredAreaFields = [
+      [areaForm.name, "Informe o nome da área."],
+      [areaForm.category, "Informe a categoria da área."],
+      [areaForm.status, "Informe o status da área."],
+      [areaForm.impact, "Informe o impacto observado."],
+      [areaForm.description, "Informe a descrição da área."],
+    ];
+    const missingAreaField = requiredAreaFields.find(([value]) => !String(value ?? "").trim());
+    if (missingAreaField) {
+      setDataStatus(missingAreaField[1]);
+      setAreaErrorMessage(`Cadastro não realizado. ${missingAreaField[1]}`);
+      setOpenCard("area");
+      return;
+    }
+
+    if (!areaPreview) {
+      setDataStatus("Envie uma imagem da área para concluir o cadastro.");
+      setAreaErrorMessage("Cadastro não realizado. A imagem da área é obrigatória.");
+      setOpenCard("area");
+      return;
+    }
+
     const normalizedName = normalizeAreaName(areaForm.name);
     const duplicateArea = areas.find((area) => normalizeAreaName(area.name) === normalizedName);
     if (duplicateArea) {
@@ -833,9 +855,10 @@ function AreaFormPanel(props) {
         <CategoriaSelect
           value={areaForm.category}
           onChange={(value) => setAreaForm((current) => ({ ...current, category: value }))}
+          required
         />
       </Field>
-      <Field label="Status"><select value={areaForm.status} onChange={(event) => setAreaForm((current) => ({ ...current, status: event.target.value }))}><option value="preservado">Preservado</option><option value="atencao">Atenção</option><option value="critico">Crítico</option></select></Field>
+      <Field label="Status"><select required value={areaForm.status} onChange={(event) => setAreaForm((current) => ({ ...current, status: event.target.value }))}><option value="preservado">Preservado</option><option value="atencao">Atenção</option><option value="critico">Crítico</option></select></Field>
       <Field label="Impacto"><input required value={areaForm.impact} onChange={(event) => setAreaForm((current) => ({ ...current, impact: event.target.value }))} placeholder="Ex.: Pressão moderada por descarte irregular" /></Field>
       <Field label="Descrição"><textarea required rows="4" value={areaForm.description} onChange={(event) => setAreaForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descreva rapidamente a situação observada." /></Field>
       <section className={`demarcation-panel${mobile ? " demarcation-panel--mobile" : ""}`}>
@@ -871,7 +894,7 @@ function AreaFormPanel(props) {
       </section>
       {areaErrorMessage ? <div className="form-feedback form-feedback--error">{areaErrorMessage}</div> : null}
       {areaSuccessMessage ? <div className="form-feedback form-feedback--success">{areaSuccessMessage}</div> : null}
-      <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} />
+      <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} required />
       <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingArea}>{isSavingArea ? "Salvando..." : "Salvar área"}</button><button className="btn btn--red" type="button" onClick={onCancelArea} disabled={isSavingArea}>Cancelar</button></div>
     </form>
   );
@@ -1224,13 +1247,14 @@ function Field({ label, children }) {
   return <label className="field"><span>{label}</span>{children}</label>;
 }
 
-function CategoriaSelect({ value, onChange }) {
+function CategoriaSelect({ value, onChange, required = false }) {
   const isCustomCategory = value && !CATEGORIES.includes(value);
   const selectedValue = isCustomCategory ? "Outro" : value;
 
   return (
     <div className="category-select-wrap">
       <select
+        required={required}
         value={selectedValue}
         onChange={(event) => onChange(event.target.value === "Outro" ? "" : event.target.value)}
       >
@@ -1245,6 +1269,7 @@ function CategoriaSelect({ value, onChange }) {
       {selectedValue === "Outro" ? (
         <input
           type="text"
+          required={required}
           value={isCustomCategory ? value : ""}
           onChange={(event) => onChange(event.target.value)}
           placeholder="Digite a categoria..."
@@ -1254,7 +1279,7 @@ function CategoriaSelect({ value, onChange }) {
   );
 }
 
-function UploadBox({ preview, onPreviewChange }) {
+function UploadBox({ preview, onPreviewChange, required = false }) {
   const [isDragOver, setIsDragOver] = useState(false);
   function handleFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
@@ -1262,7 +1287,7 @@ function UploadBox({ preview, onPreviewChange }) {
     reader.onload = () => onPreviewChange(reader.result);
     reader.readAsDataURL(file);
   }
-  return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>Arraste uma imagem ou clique para selecionar</strong><span>PNG, JPG ou WEBP</span></div>}</label>;
+  return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" required={required && !preview} onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>Arraste uma imagem ou clique para selecionar</strong><span>PNG, JPG ou WEBP obrigatorio</span></div>}</label>;
 }
 
 function DetailCard({ area }) {
