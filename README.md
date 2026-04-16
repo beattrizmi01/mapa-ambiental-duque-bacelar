@@ -33,45 +33,64 @@ Sem essas variaveis, o app continua funcionando com dados salvos no `localStorag
 
 Sempre que alterar variaveis de ambiente na Vercel, faca um novo deploy para que elas entrem no build.
 
-## Tabela do Supabase
+## Estrutura do Supabase
 
-O app usa uma tabela chamada `areas`. Um modelo simples para criar a tabela e liberar leitura/escrita para a chave anonima e:
+O app usa Supabase para persistir:
+
+- `areas`: status atual e dados da area;
+- `occurrences`: ocorrencias registradas em campo;
+- `area_status_history`: historico auditavel de alteracoes de status.
+
+Antes de usar o banco online, execute o SQL completo em [supabase/schema.sql](supabase/schema.sql) no SQL Editor do Supabase.
+
+Esse arquivo tambem cria a funcao `register_occurrence_with_status`, usada pelo app para salvar a ocorrencia, atualizar o status da area e registrar o historico em uma unica operacao transacional.
+
+Resumo da estrutura principal:
 
 ```sql
 create table if not exists public.areas (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   category text,
-  status text,
+  status text not null default 'atencao',
   impact text,
   description text,
   latitude double precision,
   longitude double precision,
   image_url text,
   polygon_coords jsonb,
+  last_occurrence_id uuid,
+  last_status_review_at timestamptz,
   created_at timestamptz not null default now()
 );
 
-alter table public.areas enable row level security;
+create table if not exists public.occurrences (
+  id uuid primary key default gen_random_uuid(),
+  area_id uuid not null references public.areas(id) on delete cascade,
+  impact text not null,
+  description text not null,
+  latitude double precision,
+  longitude double precision,
+  image_url text,
+  previous_status text,
+  new_status text,
+  status_updated boolean not null default false,
+  created_by uuid,
+  created_at timestamptz not null default now()
+);
 
-create policy "Permitir leitura publica de areas"
-on public.areas for select
-to anon
-using (true);
-
-create policy "Permitir cadastro publico de areas"
-on public.areas for insert
-to anon
-with check (true);
-
-create policy "Permitir atualizacao publica de areas"
-on public.areas for update
-to anon
-using (true)
-with check (true);
+create table if not exists public.area_status_history (
+  id uuid primary key default gen_random_uuid(),
+  area_id uuid not null references public.areas(id) on delete cascade,
+  occurrence_id uuid not null references public.occurrences(id) on delete cascade,
+  previous_status text not null,
+  new_status text not null,
+  changed_by uuid,
+  changed_at timestamptz not null default now()
+);
 ```
 
-Se o projeto for publico, revise essas politicas antes de colocar dados sensiveis, porque elas permitem leitura, cadastro e atualizacao por visitantes do app.
+Se o projeto for publico, revise as politicas RLS antes de colocar dados sensiveis, porque o modelo incluido permite leitura, cadastro e atualizacao por visitantes do app.
 
 ## Build
 

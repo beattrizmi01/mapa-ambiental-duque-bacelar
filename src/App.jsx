@@ -276,6 +276,7 @@ export default function App() {
     setIsSavingOccurrence(true);
 
     const baseDescription = occurrenceForm.description.trim();
+    const reviewTimestamp = new Date().toISOString();
     const locationSuffix =
       occurrenceLocation && occurrenceForm.areaId
         ? `\n\nPonto registrado no mapa: ${occurrenceLocation.latitude.toFixed(6)}, ${occurrenceLocation.longitude.toFixed(6)}`
@@ -290,44 +291,65 @@ export default function App() {
       status: shouldUpdateStatus ? occurrenceForm.nextStatus : targetArea.status,
       previousStatus: shouldUpdateStatus ? targetArea.status : null,
       statusUpdated: shouldUpdateStatus,
-      lastStatusReviewAt: new Date().toISOString(),
+      lastStatusReviewAt: reviewTimestamp,
     };
     if (hasSupabaseConfig()) {
-      const payload = {
-        impact: patch.impact,
-        description: patch.description,
-        ...(shouldUpdateStatus ? { status: patch.status } : {}),
-        ...(occurrencePreview ? { image_url: occurrencePreview } : {}),
-      };
-      const { data, error } = await supabase.from("areas").update(payload).eq("id", occurrenceForm.areaId).select().single();
-      if (error) {
-        console.error(error);
+      const { data: occurrenceResult, error: occurrenceError } = await supabase.rpc(
+        "register_occurrence_with_status",
+        {
+          p_area_id: occurrenceForm.areaId,
+          p_impact: patch.impact,
+          p_description: patch.description,
+          p_latitude: occurrenceLocation?.latitude ?? null,
+          p_longitude: occurrenceLocation?.longitude ?? null,
+          p_image_url: occurrencePreview ?? null,
+          p_update_status: shouldUpdateStatus,
+          p_new_status: shouldUpdateStatus ? patch.status : null,
+          p_changed_by: null,
+        },
+      );
+
+      if (occurrenceError) {
+        console.error(occurrenceError);
         setDataMode("supabase");
-        setDataStatus("Não foi possível registrar a ocorrência no Supabase.");
-        setOccurrenceErrorMessage(`Não foi possível registrar a ocorrência. ${error.message ?? "Tente novamente."}`);
+        setDataStatus("Não foi possível salvar a ocorrência e a atualização de status no Supabase.");
+        setOccurrenceErrorMessage(`Não foi possível registrar a ocorrência. ${occurrenceError.message ?? "Tente novamente."}`);
         setIsSavingOccurrence(false);
         setOpenCard("occurrence");
         return;
+      }
+
+      const updatedAreaRow = occurrenceResult?.area ?? occurrenceResult?.updated_area ?? null;
+      const mapped = mapSupabaseAreaToApp(updatedAreaRow) ?? {
+        ...targetArea,
+        impact: patch.impact,
+        description: patch.description,
+        status: patch.status,
+        image: occurrencePreview ?? targetArea.image,
+      };
+
+      setDataMode("supabase");
+      setDataStatus(
+        shouldUpdateStatus
+          ? `Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`
+          : "Ocorrência sincronizada sem alterar o status da área.",
+      );
+      setAreas((current) =>
+        current.map((area) =>
+          area.id === occurrenceForm.areaId
+            ? {
+                ...area,
+                ...mapped,
+                previousStatus: patch.previousStatus,
+                statusUpdated: patch.statusUpdated,
+                lastStatusReviewAt: patch.lastStatusReviewAt,
+              }
+            : area,
+        ),
+      );
+      if (shouldUpdateStatus) {
+        setOccurrenceSuccessMessage(`Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`);
       } else {
-        const mapped = mapSupabaseAreaToApp(data);
-        setDataMode("supabase");
-        setDataStatus(
-          shouldUpdateStatus
-            ? "Ocorrência sincronizada e status da área atualizado."
-            : "Ocorrência sincronizada sem alterar o status da área.",
-        );
-        setAreas((current) =>
-          current.map((area) =>
-            area.id === occurrenceForm.areaId
-              ? {
-                  ...(mapped ?? area),
-                  previousStatus: patch.previousStatus,
-                  statusUpdated: patch.statusUpdated,
-                  lastStatusReviewAt: patch.lastStatusReviewAt,
-                }
-              : area,
-          ),
-        );
         setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
       }
     } else {
