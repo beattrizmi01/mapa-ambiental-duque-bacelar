@@ -1158,6 +1158,21 @@ body {
   pointer-events: auto;
 }
 
+.mobile-side-button:disabled {
+  cursor: wait;
+  opacity: 0.82;
+}
+
+.mobile-side-button.is-active .mobile-side-button__icon {
+  border-color: rgba(96, 216, 255, 0.42);
+  background: rgba(16, 54, 75, 0.84);
+  color: #dff7ff;
+}
+
+.mobile-side-button.is-loading .mobile-side-button__icon svg {
+  animation: locateSpin 1s linear infinite;
+}
+
 .mobile-side-button__icon {
   display: inline-flex;
   align-items: center;
@@ -1175,6 +1190,12 @@ body {
 .mobile-side-button__icon svg {
   width: 29px;
   height: 29px;
+}
+
+@keyframes locateSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .mobile-status-card {

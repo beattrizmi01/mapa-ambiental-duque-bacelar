@@ -65,6 +65,8 @@ export default function App() {
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
   const [hoveredAreaId, setHoveredAreaId] = useState(null);
   const [activeAreaId, setActiveAreaId] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [occurrenceLocation, setOccurrenceLocation] = useState(null);
   const [areaPreview, setAreaPreview] = useState(null);
   const [occurrencePreview, setOccurrencePreview] = useState(null);
@@ -184,6 +186,42 @@ export default function App() {
     setDraftPolygonCoords([]);
     setAreaForm((current) => ({ ...current, polygonCoords: [] }));
     setDataStatus("Demarcação limpa. Clique no mapa para começar novamente.");
+  }
+
+  function locateUser() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setDataStatus("Seu navegador não oferece suporte à localização.");
+      return;
+    }
+
+    setIsLocatingUser(true);
+    setDataStatus("Buscando sua localização atual...");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        };
+        setUserLocation(nextLocation);
+        setDataStatus("Localização encontrada. O mapa foi centralizado na sua posição.");
+        setIsLocatingUser(false);
+      },
+      (error) => {
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? "Permissão de localização negada. Ative a localização do navegador para usar esse recurso."
+            : "Não foi possível obter sua localização agora. Tente novamente.";
+        setDataStatus(message);
+        setIsLocatingUser(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 60000,
+      },
+    );
   }
 
   async function handleAreaSubmit(event) {
@@ -411,6 +449,9 @@ export default function App() {
           onOpenOccurrence={() => setOpenCard("occurrence")}
           onOpenLegend={() => setOpenCard("legend")}
           onOpenLayers={() => setOpenCard("layers")}
+          onLocateUser={locateUser}
+          isLocatingUser={isLocatingUser}
+          hasUserLocation={Boolean(userLocation)}
         />
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
           <div className="mobile-drawing-bar">
@@ -449,6 +490,7 @@ export default function App() {
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
           )}
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
+          <UserLocationLayer location={userLocation} />
           <MapClickHandler
             drawingEnabled={isDrawingArea}
             onDrawPoint={(latlng) => {
@@ -916,11 +958,16 @@ function LegendContent() {
   return <div className="legend-list"><div className="legend-item"><span className="legend-swatch legend-swatch--green"></span><span>Preservado</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--yellow"></span><span>Atenção</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--red"></span><span>Crítico</span></div></div>;
 }
 
-function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers }) {
+function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers, onLocateUser, isLocatingUser, hasUserLocation }) {
   return (
     <>
       <div className="mobile-side-rail" aria-label="Ações rápidas do mapa">
-        <MobileSideButton label="Minha localização">
+        <MobileSideButton
+          label={isLocatingUser ? "Localizando" : "Minha localização"}
+          onClick={onLocateUser}
+          active={hasUserLocation}
+          loading={isLocatingUser}
+        >
           <LocationIcon />
         </MobileSideButton>
         <MobileSideButton label="Camadas" onClick={onOpenLayers}>
@@ -965,9 +1012,14 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
   );
 }
 
-function MobileSideButton({ label, children, onClick }) {
+function MobileSideButton({ label, children, onClick, active = false, loading = false }) {
   return (
-    <button type="button" className="mobile-side-button" onClick={onClick}>
+    <button
+      type="button"
+      className={`mobile-side-button${active ? " is-active" : ""}${loading ? " is-loading" : ""}`}
+      onClick={onClick}
+      disabled={loading}
+    >
       <span className="mobile-side-button__icon" aria-hidden="true">{children}</span>
       <span>{label}</span>
     </button>
@@ -1054,6 +1106,45 @@ function BellIcon() {
 
 function BoundaryLayer({ geojson }) {
   return <GeoJSON data={geojson} style={BOUNDARY_STYLE} />;
+}
+
+function UserLocationLayer({ location }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!location) return;
+    map.setView([location.latitude, location.longitude], Math.max(map.getZoom(), LOCAL_ZOOM), {
+      animate: true,
+    });
+  }, [location, map]);
+
+  if (!location) return null;
+
+  return (
+    <>
+      <CircleMarker
+        center={[location.latitude, location.longitude]}
+        radius={Math.max(24, Math.min(80, (location.accuracy ?? 0) / 8))}
+        pathOptions={{
+          color: "#60d8ff",
+          weight: 1,
+          opacity: 0.28,
+          fillColor: "#1b9bd7",
+          fillOpacity: 0.1,
+        }}
+        interactive={false}
+      />
+      <Marker
+        position={[location.latitude, location.longitude]}
+        icon={getUserLocationIcon()}
+        interactive={false}
+      >
+        <Tooltip permanent direction="top" offset={[0, -18]} className="selection-tooltip">
+          Minha localização
+        </Tooltip>
+      </Marker>
+    </>
+  );
 }
 
 function MapClickHandler({ drawingEnabled, onDrawPoint }) {
@@ -1231,6 +1322,15 @@ function getMarkerIcon(status) {
     html: `<span class="environment-marker environment-marker--${status}"></span>`,
     iconSize: [30, 36],
     iconAnchor: [15, 32],
+  });
+}
+
+function getUserLocationIcon() {
+  return L.divIcon({
+    className: "selected-location-icon",
+    html: '<span class="selected-location-pin"></span>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
   });
 }
 
