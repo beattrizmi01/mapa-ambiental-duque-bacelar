@@ -1,7 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 import {
-  LayersControl,
   CircleMarker,
   GeoJSON,
   MapContainer,
@@ -406,35 +405,31 @@ export default function App() {
         onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
       />
       <main className="map-stage">
-        {isMobileViewport ? (
-          <>
-            <MobileMapActions
-              isDrawingArea={isDrawingArea}
-              onOpenArea={() => setOpenCard("area")}
-              onOpenOccurrence={() => setOpenCard("occurrence")}
-              onOpenLegend={() => setOpenCard("legend")}
-              onOpenLayers={() => setOpenCard("layers")}
-            />
-            {(isDrawingArea || draftPolygonCoords.length > 0) ? (
-              <div className="mobile-drawing-bar">
-                <button
-                  type="button"
-                  className="mobile-drawing-bar__button mobile-drawing-bar__button--primary"
-                  onClick={concludeAreaDrawing}
-                  disabled={draftPolygonCoords.length < 3}
-                >
-                  Concluir área
-                </button>
-                <button
-                  type="button"
-                  className="mobile-drawing-bar__button"
-                  onClick={clearAreaDrawing}
-                >
-                  Limpar
-                </button>
-              </div>
-            ) : null}
-          </>
+        <MobileMapActions
+          isDrawingArea={isDrawingArea}
+          onOpenArea={() => setOpenCard("area")}
+          onOpenOccurrence={() => setOpenCard("occurrence")}
+          onOpenLegend={() => setOpenCard("legend")}
+          onOpenLayers={() => setOpenCard("layers")}
+        />
+        {(isDrawingArea || draftPolygonCoords.length > 0) ? (
+          <div className="mobile-drawing-bar">
+            <button
+              type="button"
+              className="mobile-drawing-bar__button mobile-drawing-bar__button--primary"
+              onClick={concludeAreaDrawing}
+              disabled={draftPolygonCoords.length < 3}
+            >
+              Concluir área
+            </button>
+            <button
+              type="button"
+              className="mobile-drawing-bar__button"
+              onClick={clearAreaDrawing}
+            >
+              Limpar
+            </button>
+          </div>
         ) : null}
           <MapContainer
             center={REGIONAL_CENTER}
@@ -448,16 +443,7 @@ export default function App() {
           tap={true}
           className="leaflet-map"
         >
-          {!isMobileViewport ? (
-            <LayersControl position="topright">
-              <LayersControl.BaseLayer checked={activeBaseMap === "satellite"} name="Satélite">
-                <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />
-              </LayersControl.BaseLayer>
-              <LayersControl.BaseLayer checked={activeBaseMap === "street"} name="Mapa padrão">
-                <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
-              </LayersControl.BaseLayer>
-            </LayersControl>
-          ) : activeBaseMap === "satellite" ? (
+          {activeBaseMap === "satellite" ? (
             <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />
           ) : (
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
@@ -533,75 +519,71 @@ export default function App() {
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} />
           </Pane>
         </MapContainer>
-        {isMobileViewport ? (
-          <>
-            <BottomSheet
-              isOpen={openCard === "legend"}
-              title="Legenda e status"
-              onClose={() => setOpenCard(null)}
-            >
-              <LegendContent />
-            </BottomSheet>
-            <BottomSheet
-              isOpen={openCard === "layers"}
-              title="Camadas do mapa"
-              onClose={() => setOpenCard(null)}
-            >
-              <LayerSheet
-                activeBaseMap={activeBaseMap}
-                onChangeBaseMap={setActiveBaseMap}
-              />
-            </BottomSheet>
-            <BottomSheet
-              isOpen={openCard === "area"}
-              title="Nova área"
-              onClose={() => { resetAreaDraft(); setOpenCard(null); }}
-              large
-            >
-              <AreaFormPanel
-                areaForm={areaForm}
-                setAreaForm={setAreaForm}
-                areaPreview={areaPreview}
-                setAreaPreview={setAreaPreview}
-                isDrawingArea={isDrawingArea}
-                draftPolygonCoords={draftPolygonCoords}
-                onStartAreaDrawing={() => {
-                  startAreaDrawing();
-                  setOpenCard(null);
-                }}
-                onConcludeAreaDrawing={concludeAreaDrawing}
-                onClearAreaDrawing={clearAreaDrawing}
-                onSubmitArea={handleAreaSubmit}
-                isSavingArea={isSavingArea}
-                areaSuccessMessage={areaSuccessMessage}
-                areaErrorMessage={areaErrorMessage}
-                onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
-                mobile
-              />
-            </BottomSheet>
-            <BottomSheet
-              isOpen={openCard === "occurrence"}
-              title="Registrar ocorrência"
-              onClose={() => { resetOccurrenceDraft(); setOpenCard(null); }}
-              large
-            >
-              <OccurrenceFormPanel
-                areas={areas}
-                occurrenceForm={occurrenceForm}
-                setOccurrenceForm={setOccurrenceForm}
-                occurrencePreview={occurrencePreview}
-                setOccurrencePreview={setOccurrencePreview}
-                onSubmitOccurrence={handleOccurrenceSubmit}
-                isSavingOccurrence={isSavingOccurrence}
-                occurrenceSuccessMessage={occurrenceSuccessMessage}
-                occurrenceErrorMessage={occurrenceErrorMessage}
-                onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
-                occurrenceLocation={occurrenceLocation}
-                mobile
-              />
-            </BottomSheet>
-          </>
-        ) : null}
+        <BottomSheet
+          isOpen={openCard === "legend"}
+          title="Legenda e status"
+          onClose={() => setOpenCard(null)}
+        >
+          <LegendContent />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "layers"}
+          title="Camadas do mapa"
+          onClose={() => setOpenCard(null)}
+        >
+          <LayerSheet
+            activeBaseMap={activeBaseMap}
+            onChangeBaseMap={setActiveBaseMap}
+          />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "area"}
+          title="Nova área"
+          onClose={() => { resetAreaDraft(); setOpenCard(null); }}
+          large
+        >
+          <AreaFormPanel
+            areaForm={areaForm}
+            setAreaForm={setAreaForm}
+            areaPreview={areaPreview}
+            setAreaPreview={setAreaPreview}
+            isDrawingArea={isDrawingArea}
+            draftPolygonCoords={draftPolygonCoords}
+            onStartAreaDrawing={() => {
+              startAreaDrawing();
+              setOpenCard(null);
+            }}
+            onConcludeAreaDrawing={concludeAreaDrawing}
+            onClearAreaDrawing={clearAreaDrawing}
+            onSubmitArea={handleAreaSubmit}
+            isSavingArea={isSavingArea}
+            areaSuccessMessage={areaSuccessMessage}
+            areaErrorMessage={areaErrorMessage}
+            onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
+            mobile
+          />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "occurrence"}
+          title="Registrar ocorrência"
+          onClose={() => { resetOccurrenceDraft(); setOpenCard(null); }}
+          large
+        >
+          <OccurrenceFormPanel
+            areas={areas}
+            occurrenceForm={occurrenceForm}
+            setOccurrenceForm={setOccurrenceForm}
+            occurrencePreview={occurrencePreview}
+            setOccurrencePreview={setOccurrencePreview}
+            onSubmitOccurrence={handleOccurrenceSubmit}
+            isSavingOccurrence={isSavingOccurrence}
+            occurrenceSuccessMessage={occurrenceSuccessMessage}
+            occurrenceErrorMessage={occurrenceErrorMessage}
+            onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
+            occurrenceLocation={occurrenceLocation}
+            mobile
+          />
+        </BottomSheet>
       </main>
     </div>
   );
@@ -758,56 +740,12 @@ function AreaLayer(props) {
 }
 
 function Sidebar(props) {
-  const { isMobileViewport, openCard, onToggle, areas, areaForm, setAreaForm, areaPreview, setAreaPreview, occurrenceForm, setOccurrenceForm, occurrencePreview, setOccurrencePreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, onSubmitOccurrence, isSavingArea, isSavingOccurrence, areaSuccessMessage, areaErrorMessage, occurrenceSuccessMessage, occurrenceErrorMessage, onCancelArea, onCancelOccurrence, occurrenceLocation } = props;
-
-  if (isMobileViewport) {
-    return (
-      <aside className="sidebar sidebar--mobile">
-        <div className="sidebar__panel sidebar__panel--mobile">
-          <CompactHeader mobile />
-        </div>
-      </aside>
-    );
-  }
+  const { isMobileViewport } = props;
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar__panel">
-        <CompactHeader />
-        <LegendCard />
-        <ExpandableCard kicker="Área protegida" title="Cadastrar Nova Área" isOpen={openCard === "area"} onToggle={() => onToggle("area")}>
-          <AreaFormPanel
-            areaForm={areaForm}
-            setAreaForm={setAreaForm}
-            areaPreview={areaPreview}
-            setAreaPreview={setAreaPreview}
-            isDrawingArea={isDrawingArea}
-            draftPolygonCoords={draftPolygonCoords}
-            onStartAreaDrawing={onStartAreaDrawing}
-            onConcludeAreaDrawing={onConcludeAreaDrawing}
-            onClearAreaDrawing={onClearAreaDrawing}
-            onSubmitArea={onSubmitArea}
-            isSavingArea={isSavingArea}
-            areaSuccessMessage={areaSuccessMessage}
-            areaErrorMessage={areaErrorMessage}
-            onCancelArea={onCancelArea}
-          />
-        </ExpandableCard>
-        <ExpandableCard kicker="Registro de campo" title="Registrar Ocorrência" isOpen={openCard === "occurrence"} onToggle={() => onToggle("occurrence")}>
-          <OccurrenceFormPanel
-            areas={areas}
-            occurrenceForm={occurrenceForm}
-            setOccurrenceForm={setOccurrenceForm}
-            occurrencePreview={occurrencePreview}
-            setOccurrencePreview={setOccurrencePreview}
-            onSubmitOccurrence={onSubmitOccurrence}
-            isSavingOccurrence={isSavingOccurrence}
-            occurrenceSuccessMessage={occurrenceSuccessMessage}
-            occurrenceErrorMessage={occurrenceErrorMessage}
-            onCancelOccurrence={onCancelOccurrence}
-            occurrenceLocation={occurrenceLocation}
-          />
-        </ExpandableCard>
+    <aside className="sidebar sidebar--mobile">
+      <div className="sidebar__panel sidebar__panel--mobile">
+        <CompactHeader mobile={isMobileViewport} />
       </div>
     </aside>
   );
@@ -815,7 +753,7 @@ function Sidebar(props) {
 
 function CompactHeader({ mobile = false }) {
   return (
-    <header className={`sidebar__header${mobile ? " sidebar__header--mobile" : ""}`}>
+    <header className="sidebar__header sidebar__header--mobile">
       <div className="compact-header__main">
         <span className="eyebrow eyebrow--with-icon">
           <span className="eyebrow__icon" aria-hidden="true">
@@ -823,14 +761,12 @@ function CompactHeader({ mobile = false }) {
           </span>
           <span>Monitoramento Ambiental</span>
         </span>
-        <h1>{mobile ? "Duque Bacelar" : "Mapa de Atenção Ambiental de Duque Bacelar"}</h1>
+        <h1>Duque Bacelar</h1>
       </div>
-      {mobile ? (
-        <button type="button" className="mobile-notification" aria-label="Notificações">
-          <BellIcon />
-          <span className="mobile-notification__dot" />
-        </button>
-      ) : null}
+      <button type="button" className="mobile-notification" aria-label="Notificações">
+        <BellIcon />
+        <span className="mobile-notification__dot" />
+      </button>
     </header>
   );
 }
