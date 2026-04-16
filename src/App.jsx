@@ -163,7 +163,7 @@ export default function App() {
   }
 
   function startAreaDrawing() {
-    setOpenCard("area");
+    setOpenCard(null);
     setActiveAreaId(null);
     setHoveredAreaId(null);
     setDraftPolygonCoords([]);
@@ -180,6 +180,7 @@ export default function App() {
 
     setAreaForm((current) => ({ ...current, polygonCoords: draftPolygonCoords }));
     setIsDrawingArea(false);
+    setOpenCard("area");
     setDataStatus(`Área demarcada com ${draftPolygonCoords.length} vértices. Agora preencha os dados e salve.`);
   }
 
@@ -504,7 +505,6 @@ export default function App() {
                 setAreaForm((form) => ({ ...form, polygonCoords: next }));
                 return next;
               });
-              setOpenCard("area");
             }}
           />
           {draftPolygonCoords.length > 1 ? (
@@ -603,10 +603,7 @@ export default function App() {
             setAreaPreview={setAreaPreview}
             isDrawingArea={isDrawingArea}
             draftPolygonCoords={draftPolygonCoords}
-            onStartAreaDrawing={() => {
-              startAreaDrawing();
-              setOpenCard(null);
-            }}
+            onStartAreaDrawing={startAreaDrawing}
             onConcludeAreaDrawing={concludeAreaDrawing}
             onClearAreaDrawing={clearAreaDrawing}
             onSubmitArea={handleAreaSubmit}
