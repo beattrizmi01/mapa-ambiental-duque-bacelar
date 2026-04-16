@@ -12,8 +12,8 @@ npm run dev
 Para usar Supabase localmente, crie um arquivo `.env` na raiz do projeto seguindo o modelo de `.env.example`:
 
 ```bash
-VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-VITE_SUPABASE_ANON_KEY=sua-chave-anon-publica
+VITE_SUPABASE_URL=https://zebsizvdirevdescsocd.supabase.co
+VITE_SUPABASE_ANON_KEY=cole-aqui-a-publishable-key-do-supabase
 ```
 
 Sem essas variaveis, o app continua funcionando com dados salvos no `localStorage` do navegador.
@@ -27,11 +27,20 @@ Sem essas variaveis, o app continua funcionando com dados salvos no `localStorag
    - Build Command: `npm run build`
    - Output Directory: `dist`
 4. Em **Environment Variables**, cadastre as variaveis se for usar Supabase:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SUPABASE_URL`: `https://zebsizvdirevdescsocd.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY`: a **Publishable key** do Supabase
 5. Clique em **Deploy**.
 
 Sempre que alterar variaveis de ambiente na Vercel, faca um novo deploy para que elas entrem no build.
+
+Para encontrar a chave no painel novo do Supabase:
+
+1. Clique em **Project Settings** no menu lateral esquerdo.
+2. Abra **API Keys**.
+3. Na secao **Publishable key**, copie a chave `default`.
+4. Cole essa chave na Vercel em `VITE_SUPABASE_ANON_KEY`.
+
+Se voce estiver em **Integrations > Data API**, essa tela mostra a URL da API, mas nao e o lugar certo para copiar a chave do app.
 
 ## Estrutura do Supabase
 
