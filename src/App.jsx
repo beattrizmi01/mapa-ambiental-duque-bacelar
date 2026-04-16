@@ -298,9 +298,10 @@ export default function App() {
       }).select().single();
       if (error) {
         console.error(error);
+        const friendlyError = getSupabaseFriendlyError(error);
         setDataMode("supabase");
         setDataStatus("Cadastro não realizado. A área não foi salva no banco de dados.");
-        setAreaErrorMessage(`Cadastro não realizado. A área não foi salva no banco de dados. ${error.message ?? "Tente novamente."}`);
+        setAreaErrorMessage(`Cadastro não realizado. A área não foi salva no banco de dados. ${friendlyError}`);
         setIsSavingArea(false);
         setOpenCard("area");
         return;
@@ -1398,6 +1399,20 @@ function normalizeAreaName(value) {
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase();
+}
+
+function getSupabaseFriendlyError(error) {
+  const message = String(error?.message ?? "");
+  if (message.toLowerCase().includes("invalid api key")) {
+    return "Chave do Supabase inválida. Atualize VITE_SUPABASE_ANON_KEY nas variáveis de ambiente da Vercel e faça um novo deploy.";
+  }
+  if (message.toLowerCase().includes("permission denied") || message.toLowerCase().includes("row-level security")) {
+    return "Permissão negada no Supabase. Verifique as políticas RLS da tabela areas.";
+  }
+  if (message.toLowerCase().includes("relation") && message.toLowerCase().includes("does not exist")) {
+    return "Tabela não encontrada no Supabase. Execute o arquivo supabase/schema.sql no SQL Editor.";
+  }
+  return message || "Tente novamente.";
 }
 
 function createMapFocus(area) {
