@@ -196,6 +196,78 @@ body {
   color: #dbe8f9;
 }
 
+.status-summary {
+  display: grid;
+  gap: 14px;
+}
+
+.status-summary__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid rgba(161, 179, 201, 0.14);
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: rgba(8, 15, 26, 0.72);
+}
+
+.status-summary__total span {
+  color: #b8c7d8;
+  font-size: 0.84rem;
+}
+
+.status-summary__total strong {
+  font-size: 1.5rem;
+  color: #f7fbff;
+}
+
+.status-summary__grid {
+  display: grid;
+  gap: 10px;
+}
+
+.status-summary__card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(161, 179, 201, 0.12);
+  border-radius: 18px;
+  padding: 13px 14px;
+  background: rgba(10, 18, 31, 0.64);
+}
+
+.status-summary__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  color: #eef6ff;
+  font-weight: 700;
+}
+
+.status-summary__header .legend-swatch {
+  width: 11px;
+  height: 11px;
+  box-shadow: none;
+}
+
+.status-summary__areas {
+  display: grid;
+  gap: 5px;
+  color: #b8c7d8;
+  font-size: 0.8rem;
+}
+
+.status-summary__areas span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-summary__areas small {
+  color: #7f8da1;
+}
+
 .legend-swatch {
   width: 14px;
   height: 14px;

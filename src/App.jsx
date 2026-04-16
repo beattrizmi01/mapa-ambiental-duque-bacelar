@@ -448,6 +448,7 @@ export default function App() {
           onOpenArea={() => setOpenCard("area")}
           onOpenOccurrence={() => setOpenCard("occurrence")}
           onOpenLegend={() => setOpenCard("legend")}
+          onOpenStatus={() => setOpenCard("status")}
           onOpenLayers={() => setOpenCard("layers")}
           onLocateUser={locateUser}
           isLocatingUser={isLocatingUser}
@@ -563,10 +564,17 @@ export default function App() {
         </MapContainer>
         <BottomSheet
           isOpen={openCard === "legend"}
-          title="Legenda e status"
+          title="Legenda"
           onClose={() => setOpenCard(null)}
         >
           <LegendContent />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "status"}
+          title="Status das áreas"
+          onClose={() => setOpenCard(null)}
+        >
+          <StatusContent areas={areas} />
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "layers"}
@@ -958,7 +966,46 @@ function LegendContent() {
   return <div className="legend-list"><div className="legend-item"><span className="legend-swatch legend-swatch--green"></span><span>Preservado</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--yellow"></span><span>Atenção</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--red"></span><span>Crítico</span></div></div>;
 }
 
-function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers, onLocateUser, isLocatingUser, hasUserLocation }) {
+function StatusContent({ areas }) {
+  const statusItems = [
+    { status: "preservado", label: "Preservadas", swatch: "green" },
+    { status: "atencao", label: "Em atenção", swatch: "yellow" },
+    { status: "critico", label: "Críticas", swatch: "red" },
+  ];
+  const total = areas.length;
+
+  return (
+    <div className="status-summary">
+      <div className="status-summary__total">
+        <span>Total monitorado</span>
+        <strong>{total}</strong>
+      </div>
+      <div className="status-summary__grid">
+        {statusItems.map((item) => {
+          const filteredAreas = areas.filter((area) => area.status === item.status);
+          return (
+            <section key={item.status} className="status-summary__card">
+              <div className="status-summary__header">
+                <span className={`legend-swatch legend-swatch--${item.swatch}`}></span>
+                <span>{item.label}</span>
+                <strong>{filteredAreas.length}</strong>
+              </div>
+              <div className="status-summary__areas">
+                {filteredAreas.length ? (
+                  filteredAreas.slice(0, 4).map((area) => <span key={area.id}>{area.name}</span>)
+                ) : (
+                  <small>Nenhuma área</small>
+                )}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenStatus, onOpenLayers, onLocateUser, isLocatingUser, hasUserLocation }) {
   return (
     <>
       <div className="mobile-side-rail" aria-label="Ações rápidas do mapa">
@@ -973,7 +1020,7 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         <MobileSideButton label="Camadas" onClick={onOpenLayers}>
           <LayersIcon />
         </MobileSideButton>
-        <MobileSideButton label="Status" onClick={onOpenLegend}>
+        <MobileSideButton label="Status" onClick={onOpenStatus}>
           <StatusIcon />
         </MobileSideButton>
       </div>
@@ -988,8 +1035,8 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
             <span className="legend-swatch legend-swatch--red"></span>
           </span>
           <span className="mobile-status-card__copy">
-            <strong>Legenda / Status</strong>
-            <span>Ver classificação das áreas</span>
+            <strong>Legenda</strong>
+            <span>Ver significado das cores</span>
           </span>
           <span className="mobile-status-card__chevron" aria-hidden="true">›</span>
         </button>
