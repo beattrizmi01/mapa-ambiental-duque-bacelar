@@ -276,8 +276,8 @@ export default function App() {
       if (error) {
         console.error(error);
         setDataMode("supabase");
-        setDataStatus("Não foi possível salvar a área no Supabase.");
-        setAreaErrorMessage(`Não foi possível salvar a área. ${error.message ?? "Tente novamente."}`);
+        setDataStatus("Cadastro não realizado. A área não foi salva no banco de dados.");
+        setAreaErrorMessage(`Cadastro não realizado. A área não foi salva no banco de dados. ${error.message ?? "Tente novamente."}`);
         setIsSavingArea(false);
         setOpenCard("area");
         return;
@@ -288,14 +288,14 @@ export default function App() {
         setAreas((current) => [mapped, ...current]);
         setActiveAreaId(mapped.id);
         setMapFocus(createMapFocus(mapped));
-        setAreaSuccessMessage("Área cadastrada com sucesso.");
+        setAreaSuccessMessage("Área cadastrada com sucesso no banco de dados.");
       }
     } else {
       setAreas((current) => [draft, ...current]);
-      setDataStatus("Nova área salva localmente no navegador.");
+      setDataStatus("Supabase não configurado. A área foi salva apenas neste navegador, não no banco de dados.");
       setActiveAreaId(draft.id);
       setMapFocus(createMapFocus(draft));
-      setAreaSuccessMessage("Área cadastrada com sucesso.");
+      setAreaSuccessMessage("Área salva localmente. Configure o Supabase para salvar no banco de dados.");
     }
     setIsSavingArea(false);
     resetAreaDraft();
