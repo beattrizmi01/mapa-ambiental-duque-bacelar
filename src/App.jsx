@@ -65,6 +65,7 @@ export default function App() {
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
   const [hoveredAreaId, setHoveredAreaId] = useState(null);
   const [activeAreaId, setActiveAreaId] = useState(null);
+  const [mapFocus, setMapFocus] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [occurrenceLocation, setOccurrenceLocation] = useState(null);
@@ -286,12 +287,14 @@ export default function App() {
         setDataStatus("Nova área salva e sincronizada com o Supabase.");
         setAreas((current) => [mapped, ...current]);
         setActiveAreaId(mapped.id);
+        setMapFocus(createMapFocus(mapped));
         setAreaSuccessMessage("Área cadastrada com sucesso.");
       }
     } else {
       setAreas((current) => [draft, ...current]);
       setDataStatus("Nova área salva localmente no navegador.");
       setActiveAreaId(draft.id);
+      setMapFocus(createMapFocus(draft));
       setAreaSuccessMessage("Área cadastrada com sucesso.");
     }
     setIsSavingArea(false);
@@ -490,6 +493,7 @@ export default function App() {
           ) : (
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
           )}
+          <MapFocusController focus={mapFocus} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
           <MapClickHandler
@@ -1155,6 +1159,17 @@ function BoundaryLayer({ geojson }) {
   return <GeoJSON data={geojson} style={BOUNDARY_STYLE} />;
 }
 
+function MapFocusController({ focus }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!focus) return;
+    map.setView(focus.center, focus.zoom, { animate: true });
+  }, [focus, map]);
+
+  return null;
+}
+
 function UserLocationLayer({ location }) {
   const map = useMap();
 
@@ -1361,6 +1376,14 @@ function normalizeAreaName(value) {
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase();
+}
+
+function createMapFocus(area) {
+  return {
+    id: `${area.id}-${Date.now()}`,
+    center: [area.latitude, area.longitude],
+    zoom: LOCAL_ZOOM,
+  };
 }
 
 function getMarkerIcon(status) {
