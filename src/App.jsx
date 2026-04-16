@@ -1404,7 +1404,7 @@ function normalizeAreaName(value) {
 function getSupabaseFriendlyError(error) {
   const message = String(error?.message ?? "");
   if (message.toLowerCase().includes("invalid api key")) {
-    return "Chave do Supabase invalida. No Supabase, acesse Project Settings > API Keys e copie a Publishable key default. Na Vercel, atualize VITE_SUPABASE_ANON_KEY e faca um novo deploy.";
+    return "Chave do Supabase invalida. Use o botao de copiar da Publishable key default em Project Settings > API Keys. Na Vercel, salve em VITE_SUPABASE_ANON_KEY ou VITE_SUPABASE_PUBLISHABLE_KEY e faca um novo deploy.";
   }
   if (message.toLowerCase().includes("permission denied") || message.toLowerCase().includes("row-level security")) {
     return "Permissão negada no Supabase. Verifique as políticas RLS da tabela areas.";

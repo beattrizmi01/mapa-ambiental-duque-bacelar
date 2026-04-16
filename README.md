@@ -14,6 +14,7 @@ Para usar Supabase localmente, crie um arquivo `.env` na raiz do projeto seguind
 ```bash
 VITE_SUPABASE_URL=https://zebsizvdirevdescsocd.supabase.co
 VITE_SUPABASE_ANON_KEY=cole-aqui-a-publishable-key-do-supabase
+# Opcional: tambem funciona com VITE_SUPABASE_PUBLISHABLE_KEY
 ```
 
 Sem essas variaveis, o app continua funcionando com dados salvos no `localStorage` do navegador.
@@ -29,6 +30,7 @@ Sem essas variaveis, o app continua funcionando com dados salvos no `localStorag
 4. Em **Environment Variables**, cadastre as variaveis se for usar Supabase:
    - `VITE_SUPABASE_URL`: `https://zebsizvdirevdescsocd.supabase.co`
    - `VITE_SUPABASE_ANON_KEY`: a **Publishable key** do Supabase
+     - Se preferir, tambem pode usar o nome `VITE_SUPABASE_PUBLISHABLE_KEY`.
 5. Clique em **Deploy**.
 
 Sempre que alterar variaveis de ambiente na Vercel, faca um novo deploy para que elas entrem no build.
@@ -37,10 +39,12 @@ Para encontrar a chave no painel novo do Supabase:
 
 1. Clique em **Project Settings** no menu lateral esquerdo.
 2. Abra **API Keys**.
-3. Na secao **Publishable key**, copie a chave `default`.
+3. Na secao **Publishable key**, copie a chave `default` pelo botao de copiar.
 4. Cole essa chave na Vercel em `VITE_SUPABASE_ANON_KEY`.
 
 Se voce estiver em **Integrations > Data API**, essa tela mostra a URL da API, mas nao e o lugar certo para copiar a chave do app.
+
+Nao copie o texto encurtado que aparece na tela com reticencias. Ele parece algo como `sb_publishable_...`, mas a Vercel precisa da chave completa copiada pelo icone de copiar.
 
 ## Estrutura do Supabase
 
