@@ -717,13 +717,21 @@ function Sidebar(props) {
 function CompactHeader({ mobile = false }) {
   return (
     <header className={`sidebar__header${mobile ? " sidebar__header--mobile" : ""}`}>
-      <span className="eyebrow eyebrow--with-icon">
-        <span className="eyebrow__icon" aria-hidden="true">
-          <LeafIcon />
+      <div className="compact-header__main">
+        <span className="eyebrow eyebrow--with-icon">
+          <span className="eyebrow__icon" aria-hidden="true">
+            <LeafIcon />
+          </span>
+          <span>Monitoramento Ambiental</span>
         </span>
-        <span>Monitoramento Ambiental</span>
-      </span>
-      <h1>Mapa de Atenção Ambiental de Duque Bacelar</h1>
+        <h1>{mobile ? "Duque Bacelar" : "Mapa de Atenção Ambiental de Duque Bacelar"}</h1>
+      </div>
+      {mobile ? (
+        <button type="button" className="mobile-notification" aria-label="Notificações">
+          <BellIcon />
+          <span className="mobile-notification__dot" />
+        </button>
+      ) : null}
     </header>
   );
 }
@@ -876,6 +884,34 @@ function LegendContent() {
 function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenLayers }) {
   return (
     <>
+      <div className="mobile-side-rail" aria-label="Ações rápidas do mapa">
+        <MobileSideButton label="Minha localização">
+          <LocationIcon />
+        </MobileSideButton>
+        <MobileSideButton label="Camadas" onClick={onOpenLayers}>
+          <LayersIcon />
+        </MobileSideButton>
+        <MobileSideButton label="Status" onClick={onOpenLegend}>
+          <StatusIcon />
+        </MobileSideButton>
+      </div>
+      <button type="button" className="mobile-add-button" onClick={onOpenArea} aria-label="Nova área">
+        +
+      </button>
+      {!isDrawingArea ? (
+        <button type="button" className="mobile-status-card" onClick={onOpenLegend}>
+          <span className="mobile-status-card__dots" aria-hidden="true">
+            <span className="legend-swatch legend-swatch--green"></span>
+            <span className="legend-swatch legend-swatch--yellow"></span>
+            <span className="legend-swatch legend-swatch--red"></span>
+          </span>
+          <span className="mobile-status-card__copy">
+            <strong>Legenda / Status</strong>
+            <span>Ver classificação das áreas</span>
+          </span>
+          <span className="mobile-status-card__chevron" aria-hidden="true">›</span>
+        </button>
+      ) : null}
       <div className="mobile-fab-dock">
         <MobileFabButton label="Legenda" onClick={onOpenLegend}>
           <LegendIcon />
@@ -891,6 +927,15 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         </MobileFabButton>
       </div>
     </>
+  );
+}
+
+function MobileSideButton({ label, children, onClick }) {
+  return (
+    <button type="button" className="mobile-side-button" onClick={onClick}>
+      <span className="mobile-side-button__icon" aria-hidden="true">{children}</span>
+      <span>{label}</span>
+    </button>
   );
 }
 
@@ -958,6 +1003,18 @@ function LegendIcon() {
 
 function LayersIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>;
+}
+
+function LocationIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>;
+}
+
+function StatusIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 19V9"/><path d="M12 19V5"/><path d="M18 19v-8"/></svg>;
+}
+
+function BellIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>;
 }
 
 function BoundaryLayer({ geojson }) {
@@ -1206,6 +1263,5 @@ function createId() {
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
-
 
 
