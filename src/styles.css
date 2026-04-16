@@ -41,10 +41,10 @@ body {
 
 .sidebar {
   position: absolute;
-  top: max(22px, env(safe-area-inset-top));
-  left: 32px;
+  top: max(18px, env(safe-area-inset-top));
+  left: 24px;
   z-index: 1200;
-  width: min(620px, calc(100vw - 64px));
+  width: min(430px, calc(100vw - 48px));
   min-width: 0;
   height: auto;
   padding: 0;
@@ -1380,8 +1380,8 @@ body {
 }
 
 .leaflet-top.leaflet-left {
-  top: 178px;
-  left: 32px;
+  top: 136px;
+  left: 24px;
 }
 
 .leaflet-control-zoom {
@@ -1395,14 +1395,14 @@ body {
 }
 
 .leaflet-control-zoom a {
-  width: 56px !important;
-  height: 56px !important;
+  width: 44px !important;
+  height: 44px !important;
   border: 0 !important;
   background: transparent !important;
   color: #f4f8ff !important;
-  font-size: 1.95rem !important;
+  font-size: 1.55rem !important;
   font-weight: 300 !important;
-  line-height: 54px !important;
+  line-height: 42px !important;
 }
 
 .leaflet-control-zoom a:first-child {
@@ -1426,89 +1426,142 @@ body {
 
 @media (min-width: 901px) {
   .sidebar__header--mobile {
-    padding: 22px 26px;
-    border-radius: 28px;
+    padding: 14px 17px;
+    border-radius: 22px;
+    gap: 12px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
   }
 
   .sidebar__header--mobile .eyebrow {
-    font-size: 0.72rem;
+    margin-bottom: 4px;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
   }
 
   .sidebar__header--mobile .eyebrow__icon {
-    width: 44px;
-    height: 44px;
-    padding: 9px;
+    width: 31px;
+    height: 31px;
+    padding: 6px;
   }
 
   .sidebar__header--mobile h1 {
-    font-size: 1.72rem;
+    gap: 8px;
+    font-size: 1.18rem;
+  }
+
+  .sidebar__header--mobile h1::after {
+    width: 7px;
+    height: 7px;
   }
 
   .mobile-notification {
-    width: 46px;
-    height: 46px;
-  }
-
-  .mobile-notification svg {
-    width: 31px;
-    height: 31px;
-  }
-
-  .mobile-side-rail {
-    right: 36px;
-    top: 32%;
-    gap: 16px;
-  }
-
-  .mobile-side-button {
-    width: 84px;
-    font-size: 0.78rem;
-  }
-
-  .mobile-side-button__icon {
-    width: 74px;
-    height: 74px;
-    border-radius: 22px;
-  }
-
-  .mobile-side-button__icon svg {
     width: 32px;
     height: 32px;
   }
 
+  .mobile-notification svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .mobile-notification__dot {
+    width: 8px;
+    height: 8px;
+    top: 3px;
+    right: 2px;
+  }
+
+  .mobile-side-rail {
+    right: 28px;
+    top: 31%;
+    gap: 10px;
+  }
+
+  .mobile-side-button {
+    width: 58px;
+    gap: 5px;
+    font-size: 0.6rem;
+  }
+
+  .mobile-side-button__icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  .mobile-side-button__icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
   .mobile-status-card {
-    left: 32px;
-    bottom: calc(max(28px, env(safe-area-inset-bottom)) + 102px);
-    width: 370px;
-    min-height: 78px;
+    left: 24px;
+    bottom: calc(max(22px, env(safe-area-inset-bottom)) + 72px);
+    width: 292px;
+    min-height: 58px;
+    gap: 10px;
+    padding: 10px 13px;
+    border-radius: 18px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+  }
+
+  .mobile-status-card__dots {
+    gap: 4px;
+  }
+
+  .mobile-status-card__dots .legend-swatch {
+    width: 10px;
+    height: 10px;
+  }
+
+  .mobile-status-card__copy {
+    gap: 3px;
+  }
+
+  .mobile-status-card__copy strong {
+    font-size: 0.76rem;
+  }
+
+  .mobile-status-card__copy span {
+    font-size: 0.64rem;
+  }
+
+  .mobile-status-card__chevron {
+    font-size: 1.45rem;
   }
 
   .mobile-add-button {
-    right: 36px;
-    bottom: calc(max(28px, env(safe-area-inset-bottom)) + 104px);
-    width: 86px;
-    height: 86px;
-    font-size: 3.35rem;
+    right: 28px;
+    bottom: calc(max(22px, env(safe-area-inset-bottom)) + 74px);
+    width: 58px;
+    height: 58px;
+    font-size: 2.25rem;
+    box-shadow: 0 10px 22px rgba(22, 124, 72, 0.26);
   }
 
   .mobile-fab-dock {
-    left: 32px;
-    bottom: max(28px, env(safe-area-inset-bottom));
-    gap: 12px;
+    left: 24px;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    width: 468px;
+    gap: 8px;
   }
 
   .mobile-fab {
-    min-height: 82px;
-    border-radius: 22px;
+    min-height: 58px;
+    padding: 8px 7px 7px;
+    gap: 4px;
+    border-radius: 16px;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.22);
   }
 
   .mobile-fab__icon {
-    width: 29px;
-    height: 29px;
+    width: 21px;
+    height: 21px;
   }
 
   .mobile-fab__label {
-    font-size: 0.88rem;
+    font-size: 0.68rem;
   }
 
   .bottom-sheet {
