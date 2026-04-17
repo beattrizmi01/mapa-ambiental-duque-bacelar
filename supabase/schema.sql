@@ -4,6 +4,7 @@ create table if not exists public.areas (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   category text,
+  region text not null default 'Duque Bacelar',
   status text not null default 'atencao'
     check (status in ('preservado', 'atencao', 'critico')),
   impact text,
@@ -18,8 +19,12 @@ create table if not exists public.areas (
 );
 
 alter table public.areas
+  add column if not exists region text not null default 'Duque Bacelar',
   add column if not exists last_occurrence_id uuid,
   add column if not exists last_status_review_at timestamptz;
+
+create index if not exists areas_region_created_at_idx
+on public.areas (region, created_at desc);
 
 create table if not exists public.occurrences (
   id uuid primary key default gen_random_uuid(),

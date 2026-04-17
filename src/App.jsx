@@ -24,7 +24,6 @@ const REGIONAL_ZOOM = 7;
 const LOCAL_ZOOM = 12;
 const REGIONS = [
   { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
-  { id: "maranhao", name: "Maranhão", center: REGIONAL_CENTER, zoom: REGIONAL_ZOOM },
 ];
 const BOUNDARY_STYLE = { color: "#7fb5ff", weight: 1.4, fillColor: "transparent", fillOpacity: 0 };
 const STREET_TILES = {
@@ -68,8 +67,9 @@ export default function App() {
   const [dataMode, setDataMode] = useState(hasSupabaseConfig() ? "supabase" : "local");
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
   const [selectedRegionId, setSelectedRegionId] = useState(REGIONS[0].id);
+  const [availableRegions, setAvailableRegions] = useState(REGIONS);
   const [isRegionPanelOpen, setIsRegionPanelOpen] = useState(false);
-  const [occurrenceCount, setOccurrenceCount] = useState(0);
+  const [occurrenceRecords, setOccurrenceRecords] = useState([]);
   const [hoveredAreaId, setHoveredAreaId] = useState(null);
   const [activeAreaId, setActiveAreaId] = useState(null);
   const [mapFocus, setMapFocus] = useState(null);
@@ -93,8 +93,14 @@ export default function App() {
     () => (draftPolygonCoords.length ? computeCentroid(draftPolygonCoords) : null),
     [draftPolygonCoords],
   );
-  const selectedRegion = REGIONS.find((region) => region.id === selectedRegionId) ?? REGIONS[0];
-  const regionSummary = useMemo(() => createRegionSummary(areas, occurrenceCount), [areas, occurrenceCount]);
+  const selectedRegion = availableRegions.find((region) => region.id === selectedRegionId) ?? availableRegions[0] ?? REGIONS[0];
+  const regionAreas = useMemo(() => filterAreasByRegion(areas, selectedRegion.name), [areas, selectedRegion.name]);
+  const regionOccurrenceCount = useMemo(
+    () => countOccurrencesForAreas(occurrenceRecords, regionAreas),
+    [occurrenceRecords, regionAreas],
+  );
+  const regionSummary = useMemo(() => createRegionSummary(regionAreas, regionOccurrenceCount), [regionAreas, regionOccurrenceCount]);
+  const hasRegionData = regionAreas.length > 0;
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -134,14 +140,15 @@ export default function App() {
         return;
       }
       const mapped = (data ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
-      const { count, error: occurrenceError } = await supabase
+      const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
-        .select("id", { count: "exact", head: true });
+        .select("id, area_id");
       if (!active) return;
       if (!occurrenceError) {
-        setOccurrenceCount(count ?? 0);
+        setOccurrenceRecords(occurrenceRows ?? []);
       }
       setAreas(mapped);
+      setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(mapped)));
       setDataMode("supabase");
       setDataStatus(mapped.length ? `Exibindo ${mapped.length} registro(s) do Supabase.` : "Supabase conectado, mas nenhuma área foi encontrada ainda.");
     }
@@ -156,10 +163,18 @@ export default function App() {
   }, [areas]);
 
   useEffect(() => {
+    setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(areas)));
+  }, [areas]);
+
+  useEffect(() => {
     if (!occurrenceForm.areaId && areas[0]) {
       setOccurrenceForm((current) => ({ ...current, areaId: areas[0].id }));
     }
   }, [areas, occurrenceForm.areaId]);
+
+  useEffect(() => {
+    detectUserRegion({ source: "auto" });
+  }, []);
 
   function resetAreaDraft() {
     setAreaForm(emptyAreaForm());
@@ -206,44 +221,56 @@ export default function App() {
     setDataStatus("Demarcação limpa. Clique no mapa para começar novamente.");
   }
 
-  function locateUser() {
+  async function locateUser() {
+    await detectUserRegion({ source: "manual" });
+  }
+
+  async function detectUserRegion({ source }) {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDataStatus("Seu navegador não oferece suporte à localização.");
       return;
     }
 
     setIsLocatingUser(true);
-    setDataStatus("Buscando sua localização atual...");
+    setDataStatus(source === "auto" ? "Detectando sua região atual..." : "Buscando sua localização atual...");
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const nextLocation = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        };
-        setUserLocation(nextLocation);
-        setDataStatus("Localização encontrada. O mapa foi centralizado na sua posição.");
-        setIsLocatingUser(false);
-      },
-      (error) => {
-        const message =
-          error.code === error.PERMISSION_DENIED
-            ? "Permissão de localização negada. Ative a localização do navegador para usar esse recurso."
-            : "Não foi possível obter sua localização agora. Tente novamente.";
-        setDataStatus(message);
-        setIsLocatingUser(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 60000,
-      },
-    );
+    try {
+      const position = await getBrowserPosition();
+      const nextLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      };
+      const cityName = await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
+      const detectedRegion = createRegion(cityName || REGIONS[0].name, [nextLocation.latitude, nextLocation.longitude], LOCAL_ZOOM);
+      setUserLocation(nextLocation);
+      setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
+      setSelectedRegionId(detectedRegion.id);
+      setMapFocus({
+        id: `detected-region-${detectedRegion.id}-${Date.now()}`,
+        center: detectedRegion.center,
+        zoom: detectedRegion.zoom,
+      });
+      setDataStatus(
+        regionHasAreas(areas, detectedRegion.name)
+          ? `Região detectada: ${detectedRegion.name}. Dados carregados.`
+          : `Região detectada: ${detectedRegion.name}. Ainda não há áreas monitoradas nesta região.`,
+      );
+    } catch (error) {
+      const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
+      setSelectedRegionId(REGIONS[0].id);
+      setDataStatus(
+        denied
+          ? "Permissão de localização negada. Região padrão definida como Duque Bacelar."
+          : "Não foi possível detectar sua região. Região padrão definida como Duque Bacelar.",
+      );
+    } finally {
+      setIsLocatingUser(false);
+    }
   }
 
   function handleRegionChange(regionId) {
-    const region = REGIONS.find((item) => item.id === regionId);
+    const region = availableRegions.find((item) => item.id === regionId);
     if (!region) return;
     setSelectedRegionId(region.id);
     setMapFocus({
@@ -304,6 +331,7 @@ export default function App() {
       id: createId(),
       name: areaForm.name.trim(),
       category: areaForm.category.trim(),
+      region: selectedRegion.name,
       status: areaForm.status,
       impact: areaForm.impact.trim(),
       description: areaForm.description.trim(),
@@ -316,6 +344,7 @@ export default function App() {
       const { data, error } = await supabase.from("areas").insert({
         name: draft.name,
         category: draft.category,
+        region: draft.region,
         status: draft.status,
         impact: draft.impact,
         description: draft.description,
@@ -426,7 +455,10 @@ export default function App() {
           ? `Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`
           : "Ocorrência sincronizada sem alterar o status da área.",
       );
-      setOccurrenceCount((current) => current + 1);
+      setOccurrenceRecords((current) => [
+        ...current,
+        { id: occurrenceResult?.occurrence_id ?? createId(), area_id: occurrenceForm.areaId },
+      ]);
       setAreas((current) =>
         current.map((area) =>
           area.id === occurrenceForm.areaId
@@ -458,7 +490,7 @@ export default function App() {
           ? "Ocorrência salva localmente e status da área atualizado."
           : "Ocorrência salva localmente sem alterar o status da área.",
       );
-      setOccurrenceCount((current) => current + 1);
+      setOccurrenceRecords((current) => [...current, { id: createId(), area_id: occurrenceForm.areaId }]);
       setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
     }
     setIsSavingOccurrence(false);
@@ -474,8 +506,9 @@ export default function App() {
         openCard={openCard}
         onToggle={(cardName) => setOpenCard((current) => (current === cardName ? null : cardName))}
         selectedRegion={selectedRegion}
-        regions={REGIONS}
+        regions={availableRegions}
         regionSummary={regionSummary}
+        hasRegionData={hasRegionData}
         selectedRegionId={selectedRegionId}
         isRegionPanelOpen={isRegionPanelOpen}
         onToggleRegionPanel={() => setIsRegionPanelOpen((current) => !current)}
@@ -858,6 +891,7 @@ function Sidebar(props) {
     selectedRegion,
     regions,
     regionSummary,
+    hasRegionData,
     selectedRegionId,
     isRegionPanelOpen,
     onToggleRegionPanel,
@@ -874,6 +908,7 @@ function Sidebar(props) {
           selectedRegion={selectedRegion}
           regions={regions}
           summary={regionSummary}
+          hasRegionData={hasRegionData}
           selectedRegionId={selectedRegionId}
           expanded={isRegionPanelOpen}
           onToggle={onToggleRegionPanel}
@@ -890,6 +925,7 @@ function CompactHeader({
   selectedRegion,
   regions,
   summary,
+  hasRegionData,
   selectedRegionId,
   expanded,
   onToggle,
@@ -939,6 +975,9 @@ function CompactHeader({
           <div className="region-panel__divider" />
 
           <div className="region-panel__section-title">Resumo da região</div>
+          {!hasRegionData ? (
+            <div className="region-empty-state">Ainda não há áreas monitoradas nesta região</div>
+          ) : null}
           <div className="region-summary-grid">
             {summary.map((item) => (
               <article key={item.key} className={`region-summary-card region-summary-card--${item.tone}`}>
@@ -1505,7 +1544,7 @@ function ClusterCard({ areas }) {
 
 function areaSeed(name, category, status, impact, description, polygonCoords) {
   const [latitude, longitude] = computeCentroid(polygonCoords);
-  return { id: createId(), name, category, status, impact, description, polygonCoords, latitude, longitude, image: createPlaceholderImage(name, statusToColor(status)) };
+  return { id: createId(), name, category, region: REGIONS[0].name, status, impact, description, polygonCoords, latitude, longitude, image: createPlaceholderImage(name, statusToColor(status)) };
 }
 
 function emptyAreaForm() {
@@ -1541,6 +1580,7 @@ function mapSupabaseAreaToApp(row) {
     id: String(row.id),
     name: row.name ?? "Área sem nome",
     category: row.category ?? "Sem categoria",
+    region: row.region || REGIONS[0].name,
     status: row.status ?? "atencao",
     impact: row.impact ?? "Sem impacto informado",
     description: row.description ?? "Sem descrição informada",
@@ -1554,7 +1594,91 @@ function mapSupabaseAreaToApp(row) {
 function normalizeAreaShape(area) {
   const polygonCoords = normalizePolygonCoords(area?.polygonCoords, area?.latitude, area?.longitude);
   const [latitude, longitude] = computeCentroid(polygonCoords);
-  return { ...area, polygonCoords, latitude, longitude };
+  return { ...area, region: area?.region || REGIONS[0].name, polygonCoords, latitude, longitude };
+}
+
+function createRegion(name, center = REGIONAL_CENTER, zoom = LOCAL_ZOOM) {
+  return {
+    id: regionIdFromName(name),
+    name,
+    center,
+    zoom,
+  };
+}
+
+function regionIdFromName(name) {
+  return normalizeAreaName(name || REGIONS[0].name).replace(/[^a-z0-9]+/g, "-") || REGIONS[0].id;
+}
+
+function mergeRegions(current, nextRegions) {
+  const byId = new Map(current.map((region) => [region.id, region]));
+  nextRegions.forEach((region) => {
+    if (!region?.id) return;
+    byId.set(region.id, { ...byId.get(region.id), ...region });
+  });
+  return Array.from(byId.values());
+}
+
+function regionsFromAreas(areas) {
+  return Array.from(
+    new Map(
+      areas
+        .map((area) => area.region || REGIONS[0].name)
+        .filter(Boolean)
+        .map((regionName) => [regionIdFromName(regionName), createRegion(regionName)]),
+    ).values(),
+  );
+}
+
+function filterAreasByRegion(areas, regionName) {
+  const normalizedRegion = normalizeAreaName(regionName);
+  return areas.filter((area) => normalizeAreaName(area.region || REGIONS[0].name) === normalizedRegion);
+}
+
+function regionHasAreas(areas, regionName) {
+  return filterAreasByRegion(areas, regionName).length > 0;
+}
+
+function countOccurrencesForAreas(occurrences, areas) {
+  const areaIds = new Set(areas.map((area) => String(area.id)));
+  return occurrences.filter((occurrence) => areaIds.has(String(occurrence.area_id))).length;
+}
+
+function getBrowserPosition() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 60000,
+    });
+  });
+}
+
+async function reverseGeocodeCity(latitude, longitude) {
+  const url = new URL("https://nominatim.openstreetmap.org/reverse");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("lat", String(latitude));
+  url.searchParams.set("lon", String(longitude));
+  url.searchParams.set("zoom", "10");
+  url.searchParams.set("addressdetails", "1");
+
+  const response = await fetch(url.toString(), {
+    headers: { "Accept-Language": "pt-BR,pt;q=0.9" },
+  });
+  if (!response.ok) return "";
+  const data = await response.json();
+  const address = data?.address ?? {};
+  return (
+    address.city ||
+    address.town ||
+    address.municipality ||
+    address.village ||
+    address.city_district ||
+    address.county ||
+    address.state_district ||
+    address.state ||
+    ""
+  );
 }
 
 function normalizePolygonCoords(coords, fallbackLatitude, fallbackLongitude) {

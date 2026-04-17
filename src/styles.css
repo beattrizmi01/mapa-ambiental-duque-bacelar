@@ -1218,6 +1218,18 @@ body {
   text-transform: uppercase;
 }
 
+.region-empty-state {
+  margin: -2px 0 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(232, 186, 57, 0.2);
+  border-radius: 14px;
+  background: rgba(232, 186, 57, 0.08);
+  color: #f6d986;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .region-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
