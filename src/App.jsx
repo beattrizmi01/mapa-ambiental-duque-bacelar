@@ -22,6 +22,10 @@ const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const REGIONAL_ZOOM = 7;
 const LOCAL_ZOOM = 12;
+const REGIONS = [
+  { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
+  { id: "maranhao", name: "Maranhão", center: REGIONAL_CENTER, zoom: REGIONAL_ZOOM },
+];
 const BOUNDARY_STYLE = { color: "#7fb5ff", weight: 1.4, fillColor: "transparent", fillOpacity: 0 };
 const STREET_TILES = {
   url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
@@ -63,6 +67,9 @@ export default function App() {
   const [boundaryData, setBoundaryData] = useState(null);
   const [dataMode, setDataMode] = useState(hasSupabaseConfig() ? "supabase" : "local");
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
+  const [selectedRegionId, setSelectedRegionId] = useState(REGIONS[0].id);
+  const [isRegionPanelOpen, setIsRegionPanelOpen] = useState(false);
+  const [occurrenceCount, setOccurrenceCount] = useState(0);
   const [hoveredAreaId, setHoveredAreaId] = useState(null);
   const [activeAreaId, setActiveAreaId] = useState(null);
   const [mapFocus, setMapFocus] = useState(null);
@@ -86,6 +93,8 @@ export default function App() {
     () => (draftPolygonCoords.length ? computeCentroid(draftPolygonCoords) : null),
     [draftPolygonCoords],
   );
+  const selectedRegion = REGIONS.find((region) => region.id === selectedRegionId) ?? REGIONS[0];
+  const regionSummary = useMemo(() => createRegionSummary(areas, occurrenceCount), [areas, occurrenceCount]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -125,6 +134,13 @@ export default function App() {
         return;
       }
       const mapped = (data ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
+      const { count, error: occurrenceError } = await supabase
+        .from("occurrences")
+        .select("id", { count: "exact", head: true });
+      if (!active) return;
+      if (!occurrenceError) {
+        setOccurrenceCount(count ?? 0);
+      }
       setAreas(mapped);
       setDataMode("supabase");
       setDataStatus(mapped.length ? `Exibindo ${mapped.length} registro(s) do Supabase.` : "Supabase conectado, mas nenhuma área foi encontrada ainda.");
@@ -224,6 +240,18 @@ export default function App() {
         maximumAge: 60000,
       },
     );
+  }
+
+  function handleRegionChange(regionId) {
+    const region = REGIONS.find((item) => item.id === regionId);
+    if (!region) return;
+    setSelectedRegionId(region.id);
+    setMapFocus({
+      id: `region-${region.id}-${Date.now()}`,
+      center: region.center,
+      zoom: region.zoom,
+    });
+    setDataStatus(`Região alterada para ${region.name}. Resumo atualizado.`);
   }
 
   async function handleAreaSubmit(event) {
@@ -398,6 +426,7 @@ export default function App() {
           ? `Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`
           : "Ocorrência sincronizada sem alterar o status da área.",
       );
+      setOccurrenceCount((current) => current + 1);
       setAreas((current) =>
         current.map((area) =>
           area.id === occurrenceForm.areaId
@@ -429,6 +458,7 @@ export default function App() {
           ? "Ocorrência salva localmente e status da área atualizado."
           : "Ocorrência salva localmente sem alterar o status da área.",
       );
+      setOccurrenceCount((current) => current + 1);
       setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
     }
     setIsSavingOccurrence(false);
@@ -443,6 +473,15 @@ export default function App() {
         isMobileViewport={isMobileViewport}
         openCard={openCard}
         onToggle={(cardName) => setOpenCard((current) => (current === cardName ? null : cardName))}
+        selectedRegion={selectedRegion}
+        regions={REGIONS}
+        regionSummary={regionSummary}
+        selectedRegionId={selectedRegionId}
+        isRegionPanelOpen={isRegionPanelOpen}
+        onToggleRegionPanel={() => setIsRegionPanelOpen((current) => !current)}
+        onRegionChange={handleRegionChange}
+        onUseCurrentLocation={locateUser}
+        isLocatingUser={isLocatingUser}
         areas={areas}
         areaForm={areaForm}
         setAreaForm={setAreaForm}
@@ -814,35 +853,182 @@ function AreaLayer(props) {
 }
 
 function Sidebar(props) {
-  const { isMobileViewport } = props;
+  const {
+    isMobileViewport,
+    selectedRegion,
+    regions,
+    regionSummary,
+    selectedRegionId,
+    isRegionPanelOpen,
+    onToggleRegionPanel,
+    onRegionChange,
+    onUseCurrentLocation,
+    isLocatingUser,
+  } = props;
 
   return (
     <aside className="sidebar sidebar--mobile">
       <div className="sidebar__panel sidebar__panel--mobile">
-        <CompactHeader mobile={isMobileViewport} />
+        <CompactHeader
+          mobile={isMobileViewport}
+          selectedRegion={selectedRegion}
+          regions={regions}
+          summary={regionSummary}
+          selectedRegionId={selectedRegionId}
+          expanded={isRegionPanelOpen}
+          onToggle={onToggleRegionPanel}
+          onRegionChange={onRegionChange}
+          onUseCurrentLocation={onUseCurrentLocation}
+          isLocatingUser={isLocatingUser}
+        />
       </div>
     </aside>
   );
 }
 
-function CompactHeader({ mobile = false }) {
+function CompactHeader({
+  selectedRegion,
+  regions,
+  summary,
+  selectedRegionId,
+  expanded,
+  onToggle,
+  onRegionChange,
+  onUseCurrentLocation,
+  isLocatingUser,
+}) {
   return (
-    <header className="sidebar__header sidebar__header--mobile">
-      <div className="compact-header__main">
-        <span className="eyebrow eyebrow--with-icon">
-          <span className="eyebrow__icon" aria-hidden="true">
-            <LeafIcon />
+    <div className={`region-header${expanded ? " is-expanded" : ""}`}>
+      <header className="sidebar__header sidebar__header--mobile">
+        <div className="compact-header__main">
+          <span className="eyebrow eyebrow--with-icon">
+            <span className="eyebrow__icon" aria-hidden="true">
+              <LeafIcon />
+            </span>
+            <span>Monitoramento Ambiental</span>
           </span>
-          <span>Monitoramento Ambiental</span>
-        </span>
-        <h1>Duque Bacelar</h1>
-      </div>
-      <button type="button" className="mobile-notification" aria-label="Notificações">
-        <BellIcon />
-        <span className="mobile-notification__dot" />
-      </button>
-    </header>
+          <button
+            type="button"
+            className="region-toggle"
+            onClick={onToggle}
+            aria-expanded={expanded}
+            aria-controls="region-panel"
+          >
+            <span>{selectedRegion.name}</span>
+            <span className="region-toggle__chevron" aria-hidden="true" />
+          </button>
+        </div>
+        <button type="button" className="mobile-notification" aria-label="Notificações">
+          <BellIcon />
+          <span className="mobile-notification__dot" />
+        </button>
+      </header>
+
+      {expanded ? (
+        <section className="region-panel" id="region-panel">
+          <div className="region-panel__selected">
+            <span className="region-panel__pin" aria-hidden="true">
+              <MapPinIcon />
+            </span>
+            <div>
+              <span>Região selecionada</span>
+              <strong>{selectedRegion.name}</strong>
+            </div>
+          </div>
+
+          <div className="region-panel__divider" />
+
+          <div className="region-panel__section-title">Resumo da região</div>
+          <div className="region-summary-grid">
+            {summary.map((item) => (
+              <article key={item.key} className={`region-summary-card region-summary-card--${item.tone}`}>
+                <span className="region-summary-card__icon" aria-hidden="true">{item.icon}</span>
+                <strong>{item.value}</strong>
+                <span>{item.label}</span>
+                {item.detail ? <small>{item.detail}</small> : null}
+              </article>
+            ))}
+          </div>
+
+          <div className="region-panel__divider" />
+
+          <div className="region-panel__section-title">Alterar região</div>
+          <label className="region-select">
+            <span aria-hidden="true"><MapPinIcon /></span>
+            <select
+              value={selectedRegionId}
+              onChange={(event) => onRegionChange(event.target.value)}
+            >
+              {regions.map((region) => (
+                <option key={region.id} value={region.id}>{region.name}</option>
+              ))}
+            </select>
+          </label>
+          <button type="button" className="region-location-action" onClick={onUseCurrentLocation} disabled={isLocatingUser}>
+            <span aria-hidden="true"><LocationIcon /></span>
+            <span>
+              <strong>{isLocatingUser ? "Buscando localização..." : "Usar minha localização atual"}</strong>
+              <small>Centralizar mapa na sua posição</small>
+            </span>
+            <span className="region-location-action__arrow" aria-hidden="true">›</span>
+          </button>
+        </section>
+      ) : null}
+    </div>
   );
+}
+
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 5.2-8 12-8 12S4 15.2 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+function TreeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3 5 13h4l-3 5h12l-3-5h4L12 3Z" />
+      <path d="M12 18v3" />
+    </svg>
+  );
+}
+
+function FlameIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22c4 0 7-2.8 7-6.8 0-2.7-1.6-4.8-3.6-6.8-.6 2-1.8 3-3.1 3.4.3-3.5-1.3-6.1-4.1-8.8.1 3.7-3.2 5.8-3.2 9.6C5 18.4 8 22 12 22Z" />
+    </svg>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 4h6l1 2h3v15H5V6h3l1-2Z" />
+      <path d="M9 12h6" />
+      <path d="M9 16h4" />
+    </svg>
+  );
+}
+
+function createRegionSummary(areas, occurrenceCount) {
+  const total = areas.length;
+  const countByStatus = (status) => areas.filter((area) => area.status === status).length;
+  const percentage = (value) => (total ? `${Math.round((value / total) * 100)}%` : "0%");
+  const preserved = countByStatus("preservado");
+  const attention = countByStatus("atencao");
+  const critical = countByStatus("critico");
+
+  return [
+    { key: "total", tone: "green", icon: <LeafIcon />, value: total, label: "Áreas monitoradas", detail: "Total" },
+    { key: "preservado", tone: "green", icon: <TreeIcon />, value: preserved, label: "Preservadas", detail: percentage(preserved) },
+    { key: "atencao", tone: "yellow", icon: "!", value: attention, label: "Em atenção", detail: percentage(attention) },
+    { key: "critico", tone: "red", icon: <FlameIcon />, value: critical, label: "Críticas", detail: percentage(critical) },
+    { key: "occurrences", tone: "blue", icon: <ClipboardIcon />, value: occurrenceCount, label: "Ocorrências registradas", detail: "Banco de dados" },
+  ];
 }
 
 function AreaFormPanel(props) {
