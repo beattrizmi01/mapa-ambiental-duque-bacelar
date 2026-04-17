@@ -24,6 +24,10 @@ const REGIONAL_ZOOM = 7;
 const LOCAL_ZOOM = 12;
 const REGIONS = [
   { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
+  { id: "sao-luis", name: "São Luís", center: [-2.5307, -44.3068], zoom: 11 },
+  { id: "caxias", name: "Caxias", center: [-4.8585, -43.3558], zoom: 11 },
+  { id: "teresina", name: "Teresina", center: [-5.0892, -42.8016], zoom: 11 },
+  { id: "maranhao", name: "Maranhão", center: REGIONAL_CENTER, zoom: REGIONAL_ZOOM },
 ];
 const BOUNDARY_STYLE = { color: "#7fb5ff", weight: 1.4, fillColor: "transparent", fillOpacity: 0 };
 const STREET_TILES = {
@@ -988,17 +992,22 @@ function CompactHeader({
           <div className="region-panel__divider" />
 
           <div className="region-panel__section-title">Alterar região</div>
-          <label className="region-select">
-            <span aria-hidden="true"><MapPinIcon /></span>
-            <select
-              value={selectedRegionId}
-              onChange={(event) => onRegionChange(event.target.value)}
-            >
-              {regions.map((region) => (
-                <option key={region.id} value={region.id}>{region.name}</option>
-              ))}
-            </select>
-          </label>
+          <div className="region-options" role="listbox" aria-label="Alterar região">
+            {regions.map((region) => (
+              <button
+                key={region.id}
+                type="button"
+                className={`region-option${region.id === selectedRegionId ? " is-active" : ""}`}
+                onClick={() => onRegionChange(region.id)}
+                role="option"
+                aria-selected={region.id === selectedRegionId}
+              >
+                <span aria-hidden="true"><MapPinIcon /></span>
+                <strong>{region.name}</strong>
+                <small>{region.id === selectedRegionId ? "Região atual" : "Selecionar região"}</small>
+              </button>
+            ))}
+          </div>
           <button type="button" className="region-location-action" onClick={onUseCurrentLocation} disabled={isLocatingUser}>
             <span aria-hidden="true"><LocationIcon /></span>
             <span>
