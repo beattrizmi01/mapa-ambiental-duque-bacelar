@@ -24,10 +24,6 @@ const REGIONAL_ZOOM = 7;
 const LOCAL_ZOOM = 12;
 const REGIONS = [
   { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
-  { id: "sao-luis", name: "São Luís", center: [-2.5307, -44.3068], zoom: 11 },
-  { id: "caxias", name: "Caxias", center: [-4.8585, -43.3558], zoom: 11 },
-  { id: "teresina", name: "Teresina", center: [-5.0892, -42.8016], zoom: 11 },
-  { id: "maranhao", name: "Maranhão", center: REGIONAL_CENTER, zoom: REGIONAL_ZOOM },
 ];
 const BOUNDARY_STYLE = { color: "#7fb5ff", weight: 1.4, fillColor: "transparent", fillOpacity: 0 };
 const STREET_TILES = {
@@ -269,9 +265,10 @@ export default function App() {
     }
   }
 
-  function handleRegionChange(regionId) {
-    const region = availableRegions.find((item) => item.id === regionId);
+  function handleRegionChange(regionId, regionName = "") {
+    const region = availableRegions.find((item) => item.id === regionId) ?? createRegion(regionName || regionId);
     if (!region) return;
+    setAvailableRegions((current) => mergeRegions(current, [region]));
     setSelectedRegionId(region.id);
     setMapFocus({
       id: `region-${region.id}-${Date.now()}`,
@@ -933,6 +930,17 @@ function CompactHeader({
   onUseCurrentLocation,
   isLocatingUser,
 }) {
+  const [customRegionName, setCustomRegionName] = useState("");
+  const savedRegions = regions.filter((region) => region.id !== selectedRegionId);
+
+  function submitCustomRegion(event) {
+    event.preventDefault();
+    const nextName = customRegionName.trim();
+    if (!nextName) return;
+    onRegionChange(createRegion(nextName).id, nextName);
+    setCustomRegionName("");
+  }
+
   return (
     <div className={`region-header${expanded ? " is-expanded" : ""}`}>
       <header className="sidebar__header sidebar__header--mobile">
@@ -993,21 +1001,44 @@ function CompactHeader({
 
           <div className="region-panel__section-title">Alterar região</div>
           <div className="region-options" role="listbox" aria-label="Alterar região">
-            {regions.map((region) => (
+            <button
+              type="button"
+              className="region-option is-active"
+              onClick={() => onRegionChange(selectedRegion.id)}
+              role="option"
+              aria-selected="true"
+            >
+              <span aria-hidden="true"><MapPinIcon /></span>
+              <strong>{selectedRegion.name}</strong>
+              <small>Região atual</small>
+            </button>
+            {savedRegions.map((region) => (
               <button
                 key={region.id}
                 type="button"
-                className={`region-option${region.id === selectedRegionId ? " is-active" : ""}`}
+                className="region-option"
                 onClick={() => onRegionChange(region.id)}
                 role="option"
-                aria-selected={region.id === selectedRegionId}
+                aria-selected="false"
               >
                 <span aria-hidden="true"><MapPinIcon /></span>
                 <strong>{region.name}</strong>
-                <small>{region.id === selectedRegionId ? "Região atual" : "Selecionar região"}</small>
+                <small>Selecionar</small>
               </button>
             ))}
           </div>
+          <form className="region-custom-form" onSubmit={submitCustomRegion}>
+            <label htmlFor="custom-region">Selecionar outra cidade</label>
+            <div>
+              <input
+                id="custom-region"
+                value={customRegionName}
+                onChange={(event) => setCustomRegionName(event.target.value)}
+                placeholder="Ex.: Chapadinha"
+              />
+              <button type="submit">Usar</button>
+            </div>
+          </form>
           <button type="button" className="region-location-action" onClick={onUseCurrentLocation} disabled={isLocatingUser}>
             <span aria-hidden="true"><LocationIcon /></span>
             <span>

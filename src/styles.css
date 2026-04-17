@@ -1364,6 +1364,54 @@ body {
   text-align: right;
 }
 
+.region-custom-form {
+  display: grid;
+  gap: 8px;
+  margin: 2px 0 10px;
+}
+
+.region-custom-form label {
+  color: #61df99;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.region-custom-form div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.region-custom-form input,
+.region-custom-form button {
+  min-height: 44px;
+  border: 1px solid rgba(161, 179, 201, 0.16);
+  border-radius: 14px;
+  font: inherit;
+}
+
+.region-custom-form input {
+  min-width: 0;
+  padding: 0 13px;
+  background: rgba(11, 20, 34, 0.72);
+  color: #f4f8ff;
+  outline: 0;
+}
+
+.region-custom-form input::placeholder {
+  color: #77889d;
+}
+
+.region-custom-form button {
+  padding: 0 15px;
+  background: rgba(47, 179, 111, 0.18);
+  color: #8bf0b8;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .region-location-action {
   border-color: rgba(161, 179, 201, 0.14);
   padding: 11px 14px;
