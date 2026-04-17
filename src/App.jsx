@@ -70,6 +70,9 @@ export default function App() {
   const [availableRegions, setAvailableRegions] = useState(REGIONS);
   const [isRegionPanelOpen, setIsRegionPanelOpen] = useState(false);
   const [occurrenceRecords, setOccurrenceRecords] = useState([]);
+  const [statusHistory, setStatusHistory] = useState([]);
+  const [statusChangeNotice, setStatusChangeNotice] = useState(null);
+  const [recentlyUpdatedAreaId, setRecentlyUpdatedAreaId] = useState(null);
   const [hoveredAreaId, setHoveredAreaId] = useState(null);
   const [activeAreaId, setActiveAreaId] = useState(null);
   const [mapFocus, setMapFocus] = useState(null);
@@ -142,10 +145,27 @@ export default function App() {
       const mapped = (data ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
-        .select("id, area_id");
+        .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
       if (!active) return;
       if (!occurrenceError) {
         setOccurrenceRecords(occurrenceRows ?? []);
+      }
+      const { data: historyRows, error: historyError } = await supabase
+        .from("area_status_history")
+        .select("id, area_id, occurrence_id, previous_status, new_status, occurrence_impact, occurrence_description, changed_by, changed_at, occurrences(id, impact, description, created_at, created_by)")
+        .order("changed_at", { ascending: false });
+      if (!active) return;
+      if (!historyError) {
+        setStatusHistory((historyRows ?? []).map(mapStatusHistoryRowToApp));
+      } else {
+        const { data: fallbackHistoryRows, error: fallbackHistoryError } = await supabase
+          .from("area_status_history")
+          .select("id, area_id, occurrence_id, previous_status, new_status, changed_by, changed_at, occurrences(id, impact, description, created_at, created_by)")
+          .order("changed_at", { ascending: false });
+        if (!active) return;
+        if (!fallbackHistoryError) {
+          setStatusHistory((fallbackHistoryRows ?? []).map(mapStatusHistoryRowToApp));
+        }
       }
       setAreas(mapped);
       setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(mapped)));
@@ -171,6 +191,18 @@ export default function App() {
       setOccurrenceForm((current) => ({ ...current, areaId: areas[0].id }));
     }
   }, [areas, occurrenceForm.areaId]);
+
+  useEffect(() => {
+    if (!statusChangeNotice) return undefined;
+    const timer = window.setTimeout(() => setStatusChangeNotice(null), 6200);
+    return () => window.clearTimeout(timer);
+  }, [statusChangeNotice]);
+
+  useEffect(() => {
+    if (!recentlyUpdatedAreaId) return undefined;
+    const timer = window.setTimeout(() => setRecentlyUpdatedAreaId(null), 12000);
+    return () => window.clearTimeout(timer);
+  }, [recentlyUpdatedAreaId]);
 
   function resetAreaDraft() {
     setAreaForm(emptyAreaForm());
@@ -391,6 +423,24 @@ export default function App() {
       return;
     }
 
+    if (!occurrenceForm.impact.trim() || !occurrenceForm.description.trim()) {
+      setOccurrenceErrorMessage("Preencha o impacto observado e os detalhes da ocorrência.");
+      setOpenCard("occurrence");
+      return;
+    }
+
+    if (occurrenceForm.updateStatus && !occurrenceForm.nextStatus) {
+      setOccurrenceErrorMessage("Selecione o novo status da área para registrar a mudança.");
+      setOpenCard("occurrence");
+      return;
+    }
+
+    if (occurrenceForm.updateStatus && occurrenceForm.nextStatus === targetArea.status) {
+      setOccurrenceErrorMessage("Escolha um novo status diferente do status atual da área.");
+      setOpenCard("occurrence");
+      return;
+    }
+
     setIsSavingOccurrence(true);
 
     const baseDescription = occurrenceForm.description.trim();
@@ -410,6 +460,8 @@ export default function App() {
       previousStatus: shouldUpdateStatus ? targetArea.status : null,
       statusUpdated: shouldUpdateStatus,
       lastStatusReviewAt: reviewTimestamp,
+      lastStatusChangeReason: shouldUpdateStatus ? occurrenceForm.impact.trim() : targetArea.lastStatusChangeReason,
+      lastOccurrenceDescription: shouldUpdateStatus ? `${baseDescription}${locationSuffix}` : targetArea.lastOccurrenceDescription,
     };
     if (hasSupabaseConfig()) {
       const { data: occurrenceResult, error: occurrenceError } = await supabase.rpc(
@@ -454,8 +506,37 @@ export default function App() {
       );
       setOccurrenceRecords((current) => [
         ...current,
-        { id: occurrenceResult?.occurrence_id ?? createId(), area_id: occurrenceForm.areaId },
+        {
+          id: occurrenceResult?.occurrence_id ?? createId(),
+          area_id: occurrenceForm.areaId,
+          impact: patch.impact,
+          description: patch.description,
+          previous_status: patch.previousStatus,
+          new_status: shouldUpdateStatus ? patch.status : null,
+          status_updated: shouldUpdateStatus,
+          created_at: reviewTimestamp,
+        },
       ]);
+      if (shouldUpdateStatus) {
+        const historyEntry = buildStatusHistoryEntry({
+          area: targetArea,
+          occurrenceId: occurrenceResult?.occurrence_id ?? createId(),
+          previousStatus: targetArea.status,
+          newStatus: patch.status,
+          impact: patch.impact,
+          description: patch.description,
+          changedAt: patch.lastStatusReviewAt,
+        });
+        setStatusHistory((current) => [historyEntry, ...current.filter((item) => item.id !== historyEntry.id)]);
+        setStatusChangeNotice({
+          areaName: targetArea.name,
+          previousStatus: targetArea.status,
+          newStatus: patch.status,
+          impact: patch.impact,
+          changedAt: patch.lastStatusReviewAt,
+        });
+        setRecentlyUpdatedAreaId(targetArea.id);
+      }
       setAreas((current) =>
         current.map((area) =>
           area.id === occurrenceForm.areaId
@@ -465,12 +546,15 @@ export default function App() {
                 previousStatus: patch.previousStatus,
                 statusUpdated: patch.statusUpdated,
                 lastStatusReviewAt: patch.lastStatusReviewAt,
+                lastStatusChangeReason: patch.impact,
+                lastOccurrenceDescription: patch.description,
+                lastOccurrenceId: occurrenceResult?.occurrence_id ?? mapped.lastOccurrenceId,
               }
             : area,
         ),
       );
       if (shouldUpdateStatus) {
-        setOccurrenceSuccessMessage(`Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`);
+        setOccurrenceSuccessMessage(`Área ${targetArea.name} atualizada de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`);
       } else {
         setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
       }
@@ -488,10 +572,31 @@ export default function App() {
           : "Ocorrência salva localmente sem alterar o status da área.",
       );
       setOccurrenceRecords((current) => [...current, { id: createId(), area_id: occurrenceForm.areaId }]);
+      if (shouldUpdateStatus) {
+        const historyEntry = buildStatusHistoryEntry({
+          area: targetArea,
+          occurrenceId: createId(),
+          previousStatus: targetArea.status,
+          newStatus: patch.status,
+          impact: patch.impact,
+          description: patch.description,
+          changedAt: patch.lastStatusReviewAt,
+        });
+        setStatusHistory((current) => [historyEntry, ...current]);
+        setStatusChangeNotice({
+          areaName: targetArea.name,
+          previousStatus: targetArea.status,
+          newStatus: patch.status,
+          impact: patch.impact,
+          changedAt: patch.lastStatusReviewAt,
+        });
+        setRecentlyUpdatedAreaId(targetArea.id);
+      }
       setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
     }
     setIsSavingOccurrence(false);
     setActiveAreaId(occurrenceForm.areaId);
+    setMapFocus(createMapFocus({ ...targetArea, status: patch.status }));
     resetOccurrenceDraft();
     setOpenCard(null);
   }
@@ -547,6 +652,7 @@ export default function App() {
           isLocatingUser={isLocatingUser}
           hasUserLocation={Boolean(userLocation)}
         />
+        <StatusChangeToast notice={statusChangeNotice} onClose={() => setStatusChangeNotice(null)} />
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
           <div className="mobile-drawing-bar">
             <button
@@ -633,6 +739,8 @@ export default function App() {
           ) : null}
           <AreaLayer
             areas={areas}
+            statusHistory={statusHistory}
+            recentlyUpdatedAreaId={recentlyUpdatedAreaId}
             drawingEnabled={isDrawingArea}
             hoveredAreaId={hoveredAreaId}
             activeAreaId={activeAreaId}
@@ -667,7 +775,7 @@ export default function App() {
           title="Status das áreas"
           onClose={() => setOpenCard(null)}
         >
-          <StatusContent areas={areas} />
+          <StatusContent areas={areas} statusHistory={statusHistory} />
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "layers"}
@@ -729,7 +837,24 @@ export default function App() {
   );
 }
 
-function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect }) {
+function StatusChangeToast({ notice, onClose }) {
+  if (!notice) return null;
+  return (
+    <aside className={`status-change-toast status-change-toast--${notice.newStatus}`} role="status" aria-live="polite">
+      <div>
+        <span className="status-change-toast__kicker">Status atualizado</span>
+        <strong>{notice.areaName}</strong>
+        <p>
+          {statusUpdateLabel(notice.previousStatus)} {"\u2192"} {statusUpdateLabel(notice.newStatus)}
+        </p>
+        <small>{notice.impact}</small>
+      </div>
+      <button type="button" onClick={onClose} aria-label="Fechar aviso de status">×</button>
+    </aside>
+  );
+}
+
+function AreaFeature({ area, history, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect }) {
   const polygonPositions = area.polygonCoords;
   return (
     <>
@@ -772,7 +897,7 @@ function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLea
       {!drawingEnabled ? (
         <Marker
           position={[area.latitude, area.longitude]}
-          icon={getMarkerIcon(area.status)}
+          icon={getMarkerIcon(area.status, isRecentlyUpdated)}
           eventHandlers={{
             click: onToggle,
             mouseover: onHover,
@@ -795,7 +920,7 @@ function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLea
       ) : null}
       {isActive ? (
         <Popup position={[area.latitude, area.longitude]} eventHandlers={{ remove: onClose }}>
-          <DetailCard area={area} />
+          <DetailCard area={area} history={history} />
         </Popup>
       ) : null}
     </>
@@ -805,6 +930,8 @@ function AreaFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLea
 function AreaLayer(props) {
   const {
     areas,
+    statusHistory = [],
+    recentlyUpdatedAreaId,
     drawingEnabled,
     hoveredAreaId,
     activeAreaId,
@@ -829,6 +956,8 @@ function AreaLayer(props) {
       <AreaFeature
         key={area.id}
         area={area}
+        history={getAreaStatusHistory(statusHistory, area.id)}
+        isRecentlyUpdated={recentlyUpdatedAreaId === area.id || isRecentStatusChange(area)}
         drawingEnabled={drawingEnabled}
         isHovered={hoveredAreaId === area.id}
         isActive={activeAreaId === area.id}
@@ -848,6 +977,8 @@ function AreaLayer(props) {
         <AreaFeature
           key={area.id}
           area={area}
+          history={getAreaStatusHistory(statusHistory, area.id)}
+          isRecentlyUpdated={recentlyUpdatedAreaId === area.id || isRecentStatusChange(area)}
           drawingEnabled={drawingEnabled}
           isHovered={hoveredAreaId === area.id}
           isActive={activeAreaId === area.id}
@@ -1122,7 +1253,7 @@ function OccurrenceFormPanel(props) {
               ...current,
               updateStatus: event.target.checked,
               nextStatus: event.target.checked
-                ? current.nextStatus || selectedOccurrenceArea?.status || "atencao"
+                ? current.nextStatus || getSuggestedNextStatus(selectedOccurrenceArea?.status)
                 : "",
             }))
           }
@@ -1132,6 +1263,7 @@ function OccurrenceFormPanel(props) {
       {occurrenceForm.updateStatus ? (
         <Field label="Novo status da área">
           <select
+            required
             value={occurrenceForm.nextStatus}
             onChange={(event) =>
               setOccurrenceForm((current) => ({ ...current, nextStatus: event.target.value }))
@@ -1216,13 +1348,14 @@ function LegendContent() {
   );
 }
 
-function StatusContent({ areas }) {
+function StatusContent({ areas, statusHistory = [] }) {
   const statusItems = [
     { status: "preservado", label: "Preservadas", swatch: "green" },
     { status: "atencao", label: "Em atenção", swatch: "yellow" },
     { status: "critico", label: "Críticas", swatch: "red" },
   ];
   const total = areas.length;
+  const recentChanges = getRecentStatusChanges(statusHistory, areas).slice(0, 5);
 
   return (
     <div className="status-summary">
@@ -1251,6 +1384,29 @@ function StatusContent({ areas }) {
           );
         })}
       </div>
+      <section className="recent-status-panel">
+        <div className="recent-status-panel__header">
+          <strong>Últimas alterações de status</strong>
+          <span>{recentChanges.length}</span>
+        </div>
+        {recentChanges.length ? (
+          <div className="recent-status-list">
+            {recentChanges.map((change) => (
+              <article className="recent-status-item" key={change.id}>
+                <div>
+                  <strong>{change.areaName}</strong>
+                  <span>{statusUpdateLabel(change.previousStatus)} {"\u2192"} {statusUpdateLabel(change.newStatus)}</span>
+                </div>
+                <small>{formatDateTime(change.changedAt)}</small>
+                <p>Ocorrência: {change.description || change.impact || "Sem descrição resumida."}</p>
+                {change.changedBy ? <small>Responsável: {change.changedBy}</small> : null}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="recent-status-empty">Nenhuma alteração de status registrada ainda.</p>
+        )}
+      </section>
     </div>
   );
 }
@@ -1516,12 +1672,53 @@ function UploadBox({ preview, onPreviewChange, required = false }) {
   return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" required={required && !preview} onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>Arraste uma imagem ou clique para selecionar</strong><span>PNG, JPG ou WEBP obrigatorio</span></div>}</label>;
 }
 
-function DetailCard({ area }) {
-  return <article className="detail-card"><img src={area.image} alt={area.name} /><div className="detail-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div><p>{area.description}</p><span className={`impact-pill impact-pill--${area.status}`}>{area.impact}</span></div></article>;
+function DetailCard({ area, history = [] }) {
+  const latestChange = history[0] ?? null;
+  return (
+    <article className="detail-card">
+      <img src={area.image} alt={area.name} />
+      <div className="detail-card__body">
+        <h3>{area.name}</h3>
+        <div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>
+        <div className="area-status-block">
+          <span>Status atual</span>
+          <strong className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</strong>
+        </div>
+        {latestChange ? (
+          <div className="area-change-card">
+            <span>Última mudança</span>
+            <strong>{statusUpdateLabel(latestChange.previousStatus)} {"\u2192"} {statusUpdateLabel(latestChange.newStatus)}</strong>
+            <small>{formatDateTime(latestChange.changedAt)}</small>
+            <p>Motivo: {latestChange.impact || latestChange.description || "Ocorrência registrada sem resumo."}</p>
+            <small>Ocorrência: {latestChange.occurrenceId ? String(latestChange.occurrenceId).slice(0, 8) : "vinculada"}</small>
+          </div>
+        ) : (
+          <div className="area-change-card area-change-card--empty">
+            <span>Histórico</span>
+            <p>Ainda não há mudança de status registrada para esta área.</p>
+          </div>
+        )}
+        <p>{area.description}</p>
+        <span className={`impact-pill impact-pill--${area.status}`}>{area.impact}</span>
+        {history.length ? (
+          <div className="area-history">
+            <strong>Histórico de alterações</strong>
+            {history.slice(0, 4).map((item) => (
+              <div className="area-history__item" key={item.id}>
+                <span>{formatDateTime(item.changedAt)} — {statusUpdateLabel(item.previousStatus)} {"\u2192"} {statusUpdateLabel(item.newStatus)}</span>
+                <small>Ocorrência: {item.description || item.impact || "Sem descrição resumida."}</small>
+                {item.changedBy ? <small>Responsável: {item.changedBy}</small> : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
 }
 
 function HoverCard({ area }) {
-  return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div><p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
+  return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
 }
 
 function ClusterCard({ areas }) {
@@ -1588,6 +1785,8 @@ function mapSupabaseAreaToApp(row) {
     latitude,
     longitude,
     image: row.image_url || createPlaceholderImage(row.name ?? "Área monitorada", statusToColor(row.status ?? "atencao")),
+    lastOccurrenceId: row.last_occurrence_id ? String(row.last_occurrence_id) : null,
+    lastStatusReviewAt: row.last_status_review_at ?? null,
   };
 }
 
@@ -1595,6 +1794,36 @@ function normalizeAreaShape(area) {
   const polygonCoords = normalizePolygonCoords(area?.polygonCoords, area?.latitude, area?.longitude);
   const [latitude, longitude] = computeCentroid(polygonCoords);
   return { ...area, region: area?.region || REGIONS[0].name, polygonCoords, latitude, longitude };
+}
+
+function mapStatusHistoryRowToApp(row) {
+  const occurrence = row?.occurrences ?? row?.occurrence ?? null;
+  return {
+    id: String(row?.id ?? createId()),
+    areaId: String(row?.area_id ?? ""),
+    occurrenceId: row?.occurrence_id ? String(row.occurrence_id) : occurrence?.id ? String(occurrence.id) : "",
+    previousStatus: row?.previous_status ?? "atencao",
+    newStatus: row?.new_status ?? "atencao",
+    changedBy: row?.changed_by ?? occurrence?.created_by ?? "",
+    changedAt: row?.changed_at ?? occurrence?.created_at ?? new Date().toISOString(),
+    impact: row?.occurrence_impact ?? occurrence?.impact ?? "",
+    description: row?.occurrence_description ?? occurrence?.description ?? "",
+  };
+}
+
+function buildStatusHistoryEntry({ area, occurrenceId, previousStatus, newStatus, impact, description, changedAt }) {
+  return {
+    id: String(occurrenceId || createId()),
+    areaId: String(area.id),
+    areaName: area.name,
+    occurrenceId: String(occurrenceId || ""),
+    previousStatus,
+    newStatus,
+    changedBy: "",
+    changedAt,
+    impact,
+    description,
+  };
 }
 
 function createRegion(name, center = REGIONAL_CENTER, zoom = LOCAL_ZOOM) {
@@ -1642,6 +1871,26 @@ function regionHasAreas(areas, regionName) {
 function countOccurrencesForAreas(occurrences, areas) {
   const areaIds = new Set(areas.map((area) => String(area.id)));
   return occurrences.filter((occurrence) => areaIds.has(String(occurrence.area_id))).length;
+}
+
+function getAreaStatusHistory(history, areaId) {
+  return (history ?? [])
+    .filter((item) => String(item.areaId) === String(areaId))
+    .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime());
+}
+
+function getRecentStatusChanges(history, areas) {
+  const areaNames = new Map(areas.map((area) => [String(area.id), area.name]));
+  return (history ?? [])
+    .map((item) => ({ ...item, areaName: item.areaName || areaNames.get(String(item.areaId)) || "Área monitorada" }))
+    .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime());
+}
+
+function isRecentStatusChange(area) {
+  if (!area?.lastStatusReviewAt) return false;
+  const changedAt = new Date(area.lastStatusReviewAt).getTime();
+  if (!Number.isFinite(changedAt)) return false;
+  return Date.now() - changedAt < 1000 * 60 * 60 * 24 * 3;
 }
 
 function getBrowserPosition() {
@@ -1736,10 +1985,10 @@ function createMapFocus(area) {
   };
 }
 
-function getMarkerIcon(status) {
+function getMarkerIcon(status, isRecentlyUpdated = false) {
   return L.divIcon({
     className: "environment-marker-icon",
-    html: `<span class="environment-marker environment-marker--${status}"></span>`,
+    html: `<span class="environment-marker environment-marker--${status}${isRecentlyUpdated ? " environment-marker--recent" : ""}"></span>`,
     iconSize: [30, 36],
     iconAnchor: [15, 32],
   });
@@ -1856,10 +2105,29 @@ function statusUpdateLabel(status) {
   return "Crítico";
 }
 
+function getSuggestedNextStatus(currentStatus) {
+  if (currentStatus === "preservado") return "atencao";
+  if (currentStatus === "atencao") return "critico";
+  return "atencao";
+}
+
 function statusToColor(status) {
   if (status === "preservado") return "#2fb36f";
   if (status === "atencao") return "#e8ba39";
   return "#dd5757";
+}
+
+function formatDateTime(value) {
+  if (!value) return "Data não informada";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Data não informada";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function createPlaceholderImage(title, color) {

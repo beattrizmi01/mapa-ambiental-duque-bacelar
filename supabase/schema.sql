@@ -47,9 +47,15 @@ create table if not exists public.area_status_history (
   occurrence_id uuid not null references public.occurrences(id) on delete cascade,
   previous_status text not null check (previous_status in ('preservado', 'atencao', 'critico')),
   new_status text not null check (new_status in ('preservado', 'atencao', 'critico')),
+  occurrence_impact text,
+  occurrence_description text,
   changed_by uuid,
   changed_at timestamptz not null default now()
 );
+
+alter table public.area_status_history
+  add column if not exists occurrence_impact text,
+  add column if not exists occurrence_description text;
 
 create index if not exists occurrences_area_id_created_at_idx
 on public.occurrences (area_id, created_at desc);
@@ -145,6 +151,8 @@ begin
       occurrence_id,
       previous_status,
       new_status,
+      occurrence_impact,
+      occurrence_description,
       changed_by
     )
     values (
@@ -152,6 +160,8 @@ begin
       v_occurrence.id,
       v_previous_status,
       p_new_status,
+      p_impact,
+      p_description,
       p_changed_by
     );
   end if;
