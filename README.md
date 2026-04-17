@@ -12,7 +12,7 @@ npm run dev
 Para usar Supabase localmente, crie um arquivo `.env` na raiz do projeto seguindo o modelo de `.env.example`:
 
 ```bash
-VITE_SUPABASE_URL=https://zebsizvdirevdescsocd.supabase.co
+VITE_SUPABASE_URL=https://zebsjzvdirevdescsocd.supabase.co
 VITE_SUPABASE_ANON_KEY=cole-aqui-a-publishable-key-do-supabase
 # Opcional: tambem funciona com VITE_SUPABASE_PUBLISHABLE_KEY
 ```
@@ -28,7 +28,7 @@ Sem essas variaveis, o app continua funcionando com dados salvos no `localStorag
    - Build Command: `npm run build`
    - Output Directory: `dist`
 4. Em **Environment Variables**, cadastre as variaveis se for usar Supabase:
-   - `VITE_SUPABASE_URL`: `https://zebsizvdirevdescsocd.supabase.co`
+   - `VITE_SUPABASE_URL`: `https://zebsjzvdirevdescsocd.supabase.co`
    - `VITE_SUPABASE_ANON_KEY`: a **Publishable key** do Supabase
      - Se preferir, tambem pode usar o nome `VITE_SUPABASE_PUBLISHABLE_KEY`.
 5. Clique em **Deploy**.
