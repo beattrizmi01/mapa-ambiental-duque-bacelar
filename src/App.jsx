@@ -172,10 +172,6 @@ export default function App() {
     }
   }, [areas, occurrenceForm.areaId]);
 
-  useEffect(() => {
-    detectUserRegion({ source: "auto" });
-  }, []);
-
   function resetAreaDraft() {
     setAreaForm(emptyAreaForm());
     setAreaPreview(null);
@@ -222,17 +218,17 @@ export default function App() {
   }
 
   async function locateUser() {
-    await detectUserRegion({ source: "manual" });
+    await detectUserRegion();
   }
 
-  async function detectUserRegion({ source }) {
+  async function detectUserRegion() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDataStatus("Seu navegador não oferece suporte à localização.");
       return;
     }
 
     setIsLocatingUser(true);
-    setDataStatus(source === "auto" ? "Detectando sua região atual..." : "Buscando sua localização atual...");
+    setDataStatus("Buscando sua localização atual...");
 
     try {
       const position = await getBrowserPosition();
@@ -262,7 +258,7 @@ export default function App() {
       setDataStatus(
         denied
           ? "Permissão de localização negada. Região padrão definida como Duque Bacelar."
-          : "Não foi possível detectar sua região. Região padrão definida como Duque Bacelar.",
+          : "Não foi possível detectar sua localização. Região atual mantida.",
       );
     } finally {
       setIsLocatingUser(false);
