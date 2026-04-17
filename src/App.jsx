@@ -1715,6 +1715,9 @@ function getSupabaseFriendlyError(error) {
   if (message.toLowerCase().includes("permission denied") || message.toLowerCase().includes("row-level security")) {
     return "Permissão negada no Supabase. Verifique as políticas RLS da tabela areas.";
   }
+  if (message.toLowerCase().includes("schema cache") && message.toLowerCase().includes("region")) {
+    return "Banco conectado, mas a coluna region ainda não existe na tabela areas. Execute o arquivo supabase/schema.sql no SQL Editor do Supabase e tente novamente.";
+  }
   if (message.toLowerCase().includes("relation") && message.toLowerCase().includes("does not exist")) {
     return "Tabela não encontrada no Supabase. Execute o arquivo supabase/schema.sql no SQL Editor.";
   }
