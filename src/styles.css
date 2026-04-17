@@ -1301,16 +1301,6 @@ body {
   color: #58a8ff;
 }
 
-.region-options {
-  display: grid;
-  gap: 9px;
-  margin-bottom: 10px;
-  max-height: 180px;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.region-option,
 .region-location-action {
   width: 100%;
   min-height: 54px;
@@ -1324,92 +1314,14 @@ body {
   color: #eaf3ff;
 }
 
-.region-option {
-  padding: 10px 14px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.region-option.is-active {
-  border-color: rgba(86, 221, 145, 0.32);
-  background: rgba(20, 55, 38, 0.72);
-}
-
-.region-option span,
 .region-location-action > span:first-child {
   display: inline-flex;
   color: #94a5ba;
 }
 
-.region-option.is-active span {
-  color: #5fe29a;
-}
-
-.region-option svg,
 .region-location-action svg {
   width: 20px;
   height: 20px;
-}
-
-.region-option strong {
-  color: #f4f8ff;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.region-option small {
-  color: #91a2b6;
-  font-size: 0.68rem;
-  justify-self: end;
-  text-align: right;
-}
-
-.region-custom-form {
-  display: grid;
-  gap: 8px;
-  margin: 2px 0 10px;
-}
-
-.region-custom-form label {
-  color: #61df99;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.region-custom-form div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-}
-
-.region-custom-form input,
-.region-custom-form button {
-  min-height: 44px;
-  border: 1px solid rgba(161, 179, 201, 0.16);
-  border-radius: 14px;
-  font: inherit;
-}
-
-.region-custom-form input {
-  min-width: 0;
-  padding: 0 13px;
-  background: rgba(11, 20, 34, 0.72);
-  color: #f4f8ff;
-  outline: 0;
-}
-
-.region-custom-form input::placeholder {
-  color: #77889d;
-}
-
-.region-custom-form button {
-  padding: 0 15px;
-  background: rgba(47, 179, 111, 0.18);
-  color: #8bf0b8;
-  font-weight: 800;
-  cursor: pointer;
 }
 
 .region-location-action {
@@ -1946,13 +1858,11 @@ body {
     font-size: 0.65rem;
   }
 
-  .region-option,
   .region-location-action {
     min-height: 47px;
     border-radius: 13px;
   }
 
-  .region-option strong,
   .region-location-action strong {
     font-size: 0.8rem;
   }

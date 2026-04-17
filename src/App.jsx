@@ -503,13 +503,10 @@ export default function App() {
         openCard={openCard}
         onToggle={(cardName) => setOpenCard((current) => (current === cardName ? null : cardName))}
         selectedRegion={selectedRegion}
-        regions={availableRegions}
         regionSummary={regionSummary}
         hasRegionData={hasRegionData}
-        selectedRegionId={selectedRegionId}
         isRegionPanelOpen={isRegionPanelOpen}
         onToggleRegionPanel={() => setIsRegionPanelOpen((current) => !current)}
-        onRegionChange={handleRegionChange}
         onUseCurrentLocation={locateUser}
         isLocatingUser={isLocatingUser}
         areas={areas}
@@ -886,13 +883,10 @@ function Sidebar(props) {
   const {
     isMobileViewport,
     selectedRegion,
-    regions,
     regionSummary,
     hasRegionData,
-    selectedRegionId,
     isRegionPanelOpen,
     onToggleRegionPanel,
-    onRegionChange,
     onUseCurrentLocation,
     isLocatingUser,
   } = props;
@@ -903,13 +897,10 @@ function Sidebar(props) {
         <CompactHeader
           mobile={isMobileViewport}
           selectedRegion={selectedRegion}
-          regions={regions}
           summary={regionSummary}
           hasRegionData={hasRegionData}
-          selectedRegionId={selectedRegionId}
           expanded={isRegionPanelOpen}
           onToggle={onToggleRegionPanel}
-          onRegionChange={onRegionChange}
           onUseCurrentLocation={onUseCurrentLocation}
           isLocatingUser={isLocatingUser}
         />
@@ -920,27 +911,13 @@ function Sidebar(props) {
 
 function CompactHeader({
   selectedRegion,
-  regions,
   summary,
   hasRegionData,
-  selectedRegionId,
   expanded,
   onToggle,
-  onRegionChange,
   onUseCurrentLocation,
   isLocatingUser,
 }) {
-  const [customRegionName, setCustomRegionName] = useState("");
-  const savedRegions = regions.filter((region) => region.id !== selectedRegionId);
-
-  function submitCustomRegion(event) {
-    event.preventDefault();
-    const nextName = customRegionName.trim();
-    if (!nextName) return;
-    onRegionChange(createRegion(nextName).id, nextName);
-    setCustomRegionName("");
-  }
-
   return (
     <div className={`region-header${expanded ? " is-expanded" : ""}`}>
       <header className="sidebar__header sidebar__header--mobile">
@@ -996,49 +973,6 @@ function CompactHeader({
               </article>
             ))}
           </div>
-
-          <div className="region-panel__divider" />
-
-          <div className="region-panel__section-title">Alterar região</div>
-          <div className="region-options" role="listbox" aria-label="Alterar região">
-            <button
-              type="button"
-              className="region-option is-active"
-              onClick={() => onRegionChange(selectedRegion.id)}
-              role="option"
-              aria-selected="true"
-            >
-              <span aria-hidden="true"><MapPinIcon /></span>
-              <strong>{selectedRegion.name}</strong>
-              <small>Região atual</small>
-            </button>
-            {savedRegions.map((region) => (
-              <button
-                key={region.id}
-                type="button"
-                className="region-option"
-                onClick={() => onRegionChange(region.id)}
-                role="option"
-                aria-selected="false"
-              >
-                <span aria-hidden="true"><MapPinIcon /></span>
-                <strong>{region.name}</strong>
-                <small>Selecionar</small>
-              </button>
-            ))}
-          </div>
-          <form className="region-custom-form" onSubmit={submitCustomRegion}>
-            <label htmlFor="custom-region">Selecionar outra cidade</label>
-            <div>
-              <input
-                id="custom-region"
-                value={customRegionName}
-                onChange={(event) => setCustomRegionName(event.target.value)}
-                placeholder="Ex.: Chapadinha"
-              />
-              <button type="submit">Usar</button>
-            </div>
-          </form>
           <button type="button" className="region-location-action" onClick={onUseCurrentLocation} disabled={isLocatingUser}>
             <span aria-hidden="true"><LocationIcon /></span>
             <span>
