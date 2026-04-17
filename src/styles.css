@@ -172,7 +172,7 @@ body {
 .legend-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .data-status strong {
@@ -191,9 +191,29 @@ body {
 
 .legend-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   color: #dbe8f9;
+}
+
+.legend-item__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+}
+
+.legend-item__copy strong {
+  color: #f2f7ff;
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.legend-item__copy small {
+  color: #9fafc2;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .status-summary {

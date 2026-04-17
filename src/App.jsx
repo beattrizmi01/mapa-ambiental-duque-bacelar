@@ -1183,7 +1183,37 @@ function LegendCard() {
 }
 
 function LegendContent() {
-  return <div className="legend-list"><div className="legend-item"><span className="legend-swatch legend-swatch--green"></span><span>Preservado</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--yellow"></span><span>Atenção</span></div><div className="legend-item"><span className="legend-swatch legend-swatch--red"></span><span>Crítico</span></div></div>;
+  const items = [
+    {
+      label: "Preservado",
+      swatch: "green",
+      description: "Área em boas condições ambientais, sem impactos significativos.",
+    },
+    {
+      label: "Atenção",
+      swatch: "yellow",
+      description: "Área com sinais de alteração ou risco ambiental, requer monitoramento.",
+    },
+    {
+      label: "Crítico",
+      swatch: "red",
+      description: "Área com degradação ambiental evidente, necessita intervenção urgente.",
+    },
+  ];
+
+  return (
+    <div className="legend-list">
+      {items.map((item) => (
+        <div className="legend-item" key={item.label}>
+          <span className={`legend-swatch legend-swatch--${item.swatch}`}></span>
+          <span className="legend-item__copy">
+            <strong>{item.label}</strong>
+            <small>{item.description}</small>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function StatusContent({ areas }) {
