@@ -280,10 +280,16 @@ export default function App() {
     await detectUserRegion();
   }
 
+  async function locateAndStartDrawing() {
+    setOpenCard(null);
+    const located = await detectUserRegion();
+    if (located) startAreaDrawing();
+  }
+
   async function detectUserRegion() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDataStatus("Seu navegador não oferece suporte à localização.");
-      return;
+      return false;
     }
 
     setIsLocatingUser(true);
@@ -311,6 +317,7 @@ export default function App() {
           ? `Região detectada: ${detectedRegion.name}. Dados carregados.`
           : `Região detectada: ${detectedRegion.name}. Ainda não há áreas monitoradas nesta região.`,
       );
+      return true;
     } catch (error) {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
       setSelectedRegionId(REGIONS[0].id);
@@ -319,6 +326,7 @@ export default function App() {
           ? "Permissão de localização negada. Região padrão definida como Duque Bacelar."
           : "Não foi possível detectar sua localização. Região atual mantida.",
       );
+      return false;
     } finally {
       setIsLocatingUser(false);
     }
@@ -687,6 +695,14 @@ export default function App() {
           <div className="mobile-drawing-bar">
             <button
               type="button"
+              className="mobile-drawing-bar__button"
+              onClick={locateUser}
+              disabled={isLocatingUser}
+            >
+              {isLocatingUser ? "Localizando..." : "Minha localização"}
+            </button>
+            <button
+              type="button"
               className="mobile-drawing-bar__button mobile-drawing-bar__button--primary"
               onClick={concludeAreaDrawing}
               disabled={draftPolygonCoords.length < 3}
@@ -856,6 +872,9 @@ export default function App() {
             onStartAreaDrawing={startAreaDrawing}
             onConcludeAreaDrawing={concludeAreaDrawing}
             onClearAreaDrawing={clearAreaDrawing}
+            onLocateAndStartDrawing={locateAndStartDrawing}
+            isLocatingUser={isLocatingUser}
+            hasUserLocation={Boolean(userLocation)}
             onSubmitArea={handleAreaSubmit}
             isSavingArea={isSavingArea}
             areaSuccessMessage={areaSuccessMessage}
@@ -1228,7 +1247,7 @@ function createRegionSummary(areas, occurrenceCount) {
 }
 
 function AreaFormPanel(props) {
-  const { areaForm, setAreaForm, areaPreview, setAreaPreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onSubmitArea, isSavingArea, areaSuccessMessage, areaErrorMessage, onCancelArea, mobile = false } = props;
+  const { areaForm, setAreaForm, areaPreview, setAreaPreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onLocateAndStartDrawing, isLocatingUser, hasUserLocation, onSubmitArea, isSavingArea, areaSuccessMessage, areaErrorMessage, onCancelArea, mobile = false } = props;
   const areaReady = areaForm.polygonCoords.length >= 3 || draftPolygonCoords.length >= 3;
 
   return (
@@ -1251,6 +1270,19 @@ function AreaFormPanel(props) {
             {mobile ? <p>Marque os limites direto no mapa e volte para salvar.</p> : null}
           </div>
         </div>
+
+        <button
+          type="button"
+          className="location-demarcation-action"
+          onClick={onLocateAndStartDrawing}
+          disabled={isLocatingUser}
+        >
+          <span aria-hidden="true"><LocationIcon /></span>
+          <span>
+            <strong>{isLocatingUser ? "Buscando sua localização..." : "Usar minha localização e demarcar"}</strong>
+            <small>{hasUserLocation ? "Localização encontrada; toque para centralizar novamente." : "Centraliza o mapa e mostra onde você está."}</small>
+          </span>
+        </button>
 
         <button
           type="button"
@@ -1722,7 +1754,7 @@ function UserLocationLayer({ location }) {
         interactive={false}
       >
         <Tooltip permanent direction="top" offset={[0, -18]} className="selection-tooltip">
-          Minha localização
+          Você está aqui
         </Tooltip>
       </Marker>
     </>

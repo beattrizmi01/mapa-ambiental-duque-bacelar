@@ -904,6 +904,56 @@ body {
   white-space: normal;
 }
 
+.location-demarcation-action {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  border: 1px solid rgba(96, 216, 255, 0.24);
+  border-radius: 15px;
+  padding: 11px 12px;
+  color: #eaf9ff;
+  background: rgba(22, 88, 117, 0.2);
+  cursor: pointer;
+  text-align: left;
+}
+
+.location-demarcation-action:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.location-demarcation-action > span:first-child {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: #8ee5ff;
+  background: rgba(33, 151, 198, 0.2);
+}
+
+.location-demarcation-action svg {
+  width: 21px;
+  height: 21px;
+}
+
+.location-demarcation-action > span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.location-demarcation-action strong {
+  font-size: 0.82rem;
+}
+
+.location-demarcation-action small {
+  color: #9fb8c8;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
 .app-error-state {
   min-height: 100vh;
   display: grid;
@@ -2251,7 +2301,7 @@ body {
   bottom: 104px;
   z-index: 1100;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
