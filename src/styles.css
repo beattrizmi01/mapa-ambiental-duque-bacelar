@@ -1943,6 +1943,13 @@ body {
   pointer-events: auto;
 }
 
+.region-panel__explanation {
+  margin: -5px 0 14px;
+  color: #b3c0d1;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .mobile-notification__count {
   position: absolute;
   top: -1px;

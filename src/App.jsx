@@ -1270,14 +1270,17 @@ function CompactHeader({
               <MapPinIcon />
             </span>
             <div>
-              <span>Região selecionada</span>
+              <span>Você está visualizando</span>
               <strong>{selectedRegion.name}</strong>
             </div>
           </div>
 
           <div className="region-panel__divider" />
 
-          <div className="region-panel__section-title">Resumo da região</div>
+          <div className="region-panel__section-title">Situação das áreas cadastradas</div>
+          <p className="region-panel__explanation">
+            Estes números mostram as áreas cadastradas nesta região, separadas pelo status atual.
+          </p>
           {!hasRegionData ? (
             <div className="region-empty-state">Ainda não há áreas monitoradas nesta região</div>
           ) : null}
@@ -1350,11 +1353,11 @@ function createRegionSummary(areas, occurrenceCount) {
   const critical = countByStatus("critico");
 
   return [
-    { key: "total", tone: "green", icon: <LeafIcon />, value: total, label: "Áreas monitoradas", detail: "Total" },
-    { key: "preservado", tone: "green", icon: <TreeIcon />, value: preserved, label: "Preservadas", detail: percentage(preserved) },
-    { key: "atencao", tone: "yellow", icon: "!", value: attention, label: "Em atenção", detail: percentage(attention) },
-    { key: "critico", tone: "red", icon: <FlameIcon />, value: critical, label: "Críticas", detail: percentage(critical) },
-    { key: "occurrences", tone: "blue", icon: <ClipboardIcon />, value: occurrenceCount, label: "Ocorrências registradas", detail: "Banco de dados" },
+    { key: "total", tone: "green", icon: <LeafIcon />, value: total, label: "Total de áreas", detail: "Cadastradas na região" },
+    { key: "preservado", tone: "green", icon: <TreeIcon />, value: preserved, label: "Áreas preservadas", detail: `${percentage(preserved)} do total` },
+    { key: "atencao", tone: "yellow", icon: "!", value: attention, label: "Áreas em atenção", detail: `${percentage(attention)} do total` },
+    { key: "critico", tone: "red", icon: <FlameIcon />, value: critical, label: "Áreas críticas", detail: `${percentage(critical)} do total` },
+    { key: "occurrences", tone: "blue", icon: <ClipboardIcon />, value: occurrenceCount, label: "Total de ocorrências", detail: "Vinculadas às áreas" },
   ];
 }
 
