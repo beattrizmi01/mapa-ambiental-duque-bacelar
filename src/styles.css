@@ -1371,6 +1371,36 @@ body {
   display: block;
 }
 
+.detail-card.is-expanded {
+  width: min(560px, calc(100vw - 40px));
+  max-height: min(82vh, 760px);
+  border-color: rgba(116, 229, 166, 0.3);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(94, 222, 151, 0.12);
+}
+
+.app-shell:has(.detail-card.is-expanded) .sidebar,
+.app-shell:has(.detail-card.is-expanded) .mobile-side-rail,
+.app-shell:has(.detail-card.is-expanded) .mobile-fab-dock,
+.app-shell:has(.detail-card.is-expanded) .mobile-drawing-bar,
+.app-shell:has(.detail-card.is-expanded) .leaflet-control-container {
+  opacity: 0.22;
+  filter: blur(1.5px) brightness(0.45);
+  pointer-events: none;
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+
+.app-shell:has(.detail-card.is-expanded) .leaflet-tile-pane,
+.app-shell:has(.detail-card.is-expanded) .leaflet-overlay-pane,
+.app-shell:has(.detail-card.is-expanded) .leaflet-marker-pane,
+.app-shell:has(.detail-card.is-expanded) .leaflet-shadow-pane {
+  filter: brightness(0.34) saturate(0.55) blur(1px);
+  transition: filter 180ms ease;
+}
+
+.app-shell:has(.detail-card.is-expanded) .leaflet-map {
+  cursor: default;
+}
+
 .detail-card__extended > .impact-pill {
   display: block;
   width: 100%;

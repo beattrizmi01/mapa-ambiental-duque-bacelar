@@ -2065,7 +2065,7 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
           onClick={() => setExpanded((current) => !current)}
           aria-expanded={expanded}
         >
-          {expanded ? "Mostrar menos ↑" : "Ver detalhes ↓"}
+          {expanded ? "Recolher cartão ↑" : "Expandir cartão ↗"}
         </button>
         <div className="detail-card__extended">
         {latestChange ? (
