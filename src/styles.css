@@ -2541,23 +2541,27 @@ body {
 
 .mobile-drawing-bar {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 104px;
-  z-index: 1100;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 86px);
+  z-index: 1130;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: clamp(6px, 2vw, 10px);
 }
 
 .mobile-drawing-bar__button {
   border: 1px solid rgba(161, 179, 201, 0.18);
   border-radius: 18px;
-  padding: 12px 14px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 10px clamp(7px, 2.4vw, 14px);
   background: rgba(8, 16, 29, 0.88);
   color: #eff6ff;
-  font-size: 0.86rem;
+  font-size: clamp(0.7rem, 3.2vw, 0.86rem);
   font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
   box-shadow: 0 18px 28px rgba(2, 8, 17, 0.24);
 }
 
