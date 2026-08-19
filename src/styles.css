@@ -1274,10 +1274,10 @@ body {
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 163, 168, 0.5);
   border-radius: 50%;
   color: #fff;
-  background: rgba(5, 11, 20, 0.86);
+  background: linear-gradient(180deg, rgba(220, 69, 76, 0.96), rgba(155, 35, 47, 0.96));
   box-shadow: 0 7px 16px rgba(0, 0, 0, 0.3);
   font-size: 1.3rem;
   line-height: 1;
@@ -1286,8 +1286,8 @@ body {
 
 .hover-card__close:hover,
 .hover-card__close:focus-visible {
-  background: rgba(22, 34, 51, 0.96);
-  border-color: rgba(255, 255, 255, 0.36);
+  background: linear-gradient(180deg, rgba(239, 82, 89, 0.98), rgba(180, 40, 53, 0.98));
+  border-color: rgba(255, 196, 199, 0.72);
 }
 
 .detail-card {
@@ -1311,10 +1311,10 @@ body {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 163, 168, 0.5);
   border-radius: 50%;
   color: #fff;
-  background: rgba(5, 11, 20, 0.9);
+  background: linear-gradient(180deg, rgba(220, 69, 76, 0.96), rgba(155, 35, 47, 0.96));
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
   font-size: 1.35rem;
   line-height: 1;
@@ -1574,7 +1574,9 @@ body {
 }
 
 .leaflet-popup-close-button {
-  color: white !important;
+  color: #fff !important;
+  background: #c53e48 !important;
+  border-radius: 50% !important;
 }
 
 .sidebar--mobile {
@@ -2507,9 +2509,12 @@ body {
 
 .status-change-toast button {
   align-self: start;
-  border: 0;
-  background: transparent;
-  color: #a8b8cb;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 163, 168, 0.45);
+  border-radius: 50%;
+  background: #bd3945;
+  color: #fff;
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
@@ -2573,9 +2578,11 @@ body {
 }
 
 .bottom-sheet__close {
-  border: 0;
-  background: transparent;
-  color: #b8c8dc;
+  border: 1px solid rgba(255, 163, 168, 0.45);
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: linear-gradient(180deg, #d84c55, #a92f3c);
+  color: #fff;
   font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
