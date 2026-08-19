@@ -811,6 +811,7 @@ export default function App() {
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} />
           )}
           <MapFocusController focus={mapFocus} />
+          <AreasOverviewController areas={regionAreas} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
           <MapClickHandler
@@ -1894,6 +1895,32 @@ function MapFocusController({ focus }) {
     if (!focus) return;
     map.setView(focus.center, focus.zoom, { animate: true });
   }, [focus, map]);
+
+  return null;
+}
+
+function AreasOverviewController({ areas }) {
+  const map = useMap();
+  const [hasFocusedAreas, setHasFocusedAreas] = useState(false);
+
+  useEffect(() => {
+    if (hasFocusedAreas || !areas.length) return;
+    const points = areas.flatMap((area) =>
+      area.polygonCoords?.length ? area.polygonCoords : [[area.latitude, area.longitude]],
+    );
+    const validPoints = points.filter(
+      (point) => Number.isFinite(Number(point?.[0])) && Number.isFinite(Number(point?.[1])),
+    );
+    if (!validPoints.length) return;
+
+    setHasFocusedAreas(true);
+    map.fitBounds(L.latLngBounds(validPoints), {
+      paddingTopLeft: [70, 150],
+      paddingBottomRight: [70, 150],
+      maxZoom: 14,
+      animate: false,
+    });
+  }, [areas, hasFocusedAreas, map]);
 
   return null;
 }
