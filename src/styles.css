@@ -904,6 +904,43 @@ body {
   white-space: normal;
 }
 
+.app-error-state {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #eef6ff;
+  background: #050d18;
+}
+
+.app-error-state > div {
+  width: min(480px, 100%);
+  border: 1px solid rgba(161, 179, 201, 0.16);
+  border-radius: 20px;
+  padding: 22px;
+  background: rgba(11, 19, 31, 0.98);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+}
+
+.app-error-state strong {
+  font-size: 1.05rem;
+}
+
+.app-error-state p {
+  color: #aebed1;
+  line-height: 1.5;
+}
+
+.app-error-state button {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: #f5fff8;
+  background: #2aaa65;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .environment-tooltip .hover-card,
 .environment-tooltip .hover-card p,
 .environment-tooltip .hover-card h3 {

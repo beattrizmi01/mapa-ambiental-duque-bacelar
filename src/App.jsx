@@ -182,7 +182,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(areas));
+    if (hasSupabaseConfig() || typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(areas));
+    } catch (error) {
+      console.warn("Não foi possível salvar as áreas no armazenamento local.", error);
+      setDataStatus("O armazenamento local está cheio. Os dados já salvos continuam disponíveis.");
+    }
   }, [areas]);
 
   useEffect(() => {
