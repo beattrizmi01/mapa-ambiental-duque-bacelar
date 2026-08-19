@@ -317,12 +317,35 @@ body {
 
 .status-summary__areas {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   color: #b8c7d8;
   font-size: 0.8rem;
 }
 
-.status-summary__areas span {
+.status-summary__areas button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(161, 179, 201, 0.1);
+  border-radius: 11px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #c9d5e4;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.status-summary__areas button:hover,
+.status-summary__areas button:focus-visible {
+  border-color: rgba(91, 218, 145, 0.42);
+  background: rgba(47, 179, 111, 0.1);
+  color: #f5fbff;
+}
+
+.status-summary__areas button span:first-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1769,11 +1792,12 @@ body {
 }
 
 .region-summary-card {
-  min-height: 118px;
+  min-height: 86px;
   display: grid;
-  align-content: start;
-  gap: 6px;
-  padding: 14px;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: center;
+  gap: 4px 9px;
+  padding: 10px;
   border: 1px solid rgba(161, 179, 201, 0.1);
   border-radius: 15px;
   background: rgba(23, 34, 48, 0.74);
@@ -1783,9 +1807,9 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 2px;
+  grid-row: 1 / span 2;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   border: 1px solid currentColor;
   background: rgba(255, 255, 255, 0.03);
@@ -1795,13 +1819,13 @@ body {
 }
 
 .region-summary-card__icon svg {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
 }
 
 .region-summary-card strong {
   color: currentColor;
-  font-size: 1.55rem;
+  font-size: 1.3rem;
   line-height: 1;
 }
 
@@ -1815,6 +1839,26 @@ body {
 .region-summary-card small {
   font-size: 0.72rem;
   line-height: 1.25;
+}
+
+.region-summary-card small {
+  grid-column: 1 / -1;
+}
+
+.region-summary-card .region-summary-card__progress {
+  grid-column: 1 / -1;
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.region-summary-card .region-summary-card__progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
 }
 
 .region-summary-card--green {
@@ -1946,7 +1990,7 @@ body {
 .region-panel__explanation {
   margin: -5px 0 14px;
   color: #b3c0d1;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   line-height: 1.45;
 }
 

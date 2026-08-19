@@ -400,6 +400,14 @@ export default function App() {
     setDataStatus(`Região alterada para ${region.name}. Resumo atualizado.`);
   }
 
+  function openAreaFromStatus(area) {
+    setOpenCard(null);
+    setActiveAreaId(area.id);
+    setHoveredAreaId(null);
+    setOccurrenceForm((current) => ({ ...current, areaId: area.id }));
+    setMapFocus(createMapFocus(area));
+  }
+
   async function handleAreaSubmit(event) {
     event.preventDefault();
     setAreaSuccessMessage("");
@@ -927,7 +935,7 @@ export default function App() {
           title="Status das áreas"
           onClose={() => setOpenCard(null)}
         >
-          <StatusContent areas={areas} statusHistory={statusHistory} />
+          <StatusContent areas={areas} onSelectArea={openAreaFromStatus} />
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "layers"}
@@ -1291,6 +1299,11 @@ function CompactHeader({
                 <strong>{item.value}</strong>
                 <span>{item.label}</span>
                 {item.detail ? <small>{item.detail}</small> : null}
+                {typeof item.percentage === "number" ? (
+                  <span className="region-summary-card__progress" aria-label={`${item.percentage}% do total`}>
+                    <span style={{ width: `${item.percentage}%` }} />
+                  </span>
+                ) : null}
               </article>
             ))}
           </div>
@@ -1353,11 +1366,11 @@ function createRegionSummary(areas, occurrenceCount) {
   const critical = countByStatus("critico");
 
   return [
-    { key: "total", tone: "green", icon: <LeafIcon />, value: total, label: "Total de áreas", detail: "Cadastradas na região" },
-    { key: "preservado", tone: "green", icon: <TreeIcon />, value: preserved, label: "Áreas preservadas", detail: `${percentage(preserved)} do total` },
-    { key: "atencao", tone: "yellow", icon: "!", value: attention, label: "Áreas em atenção", detail: `${percentage(attention)} do total` },
-    { key: "critico", tone: "red", icon: <FlameIcon />, value: critical, label: "Áreas críticas", detail: `${percentage(critical)} do total` },
-    { key: "occurrences", tone: "blue", icon: <ClipboardIcon />, value: occurrenceCount, label: "Total de ocorrências", detail: "Vinculadas às áreas" },
+    { key: "total", tone: "green", icon: <LeafIcon />, value: total, label: "Monitoradas", detail: "Total de áreas" },
+    { key: "preservado", tone: "green", icon: <TreeIcon />, value: preserved, label: "Preservadas", detail: percentage(preserved), percentage: total ? Math.round((preserved / total) * 100) : 0 },
+    { key: "atencao", tone: "yellow", icon: "!", value: attention, label: "Em atenção", detail: percentage(attention), percentage: total ? Math.round((attention / total) * 100) : 0 },
+    { key: "critico", tone: "red", icon: <FlameIcon />, value: critical, label: "Críticas", detail: percentage(critical), percentage: total ? Math.round((critical / total) * 100) : 0 },
+    { key: "occurrences", tone: "blue", icon: <ClipboardIcon />, value: occurrenceCount, label: "Ocorrências", detail: "Registradas" },
   ];
 }
 
@@ -1567,14 +1580,13 @@ function LegendContent() {
   );
 }
 
-function StatusContent({ areas, statusHistory = [] }) {
+function StatusContent({ areas, onSelectArea }) {
   const statusItems = [
     { status: "preservado", label: "Preservadas", swatch: "green" },
     { status: "atencao", label: "Em atenção", swatch: "yellow" },
     { status: "critico", label: "Críticas", swatch: "red" },
   ];
   const total = areas.length;
-  const recentChanges = getRecentStatusChanges(statusHistory, areas).slice(0, 5);
 
   return (
     <div className="status-summary">
@@ -1594,7 +1606,12 @@ function StatusContent({ areas, statusHistory = [] }) {
               </div>
               <div className="status-summary__areas">
                 {filteredAreas.length ? (
-                  filteredAreas.slice(0, 4).map((area) => <span key={area.id}>{area.name}</span>)
+                  filteredAreas.map((area) => (
+                    <button type="button" key={area.id} onClick={() => onSelectArea(area)}>
+                      <span>{area.name}</span>
+                      <span aria-hidden="true">›</span>
+                    </button>
+                  ))
                 ) : (
                   <small>Nenhuma área</small>
                 )}
@@ -1603,29 +1620,6 @@ function StatusContent({ areas, statusHistory = [] }) {
           );
         })}
       </div>
-      <section className="recent-status-panel">
-        <div className="recent-status-panel__header">
-          <strong>Últimas alterações de status</strong>
-          <span>{recentChanges.length}</span>
-        </div>
-        {recentChanges.length ? (
-          <div className="recent-status-list">
-            {recentChanges.map((change) => (
-              <article className="recent-status-item" key={change.id}>
-                <div>
-                  <strong>{change.areaName}</strong>
-                  <span>{statusUpdateLabel(change.previousStatus)} {"\u2192"} {statusUpdateLabel(change.newStatus)}</span>
-                </div>
-                <small>{formatDateTime(change.changedAt)}</small>
-                <p>Ocorrência: {change.description || change.impact || "Sem descrição resumida."}</p>
-                {change.changedBy ? <small>Responsável: {change.changedBy}</small> : null}
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="recent-status-empty">Nenhuma alteração de status registrada ainda.</p>
-        )}
-      </section>
     </div>
   );
 }
