@@ -1237,7 +1237,10 @@ function CompactHeader({
             <span className="eyebrow__icon" aria-hidden="true">
               <LeafIcon />
             </span>
-            <strong>Mapa Ambiental de Duque Bacelar</strong>
+            <strong>
+              <span>Mapa Ambiental de</span>
+              <span>Duque Bacelar</span>
+            </strong>
           </span>
           <button
             type="button"
