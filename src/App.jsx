@@ -1639,7 +1639,7 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         >
           <LocationIcon />
         </MobileSideButton>
-        <MobileSideButton label="Camadas" onClick={onOpenLayers}>
+        <MobileSideButton label="Camada" onClick={onOpenLayers}>
           <LayersIcon />
         </MobileSideButton>
         <MobileSideButton label="Status" onClick={onOpenStatus}>
@@ -1654,7 +1654,7 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         <MobileFabButton label="Legenda" description="Entenda as cores e classificações do mapa." onClick={onOpenLegend} variant="legend">
           <LegendIcon />
         </MobileFabButton>
-        <MobileFabButton label="Camadas" description="Escolha as informações exibidas no mapa." onClick={onOpenLayers} variant="layers">
+        <MobileFabButton label="Camada" description="Escolha as informações exibidas no mapa." onClick={onOpenLayers} variant="layers">
           <LayersIcon />
         </MobileFabButton>
         <MobileFabButton label="Ocorrência" description="Registre uma ocorrência em uma área cadastrada." onClick={onOpenOccurrence} danger>
@@ -1716,7 +1716,7 @@ function createNotificationSummary(areas, occurrences) {
 function HelpGuide() {
   const tips = [
     { title: "Legenda", description: "Entenda as cores e classificações do mapa." },
-    { title: "Camadas", description: "Escolha as informações exibidas no mapa." },
+    { title: "Camada", description: "Escolha as informações exibidas no mapa." },
     { title: "Ocorrência", description: "Registre uma ocorrência em uma área cadastrada." },
     { title: "Nova área", description: "Cadastre uma nova área para monitoramento." },
   ];
@@ -1771,7 +1771,7 @@ function MobileFirstVisitTips({ onDismiss }) {
         <strong>Dicas rápidas</strong>
         <button type="button" onClick={onDismiss} aria-label="Fechar dicas">×</button>
       </div>
-      <p><strong>Legenda:</strong> cores do mapa · <strong>Camadas:</strong> visualização</p>
+      <p><strong>Legenda:</strong> cores do mapa · <strong>Camada:</strong> visualização</p>
       <p><strong>Ocorrência:</strong> registrar em uma área · <strong>Nova área:</strong> cadastrar</p>
     </aside>
   );
