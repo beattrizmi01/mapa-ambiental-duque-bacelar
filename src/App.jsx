@@ -217,6 +217,23 @@ export default function App() {
     setOccurrenceErrorMessage("");
   }
 
+  function closeHelp() {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(MOBILE_HELP_KEY, "seen");
+    }
+    setOpenCard(null);
+  }
+
+  function openOccurrenceFlow() {
+    const selectedArea = areas.find((area) => area.id === activeAreaId) ?? null;
+    if (!selectedArea) {
+      setOpenCard("occurrence-guide");
+      return;
+    }
+    setOccurrenceForm((current) => ({ ...current, areaId: selectedArea.id }));
+    setOpenCard("occurrence");
+  }
+
   function startAreaDrawing() {
     setOpenCard(null);
     setActiveAreaId(null);
@@ -1851,23 +1868,6 @@ function loadAreas() {
     return Array.isArray(parsed) ? parsed.map(normalizeAreaShape) : [];
   } catch {
     return [];
-  }
-
-  function closeHelp() {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(MOBILE_HELP_KEY, "seen");
-    }
-    setOpenCard(null);
-  }
-
-  function openOccurrenceFlow() {
-    const selectedArea = areas.find((area) => area.id === activeAreaId) ?? null;
-    if (!selectedArea) {
-      setOpenCard("occurrence-guide");
-      return;
-    }
-    setOccurrenceForm((current) => ({ ...current, areaId: selectedArea.id }));
-    setOpenCard("occurrence");
   }
 }
 
