@@ -87,6 +87,7 @@ export default function App() {
   const [occurrenceSuccessMessage, setOccurrenceSuccessMessage] = useState("");
   const [occurrenceErrorMessage, setOccurrenceErrorMessage] = useState("");
   const [showMobileTips, setShowMobileTips] = useState(false);
+  const [createdAreaForOccurrence, setCreatedAreaForOccurrence] = useState(null);
   const draftPolygonReady = draftPolygonCoords.length >= 3;
   const draftPolygonCenter = useMemo(
     () => (draftPolygonCoords.length ? computeCentroid(draftPolygonCoords) : null),
@@ -439,6 +440,7 @@ export default function App() {
         setActiveAreaId(mapped.id);
         setMapFocus(createMapFocus(mapped));
         setAreaSuccessMessage("Área cadastrada com sucesso no banco de dados.");
+        setCreatedAreaForOccurrence(mapped);
       }
     } else {
       setAreas((current) => [draft, ...current]);
@@ -446,10 +448,11 @@ export default function App() {
       setActiveAreaId(draft.id);
       setMapFocus(createMapFocus(draft));
       setAreaSuccessMessage("Área salva localmente. Configure o Supabase para salvar no banco de dados.");
+      setCreatedAreaForOccurrence(draft);
     }
     setIsSavingArea(false);
     resetAreaDraft();
-    setOpenCard(null);
+    setOpenCard("area-created");
   }
 
   async function handleOccurrenceSubmit(event) {
@@ -894,6 +897,22 @@ export default function App() {
             areaErrorMessage={areaErrorMessage}
             onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
             mobile
+          />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "area-created" && Boolean(createdAreaForOccurrence)}
+          title="Área cadastrada"
+          onClose={() => { setCreatedAreaForOccurrence(null); setOpenCard(null); }}
+        >
+          <AreaCreatedNextStep
+            area={createdAreaForOccurrence}
+            onRegisterOccurrence={() => {
+              setActiveAreaId(createdAreaForOccurrence.id);
+              setOccurrenceForm(emptyOccurrenceForm(createdAreaForOccurrence.id));
+              setCreatedAreaForOccurrence(null);
+              setOpenCard("occurrence");
+            }}
+            onFinish={() => { setCreatedAreaForOccurrence(null); setOpenCard(null); }}
           />
         </BottomSheet>
         <BottomSheet
@@ -1697,6 +1716,27 @@ function OccurrenceGuide({ onSelectArea, onCreateArea }) {
       <div className="occurrence-guide__actions">
         <button type="button" className="btn btn--green" onClick={onSelectArea}>Selecionar área</button>
         <button type="button" className="btn" onClick={onCreateArea}>Cadastrar nova área</button>
+      </div>
+    </div>
+  );
+}
+
+function AreaCreatedNextStep({ area, onRegisterOccurrence, onFinish }) {
+  return (
+    <div className="area-created-step">
+      <div className="area-created-step__success">
+        <span aria-hidden="true">✓</span>
+        <div>
+          <strong>{area?.name || "Nova área"} foi cadastrada com sucesso.</strong>
+          <p>Você pode registrar uma ocorrência agora; a área já será vinculada automaticamente.</p>
+        </div>
+      </div>
+      <div className="monitoring-flow" aria-label="Próxima etapa do monitoramento">
+        <strong>Área cadastrada</strong><span>→</span><strong>Registrar ocorrência</strong><span>→</span><strong>Monitorar</strong>
+      </div>
+      <div className="area-created-step__actions">
+        <button type="button" className="btn btn--green" onClick={onRegisterOccurrence}>Registrar ocorrência agora</button>
+        <button type="button" className="btn btn--ghost" onClick={onFinish}>Concluir sem ocorrência</button>
       </div>
     </div>
   );
