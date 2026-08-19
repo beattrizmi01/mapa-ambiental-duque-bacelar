@@ -1431,6 +1431,16 @@ body {
   cursor: default;
 }
 
+.app-shell:has(.detail-card) .mobile-side-rail,
+.app-shell:has(.detail-card) .mobile-fab-dock,
+.app-shell:has(.detail-card) .mobile-drawing-bar,
+.app-shell:has(.detail-card) .leaflet-control-container {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 150ms ease, visibility 150ms ease;
+}
+
 @media (min-width: 901px) {
   .detail-card {
     max-height: calc(100vh - 205px);
