@@ -2233,7 +2233,17 @@ function mapSupabaseAreaToApp(row) {
 function normalizeAreaShape(area) {
   const polygonCoords = normalizePolygonCoords(area?.polygonCoords, area?.latitude, area?.longitude);
   const [latitude, longitude] = computeCentroid(polygonCoords);
-  return { ...area, region: area?.region || REGIONS[0].name, polygonCoords, latitude, longitude };
+  return {
+    ...area,
+    region: area?.region || REGIONS[0].name,
+    polygonCoords,
+    latitude,
+    longitude,
+    image: area?.image || createPlaceholderImage(
+      area?.name || "Área monitorada",
+      statusToColor(area?.status || "atencao"),
+    ),
+  };
 }
 
 function mapStatusHistoryRowToApp(row) {

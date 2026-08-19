@@ -1374,8 +1374,38 @@ body {
 .detail-card.is-expanded {
   width: min(560px, calc(100vw - 40px));
   max-height: min(82vh, 760px);
+  display: grid;
+  grid-template-columns: minmax(140px, 38%) minmax(0, 1fr);
+  align-items: start;
   border-color: rgba(116, 229, 166, 0.3);
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(94, 222, 151, 0.12);
+}
+
+.detail-card.is-expanded .detail-card__close-row {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  padding: 0;
+}
+
+.detail-card.is-expanded > img {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  height: min(82vh, 760px);
+  max-height: none;
+  position: sticky;
+  top: 0;
+  object-fit: cover;
+  border-radius: 17px 0 0 17px;
+}
+
+.detail-card.is-expanded .detail-card__body {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  padding-top: 44px;
 }
 
 .app-shell:has(.detail-card.is-expanded) .sidebar,
