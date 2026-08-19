@@ -1762,6 +1762,52 @@ body {
   }
 }
 
+/* Evita que o título mobile invada o logotipo ou as notificações. */
+@media (max-width: 900px) {
+  .compact-header__main {
+    overflow: hidden;
+  }
+
+  .platform-brand,
+  .platform-brand strong {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .platform-brand strong {
+    display: grid;
+    gap: 1px;
+    overflow: hidden;
+  }
+
+  .platform-brand strong span {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .platform-brand strong span + span {
+    margin-left: 0;
+  }
+
+  .region-toggle {
+    width: fit-content;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .platform-brand {
+    font-size: clamp(0.68rem, 3.2vw, 0.76rem);
+  }
+
+  .region-toggle {
+    font-size: clamp(0.58rem, 2.6vw, 0.66rem);
+  }
+}
+
 /* Composição mobile inspirada na referência, sem alterar o mapa ou suas regras. */
 @media (max-width: 900px) {
   .map-stage,
