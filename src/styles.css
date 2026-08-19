@@ -1372,8 +1372,8 @@ body {
 }
 
 .detail-card.is-expanded {
-  width: min(560px, calc(100vw - 40px));
-  max-height: min(82vh, 760px);
+  width: min(520px, calc(100vw - 40px));
+  max-height: min(64dvh, 560px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
@@ -1394,7 +1394,7 @@ body {
   grid-row: 1;
   width: 100%;
   height: auto;
-  max-height: 300px;
+  max-height: 190px;
   aspect-ratio: 16 / 9;
   position: relative;
   object-fit: cover;
@@ -1470,12 +1470,13 @@ body {
   }
 
   .detail-card.is-expanded {
-    max-height: calc(100vh - 205px);
+    width: min(520px, calc(100vw - 260px));
+    max-height: min(60vh, 520px);
   }
 
   .detail-card.is-expanded > img {
     height: auto;
-    max-height: 300px;
+    max-height: 190px;
     aspect-ratio: 16 / 9;
   }
 }
