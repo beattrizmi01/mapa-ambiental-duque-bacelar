@@ -1092,8 +1092,12 @@ body {
 
 .hover-card,
 .detail-card {
-  width: 210px;
-  overflow: hidden;
+  box-sizing: border-box;
+  width: min(210px, calc(100vw - 48px));
+  max-width: calc(100vw - 48px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(11, 19, 31, 0.98), rgba(20, 31, 48, 0.98));
   border: 1px solid rgba(166, 186, 209, 0.16);
@@ -1101,7 +1105,8 @@ body {
 }
 
 .detail-card {
-  width: 320px;
+  width: min(320px, calc(100vw - 48px));
+  max-height: min(72vh, 620px);
 }
 
 .hover-card img,
@@ -1124,7 +1129,18 @@ body {
 .hover-card h3,
 .detail-card h3 {
   margin: 0 0 8px;
+  color: #f4f8ff;
   font-size: 0.98rem;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.hover-card small,
+.detail-card small {
+  display: block;
+  color: #9fb0c6;
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .hover-card p,
@@ -1137,6 +1153,7 @@ body {
 
 .meta-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 8px;
@@ -1251,6 +1268,8 @@ body {
 
 .leaflet-popup-content {
   margin: 0;
+  width: auto !important;
+  max-width: calc(100vw - 32px);
 }
 
 .leaflet-popup-close-button {
