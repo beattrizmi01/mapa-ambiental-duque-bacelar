@@ -742,7 +742,7 @@ export default function App() {
           className="leaflet-map"
         >
           {activeBaseMap === "satellite" ? (
-            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} maxNativeZoom={18} maxZoom={MAX_MAP_ZOOM} />
+            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} maxNativeZoom={17} maxZoom={MAX_MAP_ZOOM} />
           ) : (
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} />
           )}
