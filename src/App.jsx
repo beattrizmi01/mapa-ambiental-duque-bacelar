@@ -19,6 +19,7 @@ import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas:v2";
 const MOBILE_HELP_KEY = "mapa-ambiental-duque-bacelar:mobile-help:v1";
+const IMAGE_PRELOAD_CACHE = new Map();
 const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const LOCAL_ZOOM = 12;
@@ -186,10 +187,10 @@ export default function App() {
           .select("image_url")
           .eq("id", area.id)
           .single()
-          .then(({ data: imageRow, error: imageError }) => {
+          .then(async ({ data: imageRow, error: imageError }) => {
             if (!active || imageError || !imageRow?.image_url) return;
-            const preload = new Image();
-            preload.src = imageRow.image_url;
+            await preloadImageSource(imageRow.image_url);
+            if (!active) return;
             setAreas((current) => current.map((currentArea) =>
               String(currentArea.id) === String(area.id)
                 ? { ...currentArea, image: imageRow.image_url }
@@ -453,6 +454,7 @@ export default function App() {
       .eq("id", areaId)
       .single();
     if (error || !data?.image_url) return;
+    await preloadImageSource(data.image_url);
     setAreas((current) => current.map((area) =>
       String(area.id) === String(areaId) ? { ...area, image: data.image_url } : area,
     ));
@@ -2127,6 +2129,27 @@ async function optimizeImageFile(file) {
   } finally {
     URL.revokeObjectURL(sourceUrl);
   }
+}
+
+function preloadImageSource(source) {
+  if (!source || typeof Image === "undefined") return Promise.resolve();
+  if (IMAGE_PRELOAD_CACHE.has(source)) return IMAGE_PRELOAD_CACHE.get(source);
+
+  const preloadPromise = new Promise((resolve) => {
+    const image = new Image();
+    image.onload = async () => {
+      try {
+        if (typeof image.decode === "function") await image.decode();
+      } catch {
+        // A imagem já está disponível mesmo quando o navegador não conclui decode().
+      }
+      resolve();
+    };
+    image.onerror = resolve;
+    image.src = source;
+  });
+  IMAGE_PRELOAD_CACHE.set(source, preloadPromise);
+  return preloadPromise;
 }
 
 function DetailCard({ area, history = [], occurrences = [], onClose }) {
