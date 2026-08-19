@@ -1436,6 +1436,39 @@ body {
     max-height: calc(100vh - 205px);
   }
 
+  .detail-card.is-collapsed {
+    width: min(520px, calc(100vw - 260px));
+    display: grid;
+    grid-template-columns: minmax(160px, 42%) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .detail-card.is-collapsed .detail-card__close-row {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    padding: 0;
+  }
+
+  .detail-card.is-collapsed > img {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: min(300px, calc(100vh - 205px));
+    min-height: 260px;
+    object-fit: cover;
+    border-radius: 17px 0 0 17px;
+  }
+
+  .detail-card.is-collapsed .detail-card__body {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    padding-top: 48px;
+    align-self: center;
+  }
+
   .detail-card.is-expanded {
     max-height: calc(100vh - 205px);
   }
