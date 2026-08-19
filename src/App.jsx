@@ -742,7 +742,6 @@ export default function App() {
             onHoverArea={setHoveredAreaId}
             onLeaveArea={(areaId) => {
               setHoveredAreaId((current) => (current === areaId ? null : current));
-              setActiveAreaId((current) => (current === areaId ? null : current));
             }}
             onToggleArea={(areaId) => setActiveAreaId((current) => current === areaId ? null : areaId)}
             onCloseArea={(areaId) => setActiveAreaId((current) => (current === areaId ? null : current))}

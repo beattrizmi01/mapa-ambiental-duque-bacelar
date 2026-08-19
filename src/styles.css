@@ -899,6 +899,17 @@ body {
   border: 0;
   box-shadow: none;
   padding: 0;
+  width: auto;
+  max-width: calc(100vw - 32px);
+  white-space: normal;
+}
+
+.environment-tooltip .hover-card,
+.environment-tooltip .hover-card p,
+.environment-tooltip .hover-card h3 {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .environment-marker-icon,
