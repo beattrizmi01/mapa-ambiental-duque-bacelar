@@ -72,8 +72,9 @@ body {
   display: grid;
   justify-items: start;
   gap: clamp(3px, 0.6vw, 7px);
-  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
+  overflow: hidden;
 }
 
 .eyebrow {
@@ -106,7 +107,8 @@ body {
   max-width: 100%;
   min-width: 0;
   color: #f7fbff;
-  font-size: clamp(0.9rem, 3.4vw, 1.3rem);
+  width: 100%;
+  font-size: clamp(0.68rem, 3.4vw, 1.3rem);
   font-weight: 850;
   line-height: 1.16;
   letter-spacing: -0.04em;
@@ -115,6 +117,8 @@ body {
 
 .platform-brand strong {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -1580,9 +1584,9 @@ body {
 }
 
 .sidebar__header--mobile {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 18px 22px;
   border-radius: 26px;
@@ -1632,6 +1636,7 @@ body {
   align-items: center;
   gap: 12px;
   max-width: 100%;
+  overflow: hidden;
   border: 0;
   padding: 0;
   background: transparent;
@@ -1647,6 +1652,8 @@ body {
 
 .region-toggle > span:first-child {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -3144,5 +3151,28 @@ body {
 
   .mobile-drawing-bar {
     bottom: calc(max(18px, env(safe-area-inset-bottom)) + 78px);
+  }
+}
+
+@media (max-width: 360px) {
+  .sidebar__header--mobile {
+    gap: 9px;
+    padding-inline: 13px;
+  }
+
+  .sidebar__header--mobile .eyebrow__icon {
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+  }
+
+  .platform-brand {
+    gap: 6px;
+    font-size: 0.66rem;
+  }
+
+  .mobile-notification {
+    width: 34px;
+    height: 34px;
   }
 }
