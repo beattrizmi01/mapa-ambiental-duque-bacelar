@@ -157,9 +157,6 @@ export default function App() {
     let active = true;
     async function loadFromSupabase() {
       if (!hasSupabaseConfig()) return;
-      const detailedAreasPromise = Promise.resolve(
-        supabase.from("areas").select("*").order("created_at", { ascending: false }),
-      );
       const { data, error } = await supabase
         .from("areas")
         .select("id, name, category, region, status, impact, description, polygon_coords, latitude, longitude, created_at, last_occurrence_id, last_status_review_at")
@@ -183,17 +180,23 @@ export default function App() {
       } catch (cacheError) {
         console.warn("Não foi possível atualizar a cópia rápida das áreas.", cacheError);
       }
-      detailedAreasPromise
-        .then(({ data: detailedRows, error: detailedError }) => {
-          if (!active || detailedError) return;
-          const detailedAreas = (detailedRows ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
-          setAreas(detailedAreas);
-          detailedAreas.forEach((area) => {
-            if (!area.image || area.image.startsWith("data:image/svg+xml")) return;
+      mapped.forEach((area) => {
+        supabase
+          .from("areas")
+          .select("image_url")
+          .eq("id", area.id)
+          .single()
+          .then(({ data: imageRow, error: imageError }) => {
+            if (!active || imageError || !imageRow?.image_url) return;
             const preload = new Image();
-            preload.src = area.image;
+            preload.src = imageRow.image_url;
+            setAreas((current) => current.map((currentArea) =>
+              String(currentArea.id) === String(area.id)
+                ? { ...currentArea, image: imageRow.image_url }
+                : currentArea,
+            ));
           });
-        });
+      });
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
         .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
