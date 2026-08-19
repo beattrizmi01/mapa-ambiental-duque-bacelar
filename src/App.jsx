@@ -1090,7 +1090,7 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
         </CircleMarker>
       ) : null}
       {isActive ? (
-        <Popup position={[area.latitude, area.longitude]} eventHandlers={{ remove: onClose }}>
+        <Popup closeButton={false} position={[area.latitude, area.longitude]} eventHandlers={{ remove: onClose }}>
           <DetailCard area={area} history={history} occurrences={occurrences} onClose={onClose} />
         </Popup>
       ) : null}
