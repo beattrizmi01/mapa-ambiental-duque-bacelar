@@ -308,9 +308,19 @@ export default function App() {
         longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
       };
-      const cityName = await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
-      const detectedRegion = createRegion(cityName || REGIONS[0].name, [nextLocation.latitude, nextLocation.longitude], LOCAL_ZOOM);
       setUserLocation(nextLocation);
+      setMapFocus({
+        id: `user-location-${Date.now()}`,
+        center: [nextLocation.latitude, nextLocation.longitude],
+        zoom: LOCAL_ZOOM,
+      });
+      let cityName = "";
+      try {
+        cityName = await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
+      } catch {
+        // A localização continua válida mesmo se o serviço de nome da cidade falhar.
+      }
+      const detectedRegion = createRegion(cityName || REGIONS[0].name, [nextLocation.latitude, nextLocation.longitude], LOCAL_ZOOM);
       setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
       setSelectedRegionId(detectedRegion.id);
       setMapFocus({
@@ -2169,11 +2179,22 @@ function isRecentStatusChange(area) {
 }
 
 function getBrowserPosition() {
-  return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: true,
-      timeout: 12000,
-      maximumAge: 60000,
+  const requestPosition = (options) => new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, options);
+  });
+
+  return requestPosition({
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 60000,
+  }).catch((error) => {
+    const permissionDenied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
+    if (permissionDenied) throw error;
+
+    return requestPosition({
+      enableHighAccuracy: false,
+      timeout: 20000,
+      maximumAge: 300000,
     });
   });
 }
