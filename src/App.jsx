@@ -157,7 +157,10 @@ export default function App() {
     let active = true;
     async function loadFromSupabase() {
       if (!hasSupabaseConfig()) return;
-      const { data, error } = await supabase.from("areas").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("areas")
+        .select("id, name, category, region, status, impact, description, polygon_coords, latitude, longitude, created_at, last_occurrence_id, last_status_review_at")
+        .order("created_at", { ascending: false });
       if (!active) return;
       if (error) {
         console.error(error);
@@ -177,6 +180,15 @@ export default function App() {
       } catch (cacheError) {
         console.warn("Não foi possível atualizar a cópia rápida das áreas.", cacheError);
       }
+      supabase
+        .from("areas")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .then(({ data: detailedRows, error: detailedError }) => {
+          if (!active || detailedError) return;
+          const detailedAreas = (detailedRows ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
+          setAreas(detailedAreas);
+        });
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
         .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
