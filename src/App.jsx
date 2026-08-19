@@ -99,6 +99,10 @@ export default function App() {
     [occurrenceRecords, regionAreas],
   );
   const regionSummary = useMemo(() => createRegionSummary(regionAreas, regionOccurrenceCount), [regionAreas, regionOccurrenceCount]);
+  const notificationSummary = useMemo(
+    () => createNotificationSummary(areas, occurrenceRecords),
+    [areas, occurrenceRecords],
+  );
   const hasRegionData = regionAreas.length > 0;
 
   useEffect(() => {
@@ -650,6 +654,8 @@ export default function App() {
         onToggleRegionPanel={() => setIsRegionPanelOpen((current) => !current)}
         onUseCurrentLocation={locateUser}
         isLocatingUser={isLocatingUser}
+        notificationSummary={notificationSummary}
+        onOpenNotifications={() => setOpenCard("notifications")}
         areas={areas}
         areaForm={areaForm}
         setAreaForm={setAreaForm}
@@ -812,6 +818,13 @@ export default function App() {
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} />
           </Pane>
         </MapContainer>
+        <BottomSheet
+          isOpen={openCard === "notifications"}
+          title="Notificações"
+          onClose={() => setOpenCard(null)}
+        >
+          <NotificationContent summary={notificationSummary} />
+        </BottomSheet>
         <BottomSheet
           isOpen={openCard === "help"}
           title="Ajuda rápida"
@@ -1095,6 +1108,8 @@ function Sidebar(props) {
     onToggleRegionPanel,
     onUseCurrentLocation,
     isLocatingUser,
+    notificationSummary,
+    onOpenNotifications,
   } = props;
 
   return (
@@ -1109,6 +1124,8 @@ function Sidebar(props) {
           onToggle={onToggleRegionPanel}
           onUseCurrentLocation={onUseCurrentLocation}
           isLocatingUser={isLocatingUser}
+          notificationSummary={notificationSummary}
+          onOpenNotifications={onOpenNotifications}
         />
       </div>
     </aside>
@@ -1123,6 +1140,8 @@ function CompactHeader({
   onToggle,
   onUseCurrentLocation,
   isLocatingUser,
+  notificationSummary,
+  onOpenNotifications,
 }) {
   return (
     <div className={`region-header${expanded ? " is-expanded" : ""}`}>
@@ -1145,9 +1164,13 @@ function CompactHeader({
             <span className="region-toggle__chevron" aria-hidden="true" />
           </button>
         </div>
-        <button type="button" className="mobile-notification" aria-label="Notificações">
+        <button type="button" className="mobile-notification" aria-label="Abrir notificações" onClick={onOpenNotifications}>
           <BellIcon />
-          <span className="mobile-notification__dot" />
+          {notificationSummary.total > 0 ? (
+            <span className="mobile-notification__count" aria-label={`${notificationSummary.total} notificações novas`}>
+              {notificationSummary.total > 99 ? "99+" : notificationSummary.total}
+            </span>
+          ) : null}
         </button>
       </header>
 
@@ -1579,6 +1602,21 @@ function MobileFabButton({ label, description, children, onClick, primary = fals
   );
 }
 
+function createNotificationSummary(areas, occurrences) {
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const isRecent = (value) => {
+    const timestamp = new Date(value ?? 0).getTime();
+    return Number.isFinite(timestamp) && timestamp >= cutoff;
+  };
+  const newAreas = (areas ?? []).filter((area) => isRecent(area.createdAt));
+  const newOccurrences = (occurrences ?? []).filter((occurrence) => isRecent(occurrence.created_at ?? occurrence.createdAt));
+  return {
+    areas: newAreas.length,
+    occurrences: newOccurrences.length,
+    total: newAreas.length + newOccurrences.length,
+  };
+}
+
 function HelpGuide() {
   const tips = [
     { title: "Legenda", description: "Entenda as cores e classificações do mapa." },
@@ -1600,6 +1638,32 @@ function HelpGuide() {
       <div className="monitoring-flow" aria-label="Fluxo de monitoramento">
         <strong>Cadastrar área</strong><span>→</span><strong>Selecionar área</strong><span>→</span><strong>Registrar ocorrência</strong><span>→</span><strong>Monitorar</strong>
       </div>
+    </div>
+  );
+}
+
+function NotificationContent({ summary }) {
+  return (
+    <div className="notification-panel">
+      <p className="notification-panel__period">Atualizações registradas nos últimos 7 dias.</p>
+      <div className="notification-panel__list">
+        <article className="notification-item notification-item--occurrence">
+          <span aria-hidden="true"><AlertIcon /></span>
+          <div>
+            <strong>{String(summary.occurrences).padStart(2, "0")} {summary.occurrences === 1 ? "ocorrência nova" : "ocorrências novas"}</strong>
+            <p>Registros vinculados às áreas monitoradas.</p>
+          </div>
+        </article>
+        <article className="notification-item notification-item--area">
+          <span aria-hidden="true"><AreaIcon /></span>
+          <div>
+            <strong>{String(summary.areas).padStart(2, "0")} {summary.areas === 1 ? "área nova cadastrada" : "áreas novas cadastradas"}</strong>
+            <p>Novas áreas incluídas no monitoramento.</p>
+          </div>
+        </article>
+      </div>
+      {summary.total === 0 ? <p className="notification-panel__empty">Nenhuma novidade registrada neste período.</p> : null}
+      <small className="notification-panel__note">Este painel apenas consulta o Supabase e não altera os registros.</small>
     </div>
   );
 }
