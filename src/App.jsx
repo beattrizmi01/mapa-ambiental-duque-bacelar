@@ -1246,7 +1246,7 @@ function CompactHeader({
             aria-expanded={expanded}
             aria-controls="region-panel"
           >
-            <span>Monitoramento ambiental · Região: {selectedRegion.name}</span>
+            <span>Região: {selectedRegion.name}</span>
             <span className="region-toggle__chevron" aria-hidden="true" />
           </button>
         </div>

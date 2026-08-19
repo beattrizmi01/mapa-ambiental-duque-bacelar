@@ -106,7 +106,7 @@ body {
   max-width: 100%;
   min-width: 0;
   color: #f7fbff;
-  font-size: clamp(0.72rem, 3vw, 1.3rem);
+  font-size: clamp(0.9rem, 3.4vw, 1.3rem);
   font-weight: 850;
   line-height: 1.16;
   letter-spacing: -0.04em;
@@ -3041,7 +3041,7 @@ body {
   }
 
   .region-toggle {
-    font-size: clamp(0.56rem, 2.2vw, 0.72rem);
+    font-size: clamp(0.78rem, 3vw, 0.9rem);
   }
 
   .sidebar {
