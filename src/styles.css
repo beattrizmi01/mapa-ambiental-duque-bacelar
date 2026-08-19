@@ -2247,6 +2247,18 @@ body {
   box-shadow: 0 16px 28px rgba(18, 122, 70, 0.28);
 }
 
+.mobile-fab--legend {
+  background: linear-gradient(180deg, rgba(210, 157, 34, 0.96), rgba(151, 101, 17, 0.96));
+  border-color: rgba(255, 220, 125, 0.4);
+  box-shadow: 0 16px 28px rgba(132, 86, 12, 0.3);
+}
+
+.mobile-fab--layers {
+  background: linear-gradient(180deg, rgba(39, 126, 184, 0.96), rgba(25, 77, 126, 0.96));
+  border-color: rgba(132, 207, 255, 0.38);
+  box-shadow: 0 16px 28px rgba(14, 65, 111, 0.3);
+}
+
 .mobile-fab--danger {
   background: linear-gradient(180deg, rgba(220, 69, 76, 0.94), rgba(155, 35, 47, 0.94));
   border-color: rgba(255, 151, 156, 0.34);

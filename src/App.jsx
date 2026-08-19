@@ -1651,10 +1651,10 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         </button>
       </div>
       <div className="mobile-fab-dock">
-        <MobileFabButton label="Legenda" description="Entenda as cores e classificações do mapa." onClick={onOpenLegend}>
+        <MobileFabButton label="Legenda" description="Entenda as cores e classificações do mapa." onClick={onOpenLegend} variant="legend">
           <LegendIcon />
         </MobileFabButton>
-        <MobileFabButton label="Camadas" description="Escolha as informações exibidas no mapa." onClick={onOpenLayers}>
+        <MobileFabButton label="Camadas" description="Escolha as informações exibidas no mapa." onClick={onOpenLayers} variant="layers">
           <LayersIcon />
         </MobileFabButton>
         <MobileFabButton label="Ocorrência" description="Registre uma ocorrência em uma área cadastrada." onClick={onOpenOccurrence} danger>
@@ -1682,8 +1682,14 @@ function MobileSideButton({ label, children, onClick, active = false, loading = 
   );
 }
 
-function MobileFabButton({ label, description, children, onClick, primary = false, danger = false }) {
-  const variantClass = primary ? " mobile-fab--primary" : danger ? " mobile-fab--danger" : "";
+function MobileFabButton({ label, description, children, onClick, primary = false, danger = false, variant = "" }) {
+  const variantClass = primary
+    ? " mobile-fab--primary"
+    : danger
+      ? " mobile-fab--danger"
+      : variant
+        ? ` mobile-fab--${variant}`
+        : "";
   return (
     <button type="button" className={`mobile-fab${variantClass}`} onClick={onClick} aria-label={`${label}. ${description}`} data-tooltip={description}>
       <span className="mobile-fab__icon" aria-hidden="true">{children}</span>
