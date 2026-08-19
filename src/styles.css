@@ -99,6 +99,17 @@ body {
   overflow-wrap: anywhere;
 }
 
+.platform-title {
+  display: block;
+  max-width: 100%;
+  color: #f7fbff;
+  font-size: clamp(1.05rem, 3.8vw, 1.42rem);
+  font-weight: 850;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+
 .eyebrow__icon {
   display: inline-flex;
   align-items: center;
@@ -1618,7 +1629,7 @@ body {
   background: transparent;
   color: #f7fbff;
   font: inherit;
-  font-size: 1.5rem;
+  font-size: clamp(0.78rem, 2.4vw, 0.96rem);
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: 0;
@@ -2096,7 +2107,7 @@ body {
   border-radius: 50%;
   color: #bdf8d4;
   background: rgba(47, 179, 111, 0.18);
-  font-weight: 800;
+  font-weight: 750;
 }
 
 .help-tip strong {
@@ -2653,7 +2664,7 @@ body {
 
   .region-toggle {
     gap: 8px;
-    font-size: 1.18rem;
+    font-size: 0.84rem;
   }
 
   .sidebar__header--mobile h1::after {
@@ -3022,7 +3033,7 @@ body {
   }
 
   .region-toggle {
-    font-size: 1.34rem;
+    font-size: 0.9rem;
   }
 
   .sidebar {

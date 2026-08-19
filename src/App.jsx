@@ -1239,6 +1239,7 @@ function CompactHeader({
             </span>
             <span>Monitoramento Ambiental</span>
           </span>
+          <strong className="platform-title">Mapa Ambiental de Duque Bacelar</strong>
           <button
             type="button"
             className="region-toggle"
@@ -1246,7 +1247,7 @@ function CompactHeader({
             aria-expanded={expanded}
             aria-controls="region-panel"
           >
-            <span>{selectedRegion.name}</span>
+            <span>Região: {selectedRegion.name}</span>
             <span className="region-toggle__chevron" aria-hidden="true" />
           </button>
         </div>
