@@ -2004,8 +2004,9 @@ function UploadBox({ preview, onPreviewChange, required = false }) {
 
 function DetailCard({ area, history = [], occurrences = [], onClose }) {
   const latestChange = history[0] ?? null;
+  const [expanded, setExpanded] = useState(false);
   return (
-    <article className="detail-card">
+    <article className={`detail-card${expanded ? " is-expanded" : " is-collapsed"}`}>
       <div className="detail-card__close-row">
         <button type="button" onClick={onClose} aria-label="Fechar detalhes da área">×</button>
       </div>
@@ -2018,6 +2019,15 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
           <span>Status atual</span>
           <strong className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</strong>
         </div>
+        <button
+          type="button"
+          className="detail-card__expand"
+          onClick={() => setExpanded((current) => !current)}
+          aria-expanded={expanded}
+        >
+          {expanded ? "Mostrar menos ↑" : "Ver detalhes ↓"}
+        </button>
+        <div className="detail-card__extended">
         {latestChange ? (
           <div className="area-change-card">
             <span>Última mudança</span>
@@ -2062,6 +2072,7 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
               </small>
             </div>
           )) : <p className="occurrence-history__empty">Nenhuma ocorrência registrada para esta área.</p>}
+        </div>
         </div>
       </div>
     </article>

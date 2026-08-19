@@ -1262,6 +1262,43 @@ body {
   cursor: pointer;
 }
 
+.detail-card__expand {
+  width: 100%;
+  border: 1px solid rgba(95, 220, 151, 0.22);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: #c8f8dc;
+  background: rgba(35, 151, 88, 0.16);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.detail-card__expand:hover,
+.detail-card__expand:focus-visible {
+  background: rgba(42, 184, 104, 0.24);
+  border-color: rgba(111, 231, 165, 0.4);
+}
+
+.detail-card__extended {
+  display: none;
+  margin-top: 10px;
+}
+
+.detail-card.is-expanded .detail-card__extended {
+  display: block;
+}
+
+.detail-card__extended > .impact-pill {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 18px;
+  padding: 12px 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 .hover-card img,
 .detail-card img {
   display: block;
@@ -2836,6 +2873,10 @@ body {
 
   .detail-card img {
     height: 108px;
+  }
+
+  .detail-card.is-collapsed img {
+    height: 88px;
   }
 
   .sidebar {
