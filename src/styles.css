@@ -1375,7 +1375,7 @@ body {
   width: min(560px, calc(100vw - 40px));
   max-height: min(82vh, 760px);
   display: grid;
-  grid-template-columns: minmax(140px, 38%) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   border-color: rgba(116, 229, 166, 0.3);
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(94, 222, 151, 0.12);
@@ -1394,19 +1394,18 @@ body {
   grid-row: 1;
   width: 100%;
   height: auto;
-  max-height: 280px;
-  aspect-ratio: 1 / 1;
-  position: sticky;
-  top: 0;
+  max-height: 300px;
+  aspect-ratio: 16 / 9;
+  position: relative;
   object-fit: cover;
-  border-radius: 17px 0 14px 0;
+  border-radius: 17px 17px 0 0;
 }
 
 .detail-card.is-expanded .detail-card__body {
-  grid-column: 2;
-  grid-row: 1;
+  grid-column: 1;
+  grid-row: 2;
   min-width: 0;
-  padding-top: 44px;
+  padding-top: 16px;
 }
 
 .app-shell:has(.detail-card.is-expanded) .sidebar,
@@ -1476,8 +1475,8 @@ body {
 
   .detail-card.is-expanded > img {
     height: auto;
-    max-height: 280px;
-    aspect-ratio: 4 / 3;
+    max-height: 300px;
+    aspect-ratio: 16 / 9;
   }
 }
 
