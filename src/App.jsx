@@ -1756,7 +1756,6 @@ function NotificationContent({ summary }) {
         </article>
       </div>
       {summary.total === 0 ? <p className="notification-panel__empty">Nenhuma novidade registrada neste período.</p> : null}
-      <small className="notification-panel__note">Este painel apenas consulta o Supabase e não altera os registros.</small>
     </div>
   );
 }
