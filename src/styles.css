@@ -2897,7 +2897,7 @@ body {
 
   .mobile-help-button {
     position: absolute;
-    right: 18px;
+    right: calc(max(18px, env(safe-area-inset-right)) + 82px);
     bottom: calc(max(18px, env(safe-area-inset-bottom)) + 174px);
     z-index: 1120;
     display: inline-flex;
