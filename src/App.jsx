@@ -1645,10 +1645,11 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         <MobileSideButton label="Status" onClick={onOpenStatus}>
           <StatusIcon />
         </MobileSideButton>
+        <button type="button" className="mobile-side-help" onClick={onOpenHelp} aria-label="Abrir ajuda">
+          <span aria-hidden="true">?</span>
+          <strong>Ajuda</strong>
+        </button>
       </div>
-      <button type="button" className="mobile-help-button" onClick={onOpenHelp} aria-label="Abrir ajuda">
-        <span aria-hidden="true">?</span> Ajuda
-      </button>
       {!isDrawingArea ? (
         <button type="button" className="mobile-status-card" onClick={onOpenLegend}>
           <span className="mobile-status-card__dots" aria-hidden="true">

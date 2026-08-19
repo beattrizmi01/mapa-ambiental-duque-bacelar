@@ -2305,6 +2305,44 @@ body {
   pointer-events: auto;
 }
 
+.mobile-side-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 72px;
+  border: 1px solid rgba(255, 231, 139, 0.58);
+  border-radius: 16px;
+  padding: 9px 7px;
+  color: #2d2405;
+  background: linear-gradient(180deg, #f4ce55, #d9a92f);
+  box-shadow: 0 10px 20px rgba(117, 82, 8, 0.3);
+  font-size: 0.72rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.mobile-side-help > span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #fff7d6;
+  background: rgba(63, 45, 4, 0.76);
+  font-weight: 900;
+}
+
+.mobile-side-help strong {
+  font-weight: 900;
+}
+
+.mobile-side-help:hover,
+.mobile-side-help:focus-visible {
+  background: linear-gradient(180deg, #ffdc68, #e8b63a);
+  border-color: rgba(255, 242, 188, 0.82);
+}
+
 .mobile-side-button:disabled {
   cursor: wait;
   opacity: 0.82;
