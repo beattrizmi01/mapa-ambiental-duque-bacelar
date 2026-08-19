@@ -1791,7 +1791,7 @@ function OccurrenceGuide({ onSelectArea, onCreateArea }) {
       </div>
       <div className="occurrence-guide__actions">
         <button type="button" className="btn btn--green" onClick={onSelectArea}>Selecionar área</button>
-        <button type="button" className="btn" onClick={onCreateArea}>Cadastrar nova área</button>
+        <button type="button" className="btn btn--ghost" onClick={onCreateArea}>Cadastrar nova área</button>
       </div>
     </div>
   );
