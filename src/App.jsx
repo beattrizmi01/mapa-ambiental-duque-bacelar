@@ -1239,7 +1239,7 @@ function CompactHeader({
             </span>
             <strong>
               <span>Mapa Ambiental de</span>
-              <span>Duque Bacelar</span>
+              <span className="platform-brand__place">Duque Bacelar</span>
             </strong>
           </span>
           <button

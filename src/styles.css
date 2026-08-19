@@ -127,8 +127,8 @@ body {
   white-space: nowrap;
 }
 
-.platform-brand strong span:last-child {
-  color: #69dfa1;
+.sidebar__header--mobile .platform-brand .platform-brand__place {
+  color: #69dfa1 !important;
   font-size: 1.08em;
 }
 
