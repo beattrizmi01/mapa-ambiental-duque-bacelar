@@ -1372,8 +1372,8 @@ body {
 }
 
 .detail-card.is-expanded {
-  width: min(520px, calc(100vw - 40px));
-  max-height: min(64dvh, 560px);
+  width: min(600px, calc(100vw - 32px));
+  max-height: min(82dvh, 760px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
@@ -1394,7 +1394,7 @@ body {
   grid-row: 1;
   width: 100%;
   height: auto;
-  max-height: 190px;
+  max-height: 240px;
   aspect-ratio: 16 / 9;
   position: relative;
   object-fit: cover;
@@ -1480,13 +1480,13 @@ body {
   }
 
   .detail-card.is-expanded {
-    width: min(520px, calc(100vw - 260px));
-    max-height: min(60vh, 520px);
+    width: min(640px, calc(100vw - 220px));
+    max-height: min(78vh, 760px);
   }
 
   .detail-card.is-expanded > img {
     height: auto;
-    max-height: 190px;
+    max-height: 250px;
     aspect-ratio: 16 / 9;
   }
 }
@@ -3132,6 +3132,15 @@ body {
   .detail-card {
     width: min(360px, calc(100vw - 64px));
     max-height: min(58dvh, 560px);
+  }
+
+  .detail-card.is-expanded {
+    width: min(440px, calc(100vw - 28px));
+    max-height: calc(82dvh - env(safe-area-inset-bottom));
+  }
+
+  .detail-card.is-expanded > img {
+    max-height: 210px;
   }
 
   .hover-card__close,
