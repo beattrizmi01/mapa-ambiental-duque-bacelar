@@ -1658,6 +1658,7 @@ body {
   letter-spacing: 0;
   text-align: left;
   cursor: pointer;
+  margin-top: clamp(5px, 1.2vw, 9px);
 }
 
 .region-toggle > span:first-child {
