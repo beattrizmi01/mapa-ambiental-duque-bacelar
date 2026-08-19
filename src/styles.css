@@ -99,14 +99,22 @@ body {
   overflow-wrap: anywhere;
 }
 
-.platform-title {
-  display: block;
+.platform-brand {
+  display: flex;
+  align-items: center;
+  gap: clamp(7px, 1.8vw, 11px);
   max-width: 100%;
+  min-width: 0;
   color: #f7fbff;
-  font-size: clamp(0.76rem, 3.1vw, 1.42rem);
+  font-size: clamp(0.72rem, 3vw, 1.3rem);
   font-weight: 850;
   line-height: 1.16;
   letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.platform-brand strong {
+  min-width: 0;
   white-space: nowrap;
 }
 
@@ -3033,7 +3041,7 @@ body {
   }
 
   .region-toggle {
-    font-size: clamp(0.68rem, 2.7vw, 0.82rem);
+    font-size: clamp(0.56rem, 2.2vw, 0.72rem);
   }
 
   .sidebar {

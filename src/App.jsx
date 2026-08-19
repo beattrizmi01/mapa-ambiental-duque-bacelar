@@ -1233,13 +1233,12 @@ function CompactHeader({
     <div className={`region-header${expanded ? " is-expanded" : ""}`}>
       <header className="sidebar__header sidebar__header--mobile">
         <div className="compact-header__main">
-          <span className="eyebrow eyebrow--with-icon">
+          <span className="platform-brand">
             <span className="eyebrow__icon" aria-hidden="true">
               <LeafIcon />
             </span>
-            <span>Monitoramento Ambiental</span>
+            <strong>Mapa Ambiental de Duque Bacelar</strong>
           </span>
-          <strong className="platform-title">Mapa Ambiental de Duque Bacelar</strong>
           <button
             type="button"
             className="region-toggle"
@@ -1247,7 +1246,7 @@ function CompactHeader({
             aria-expanded={expanded}
             aria-controls="region-panel"
           >
-            <span>Região: {selectedRegion.name}</span>
+            <span>Monitoramento ambiental · Região: {selectedRegion.name}</span>
             <span className="region-toggle__chevron" aria-hidden="true" />
           </button>
         </div>
