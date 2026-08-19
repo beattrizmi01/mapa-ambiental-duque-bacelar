@@ -86,6 +86,7 @@ export default function App() {
   const [areaErrorMessage, setAreaErrorMessage] = useState("");
   const [occurrenceSuccessMessage, setOccurrenceSuccessMessage] = useState("");
   const [occurrenceErrorMessage, setOccurrenceErrorMessage] = useState("");
+  const [showMobileTips, setShowMobileTips] = useState(false);
   const draftPolygonReady = draftPolygonCoords.length >= 3;
   const draftPolygonCenter = useMemo(
     () => (draftPolygonCoords.length ? computeCentroid(draftPolygonCoords) : null),
@@ -121,7 +122,7 @@ export default function App() {
   useEffect(() => {
     if (typeof window === "undefined" || window.innerWidth > 900) return;
     if (!window.localStorage.getItem(MOBILE_HELP_KEY)) {
-      setOpenCard((current) => current ?? "help");
+      setShowMobileTips(true);
     }
   }, [isMobileViewport]);
 
@@ -222,6 +223,13 @@ export default function App() {
       window.localStorage.setItem(MOBILE_HELP_KEY, "seen");
     }
     setOpenCard(null);
+  }
+
+  function dismissMobileTips() {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(MOBILE_HELP_KEY, "seen");
+    }
+    setShowMobileTips(false);
   }
 
   function openOccurrenceFlow() {
@@ -667,6 +675,7 @@ export default function App() {
           isLocatingUser={isLocatingUser}
           hasUserLocation={Boolean(userLocation)}
         />
+        {showMobileTips ? <MobileFirstVisitTips onDismiss={dismissMobileTips} /> : null}
         <StatusChangeToast notice={statusChangeNotice} onClose={() => setStatusChangeNotice(null)} />
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
           <div className="mobile-drawing-bar">
@@ -1554,6 +1563,19 @@ function HelpGuide() {
         <strong>Cadastrar área</strong><span>→</span><strong>Selecionar área</strong><span>→</span><strong>Registrar ocorrência</strong><span>→</span><strong>Monitorar</strong>
       </div>
     </div>
+  );
+}
+
+function MobileFirstVisitTips({ onDismiss }) {
+  return (
+    <aside className="mobile-first-tips" aria-label="Dicas rápidas dos botões">
+      <div className="mobile-first-tips__header">
+        <strong>Dicas rápidas</strong>
+        <button type="button" onClick={onDismiss} aria-label="Fechar dicas">×</button>
+      </div>
+      <p><strong>Legenda:</strong> cores do mapa · <strong>Camadas:</strong> visualização</p>
+      <p><strong>Ocorrência:</strong> registrar em uma área · <strong>Nova área:</strong> cadastrar</p>
+    </aside>
   );
 }
 
