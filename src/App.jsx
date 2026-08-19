@@ -489,7 +489,7 @@ export default function App() {
         setDataMode("supabase");
         setDataStatus("Nova área salva e sincronizada com o Supabase.");
         setAreas((current) => [mapped, ...current]);
-        setActiveAreaId(mapped.id);
+        setActiveAreaId(null);
         setMapFocus(createMapFocus(mapped));
         setAreaSuccessMessage("Área cadastrada com sucesso no banco de dados.");
         setCreatedAreaForOccurrence(mapped);
@@ -497,7 +497,7 @@ export default function App() {
     } else {
       setAreas((current) => [draft, ...current]);
       setDataStatus("Supabase não configurado. A área foi salva apenas neste navegador, não no banco de dados.");
-      setActiveAreaId(draft.id);
+      setActiveAreaId(null);
       setMapFocus(createMapFocus(draft));
       setAreaSuccessMessage("Área salva localmente. Configure o Supabase para salvar no banco de dados.");
       setCreatedAreaForOccurrence(draft);
@@ -696,7 +696,7 @@ export default function App() {
       setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
     }
     setIsSavingOccurrence(false);
-    setActiveAreaId(occurrenceForm.areaId);
+    setActiveAreaId(null);
     setMapFocus(createMapFocus({ ...targetArea, status: patch.status }));
     resetOccurrenceDraft();
     setOpenCard(null);
@@ -966,7 +966,7 @@ export default function App() {
           <AreaCreatedNextStep
             area={createdAreaForOccurrence}
             onRegisterOccurrence={() => {
-              setActiveAreaId(createdAreaForOccurrence.id);
+              setActiveAreaId(null);
               setOccurrenceForm(emptyOccurrenceForm(createdAreaForOccurrence.id));
               setCreatedAreaForOccurrence(null);
               setOpenCard("occurrence");
@@ -1083,7 +1083,7 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
       ) : null}
       {isActive ? (
         <Popup position={[area.latitude, area.longitude]} eventHandlers={{ remove: onClose }}>
-          <DetailCard area={area} history={history} occurrences={occurrences} />
+          <DetailCard area={area} history={history} occurrences={occurrences} onClose={onClose} />
         </Popup>
       ) : null}
     </>
@@ -2002,10 +2002,13 @@ function UploadBox({ preview, onPreviewChange, required = false }) {
   return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" required={required && !preview} onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>Arraste uma imagem ou clique para selecionar</strong><span>PNG, JPG ou WEBP obrigatorio</span></div>}</label>;
 }
 
-function DetailCard({ area, history = [], occurrences = [] }) {
+function DetailCard({ area, history = [], occurrences = [], onClose }) {
   const latestChange = history[0] ?? null;
   return (
     <article className="detail-card">
+      <div className="detail-card__close-row">
+        <button type="button" onClick={onClose} aria-label="Fechar detalhes da área">×</button>
+      </div>
       <img src={area.image} alt={area.name} />
       <div className="detail-card__body">
         <h3>{area.name}</h3>

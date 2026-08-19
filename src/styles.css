@@ -1237,6 +1237,31 @@ body {
   scrollbar-gutter: stable;
 }
 
+.detail-card__close-row {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  display: flex;
+  justify-content: flex-end;
+  height: 0;
+  padding-right: 8px;
+}
+
+.detail-card__close-row button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(5, 11, 20, 0.9);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .hover-card img,
 .detail-card img {
   display: block;
@@ -2802,6 +2827,15 @@ body {
   body {
     overflow: hidden;
     background: #040911;
+  }
+
+  .detail-card {
+    width: min(360px, calc(100vw - 64px));
+    max-height: min(58dvh, 560px);
+  }
+
+  .detail-card img {
+    height: 108px;
   }
 
   .sidebar {
