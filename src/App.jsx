@@ -157,6 +157,9 @@ export default function App() {
     let active = true;
     async function loadFromSupabase() {
       if (!hasSupabaseConfig()) return;
+      const detailedAreasPromise = Promise.resolve(
+        supabase.from("areas").select("*").order("created_at", { ascending: false }),
+      );
       const { data, error } = await supabase
         .from("areas")
         .select("id, name, category, region, status, impact, description, polygon_coords, latitude, longitude, created_at, last_occurrence_id, last_status_review_at")
@@ -180,10 +183,7 @@ export default function App() {
       } catch (cacheError) {
         console.warn("Não foi possível atualizar a cópia rápida das áreas.", cacheError);
       }
-      supabase
-        .from("areas")
-        .select("*")
-        .order("created_at", { ascending: false })
+      detailedAreasPromise
         .then(({ data: detailedRows, error: detailedError }) => {
           if (!active || detailedError) return;
           const detailedAreas = (detailedRows ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
@@ -919,7 +919,10 @@ export default function App() {
             drawingEnabled={isDrawingArea}
             hoveredAreaId={hoveredAreaId}
             activeAreaId={activeAreaId}
-            onHoverArea={setHoveredAreaId}
+            onHoverArea={(areaId) => {
+              setHoveredAreaId(areaId);
+              loadAreaImage(areaId);
+            }}
             onLeaveArea={(areaId) => {
               setHoveredAreaId((current) => (current === areaId ? null : current));
             }}
