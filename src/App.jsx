@@ -180,15 +180,6 @@ export default function App() {
       } catch (cacheError) {
         console.warn("Não foi possível atualizar a cópia rápida das áreas.", cacheError);
       }
-      supabase
-        .from("areas")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .then(({ data: detailedRows, error: detailedError }) => {
-          if (!active || detailedError) return;
-          const detailedAreas = (detailedRows ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
-          setAreas(detailedAreas);
-        });
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
         .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
@@ -430,6 +421,24 @@ export default function App() {
     setHoveredAreaId(null);
     setOccurrenceForm((current) => ({ ...current, areaId: area.id }));
     setMapFocus(createMapFocus(area));
+    loadAreaImage(area.id);
+  }
+
+  async function loadAreaImage(areaId) {
+    if (!hasSupabaseConfig()) return;
+    const currentArea = areas.find((area) => String(area.id) === String(areaId));
+    const currentImage = currentArea?.image ?? "";
+    if (currentImage && !currentImage.startsWith("data:image/svg+xml")) return;
+
+    const { data, error } = await supabase
+      .from("areas")
+      .select("image_url")
+      .eq("id", areaId)
+      .single();
+    if (error || !data?.image_url) return;
+    setAreas((current) => current.map((area) =>
+      String(area.id) === String(areaId) ? { ...area, image: data.image_url } : area,
+    ));
   }
 
   async function handleAreaSubmit(event) {
@@ -903,6 +912,7 @@ export default function App() {
               setActiveAreaId((current) => current === areaId ? null : areaId);
               setHoveredAreaId(null);
               setOccurrenceForm((current) => ({ ...current, areaId }));
+              loadAreaImage(areaId);
             }}
             onCloseArea={(areaId) => {
               setActiveAreaId((current) => (current === areaId ? null : current));
@@ -2050,7 +2060,7 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
       <div className="detail-card__close-row">
         <button type="button" onClick={onClose} aria-label="Fechar detalhes da área">×</button>
       </div>
-      <img src={area.image} alt={area.name} />
+      <img src={area.image} alt={area.name} loading="eager" fetchPriority="high" decoding="async" />
       <div className="detail-card__body">
         <h3>{area.name}</h3>
         <div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>
