@@ -360,8 +360,9 @@ export default function App() {
       description: areaForm.description.trim(),
       polygonCoords,
       latitude,
-      longitude,
-      image: areaPreview ?? createPlaceholderImage(areaForm.name.trim(), statusToColor(areaForm.status)),
+    longitude,
+    image: areaPreview ?? createPlaceholderImage(areaForm.name.trim(), statusToColor(areaForm.status)),
+    createdAt: new Date().toISOString(),
     };
     if (hasSupabaseConfig()) {
       const { data, error } = await supabase.from("areas").insert({
@@ -1674,6 +1675,7 @@ function DetailCard({ area, history = [] }) {
       <div className="detail-card__body">
         <h3>{area.name}</h3>
         <div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>
+        {area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}
         <div className="area-status-block">
           <span>Status atual</span>
           <strong className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</strong>
@@ -1712,7 +1714,7 @@ function DetailCard({ area, history = [] }) {
 }
 
 function HoverCard({ area }) {
-  return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
+  return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
 }
 
 function ClusterCard({ areas }) {
@@ -1773,6 +1775,7 @@ function mapSupabaseAreaToApp(row) {
     latitude,
     longitude,
     image: row.image_url || createPlaceholderImage(row.name ?? "Área monitorada", statusToColor(row.status ?? "atencao")),
+    createdAt: row.created_at ?? null,
     lastOccurrenceId: row.last_occurrence_id ? String(row.last_occurrence_id) : null,
     lastStatusReviewAt: row.last_status_review_at ?? null,
   };
@@ -2115,6 +2118,7 @@ function formatDateTime(value) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
   }).format(date);
 }
 
