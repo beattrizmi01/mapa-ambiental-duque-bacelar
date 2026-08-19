@@ -1734,6 +1734,27 @@ body {
     visibility: visible;
     transform: translate(-50%, 0);
   }
+
+  .mobile-fab:first-child::after {
+    left: 0;
+    transform: translate(0, 5px);
+  }
+
+  .mobile-fab:first-child:hover::after,
+  .mobile-fab:first-child:focus-visible::after {
+    transform: translate(0, 0);
+  }
+
+  .mobile-fab:last-child::after {
+    right: 0;
+    left: auto;
+    transform: translate(0, 5px);
+  }
+
+  .mobile-fab:last-child:hover::after,
+  .mobile-fab:last-child:focus-visible::after {
+    transform: translate(0, 0);
+  }
 }
 
 .help-guide,
