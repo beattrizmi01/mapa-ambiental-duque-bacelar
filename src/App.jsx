@@ -119,7 +119,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isMobileViewport || typeof window === "undefined") return;
+    if (typeof window === "undefined" || window.innerWidth > 900) return;
     if (!window.localStorage.getItem(MOBILE_HELP_KEY)) {
       setOpenCard((current) => current ?? "help");
     }
