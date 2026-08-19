@@ -2242,27 +2242,27 @@ body {
 }
 
 .mobile-fab--primary {
-  background: linear-gradient(180deg, rgba(43, 176, 101, 0.92), rgba(30, 127, 76, 0.92));
-  border-color: rgba(113, 219, 157, 0.28);
-  box-shadow: 0 16px 28px rgba(18, 122, 70, 0.28);
+  background: linear-gradient(180deg, #28c76f, #159552);
+  border-color: rgba(132, 255, 184, 0.58);
+  box-shadow: 0 16px 30px rgba(20, 190, 99, 0.38);
 }
 
 .mobile-fab--legend {
-  background: linear-gradient(180deg, rgba(210, 157, 34, 0.96), rgba(151, 101, 17, 0.96));
-  border-color: rgba(255, 220, 125, 0.4);
-  box-shadow: 0 16px 28px rgba(132, 86, 12, 0.3);
+  background: linear-gradient(180deg, #f7bd22, #d78a00);
+  border-color: rgba(255, 235, 139, 0.7);
+  box-shadow: 0 16px 30px rgba(235, 157, 0, 0.4);
 }
 
 .mobile-fab--layers {
-  background: linear-gradient(180deg, rgba(39, 126, 184, 0.96), rgba(25, 77, 126, 0.96));
-  border-color: rgba(132, 207, 255, 0.38);
-  box-shadow: 0 16px 28px rgba(14, 65, 111, 0.3);
+  background: linear-gradient(180deg, #199cf0, #0964bd);
+  border-color: rgba(145, 220, 255, 0.64);
+  box-shadow: 0 16px 30px rgba(0, 116, 217, 0.4);
 }
 
 .mobile-fab--danger {
-  background: linear-gradient(180deg, rgba(220, 69, 76, 0.94), rgba(155, 35, 47, 0.94));
-  border-color: rgba(255, 151, 156, 0.34);
-  box-shadow: 0 16px 28px rgba(143, 27, 39, 0.3);
+  background: linear-gradient(180deg, #f14c57, #c51f32);
+  border-color: rgba(255, 169, 174, 0.62);
+  box-shadow: 0 16px 30px rgba(211, 30, 50, 0.4);
 }
 
 .mobile-fab--danger:hover,
