@@ -794,7 +794,7 @@ export default function App() {
         ) : null}
           <MapContainer
             center={FALLBACK_CENTER}
-            zoom={isMobileViewport ? 10 : 11}
+            zoom={10}
           scrollWheelZoom={true}
           dragging={true}
           touchZoom={true}
@@ -811,7 +811,6 @@ export default function App() {
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} />
           )}
           <MapFocusController focus={mapFocus} />
-          <AreasOverviewController areas={regionAreas} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
           <MapClickHandler
@@ -1899,32 +1898,6 @@ function MapFocusController({ focus }) {
   return null;
 }
 
-function AreasOverviewController({ areas }) {
-  const map = useMap();
-  const [hasFocusedAreas, setHasFocusedAreas] = useState(false);
-
-  useEffect(() => {
-    if (hasFocusedAreas || !areas.length) return;
-    const points = areas.flatMap((area) =>
-      area.polygonCoords?.length ? area.polygonCoords : [[area.latitude, area.longitude]],
-    );
-    const validPoints = points.filter(
-      (point) => Number.isFinite(Number(point?.[0])) && Number.isFinite(Number(point?.[1])),
-    );
-    if (!validPoints.length) return;
-
-    setHasFocusedAreas(true);
-    map.fitBounds(L.latLngBounds(validPoints), {
-      paddingTopLeft: [70, 150],
-      paddingBottomRight: [70, 150],
-      maxZoom: 14,
-      animate: false,
-    });
-  }, [areas, hasFocusedAreas, map]);
-
-  return null;
-}
-
 function UserLocationLayer({ location }) {
   const map = useMap();
 
@@ -2478,7 +2451,7 @@ function createAreaClusters(areas, zoom) {
     }));
   }
 
-  const gridSize = zoom <= 7 ? 0.42 : zoom <= 9 ? 0.18 : 0.075;
+  const gridSize = zoom <= 7 ? 0.42 : zoom <= 10 ? 0.18 : 0.075;
   const clusters = new Map();
   areas.forEach((area) => {
     const key = `${Math.round(area.latitude / gridSize)}:${Math.round(area.longitude / gridSize)}`;
