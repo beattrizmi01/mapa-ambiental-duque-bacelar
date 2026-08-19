@@ -52,6 +52,21 @@ const CATEGORIES = [
   "Educação ambiental",
   "Outro",
 ];
+const RESPONSIBLE_ROLES = [
+  "Professor(a)",
+  "Pesquisador(a)",
+  "Aluno(a) / Estudante",
+  "Engenheiro(a) ambiental",
+  "Biólogo(a)",
+  "Geógrafo(a)",
+  "Técnico(a) ambiental",
+  "Fiscal ambiental",
+  "Servidor(a) público(a)",
+  "Representante de órgão ambiental",
+  "Agricultor(a) / Produtor(a) rural",
+  "Morador(a) / Comunidade local",
+  "Representante de ONG",
+];
 export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
@@ -1344,7 +1359,7 @@ function AreaFormPanel(props) {
       </div>
       <div className="field-row">
         <Field label="Nome do responsável"><input required autoComplete="name" value={areaForm.reporterName} onChange={(event) => setAreaForm((current) => ({ ...current, reporterName: event.target.value }))} placeholder="Nome completo" /></Field>
-        <Field label="Função ou órgão"><input required value={areaForm.reporterRole} onChange={(event) => setAreaForm((current) => ({ ...current, reporterRole: event.target.value }))} placeholder="Ex.: Fiscal ambiental / Secretaria" /></Field>
+        <Field label="Função ou órgão"><ResponsibleRoleSelect required value={areaForm.reporterRole} onChange={(value) => setAreaForm((current) => ({ ...current, reporterRole: value }))} /></Field>
       </div>
       <Field label="Nome da área"><input required value={areaForm.name} onChange={(event) => setAreaForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Nascente do Riacho Fundo" /></Field>
       <Field label="Categoria">
@@ -1421,7 +1436,7 @@ function OccurrenceFormPanel(props) {
       </div>
       <div className="field-row">
         <Field label="Nome do responsável"><input required autoComplete="name" value={occurrenceForm.reporterName} onChange={(event) => setOccurrenceForm((current) => ({ ...current, reporterName: event.target.value }))} placeholder="Nome completo" /></Field>
-        <Field label="Função ou órgão"><input required value={occurrenceForm.reporterRole} onChange={(event) => setOccurrenceForm((current) => ({ ...current, reporterRole: event.target.value }))} placeholder="Ex.: Fiscal ambiental / Secretaria" /></Field>
+        <Field label="Função ou órgão"><ResponsibleRoleSelect required value={occurrenceForm.reporterRole} onChange={(value) => setOccurrenceForm((current) => ({ ...current, reporterRole: value }))} /></Field>
       </div>
       <Field label="Área vinculada"><select required value={occurrenceForm.areaId} onChange={(event) => setOccurrenceForm((current) => ({ ...current, areaId: event.target.value }))}>{areas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}</select></Field>
       <div className="status-reference">
@@ -2051,6 +2066,37 @@ function DetailCard({ area, history = [], occurrences = [] }) {
 
 function HoverCard({ area }) {
   return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
+}
+
+function ResponsibleRoleSelect({ value, onChange, required = false }) {
+  const otherValue = "Outro — especificar";
+  const isCustomRole = Boolean(value) && value !== otherValue && !RESPONSIBLE_ROLES.includes(value);
+  const selectedValue = isCustomRole ? otherValue : value;
+
+  return (
+    <div className="category-select-wrap">
+      <select
+        required={required}
+        value={selectedValue}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        <option value="">Selecione sua função ou órgão</option>
+        {RESPONSIBLE_ROLES.map((role) => (
+          <option key={role} value={role}>{role}</option>
+        ))}
+        <option value={otherValue}>{otherValue}</option>
+      </select>
+      {selectedValue === otherValue ? (
+        <input
+          type="text"
+          required={required}
+          value={isCustomRole ? value : ""}
+          onChange={(event) => onChange(event.target.value || otherValue)}
+          placeholder="Digite sua função ou o nome do órgão"
+        />
+      ) : null}
+    </div>
+  );
 }
 
 function ClusterCard({ areas }) {
