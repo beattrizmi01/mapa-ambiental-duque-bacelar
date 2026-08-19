@@ -808,6 +808,10 @@ export default function App() {
           <UserLocationLayer location={userLocation} />
           <MapClickHandler
             drawingEnabled={isDrawingArea}
+            onMapBlankClick={() => {
+              setActiveAreaId(null);
+              setHoveredAreaId(null);
+            }}
             onDrawPoint={(latlng) => {
               setDraftPolygonCoords((current) => {
                 const next = [...current, [latlng.lat, latlng.lng]];
@@ -865,9 +869,13 @@ export default function App() {
             }}
             onToggleArea={(areaId) => {
               setActiveAreaId((current) => current === areaId ? null : areaId);
+              setHoveredAreaId(null);
               setOccurrenceForm((current) => ({ ...current, areaId }));
             }}
-            onCloseArea={(areaId) => setActiveAreaId((current) => (current === areaId ? null : current))}
+            onCloseArea={(areaId) => {
+              setActiveAreaId((current) => (current === areaId ? null : current));
+              setHoveredAreaId((current) => (current === areaId ? null : current));
+            }}
             onAreaPointSelect={(area, point) => {
               setActiveAreaId(area.id);
               setHoveredAreaId(area.id);
@@ -1068,16 +1076,16 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
           }}
         >
           {isHovered && !isActive ? (
-            <Tooltip direction="top" offset={[0, -18]} opacity={1} className="environment-tooltip">
-              <HoverCard area={area} />
+            <Tooltip interactive direction="top" offset={[0, -18]} opacity={1} className="environment-tooltip">
+              <HoverCard area={area} onClose={onClose} />
             </Tooltip>
           ) : null}
         </Marker>
       ) : null}
       {isHovered && !isActive ? (
         <CircleMarker center={[area.latitude, area.longitude]} radius={1} opacity={0} fillOpacity={0} interactive={false}>
-          <Tooltip permanent direction="top" offset={[0, -12]} opacity={1} className="environment-tooltip">
-            <HoverCard area={area} />
+          <Tooltip interactive permanent direction="top" offset={[0, -12]} opacity={1} className="environment-tooltip">
+            <HoverCard area={area} onClose={onClose} />
           </Tooltip>
         </CircleMarker>
       ) : null}
@@ -1943,11 +1951,14 @@ function UserLocationLayer({ location }) {
   );
 }
 
-function MapClickHandler({ drawingEnabled, onDrawPoint }) {
+function MapClickHandler({ drawingEnabled, onDrawPoint, onMapBlankClick }) {
   useMapEvents({
     click(event) {
-      if (!drawingEnabled) return;
-      onDrawPoint(event.latlng);
+      if (drawingEnabled) {
+        onDrawPoint(event.latlng);
+        return;
+      }
+      onMapBlankClick?.();
     },
   });
   return null;
@@ -2081,8 +2092,8 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
   );
 }
 
-function HoverCard({ area }) {
-  return <article className="hover-card"><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
+function HoverCard({ area, onClose }) {
+  return <article className="hover-card"><button type="button" className="hover-card__close" onClick={onClose} aria-label="Fechar informações da área">×</button><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
 }
 
 function ResponsibleRoleSelect({ value, onChange, required = false }) {

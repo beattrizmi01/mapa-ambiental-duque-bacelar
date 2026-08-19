@@ -1219,6 +1219,7 @@ body {
 
 .hover-card,
 .detail-card {
+  position: relative;
   box-sizing: border-box;
   width: min(210px, calc(100vw - 48px));
   max-width: calc(100vw - 48px);
@@ -1229,6 +1230,31 @@ body {
   background: linear-gradient(180deg, rgba(11, 19, 31, 0.98), rgba(20, 31, 48, 0.98));
   border: 1px solid rgba(166, 186, 209, 0.16);
   box-shadow: var(--shadow);
+}
+
+.hover-card__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(5, 11, 20, 0.86);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.3);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hover-card__close:hover,
+.hover-card__close:focus-visible {
+  background: rgba(22, 34, 51, 0.96);
+  border-color: rgba(255, 255, 255, 0.36);
 }
 
 .detail-card {
@@ -2873,6 +2899,12 @@ body {
   .detail-card {
     width: min(360px, calc(100vw - 64px));
     max-height: min(58dvh, 560px);
+  }
+
+  .hover-card__close,
+  .detail-card__close-row button {
+    width: 44px;
+    height: 44px;
   }
 
   .detail-card img {
