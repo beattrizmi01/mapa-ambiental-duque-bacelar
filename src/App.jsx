@@ -1315,11 +1315,11 @@ function CompactHeader({
   return (
     <div className={`region-header${expanded ? " is-expanded" : ""}`}>
       <header className="sidebar__header sidebar__header--mobile">
+        <span className="compact-header__logo" aria-hidden="true">
+          <LeafIcon />
+        </span>
         <div className="compact-header__main">
           <span className="platform-brand">
-            <span className="eyebrow__icon" aria-hidden="true">
-              <LeafIcon />
-            </span>
             <strong>
               <span>Mapa Ambiental de</span>
               <span className="platform-brand__place">Duque Bacelar</span>
