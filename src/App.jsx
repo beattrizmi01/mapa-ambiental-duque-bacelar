@@ -18,6 +18,7 @@ import duqueBacelarLimiteUrl from "./data/duque-bacelar-limite.geojson?url";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas:v2";
+const MOBILE_HELP_KEY = "mapa-ambiental-duque-bacelar:mobile-help:v1";
 const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const REGIONAL_ZOOM = 7;
@@ -118,6 +119,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!isMobileViewport || typeof window === "undefined") return;
+    if (!window.localStorage.getItem(MOBILE_HELP_KEY)) {
+      setOpenCard((current) => current ?? "help");
+    }
+  }, [isMobileViewport]);
+
+  useEffect(() => {
     fetch(duqueBacelarLimiteUrl)
       .then((response) => response.json())
       .then((data) => setBoundaryData(data))
@@ -179,12 +187,6 @@ export default function App() {
   useEffect(() => {
     setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(areas)));
   }, [areas]);
-
-  useEffect(() => {
-    if (!occurrenceForm.areaId && areas[0]) {
-      setOccurrenceForm((current) => ({ ...current, areaId: areas[0].id }));
-    }
-  }, [areas, occurrenceForm.areaId]);
 
   useEffect(() => {
     if (!statusChangeNotice) return undefined;
@@ -639,10 +641,11 @@ export default function App() {
         <MobileMapActions
           isDrawingArea={isDrawingArea}
           onOpenArea={() => setOpenCard("area")}
-          onOpenOccurrence={() => setOpenCard("occurrence")}
+          onOpenOccurrence={openOccurrenceFlow}
           onOpenLegend={() => setOpenCard("legend")}
           onOpenStatus={() => setOpenCard("status")}
           onOpenLayers={() => setOpenCard("layers")}
+          onOpenHelp={() => setOpenCard("help")}
           onLocateUser={locateUser}
           isLocatingUser={isLocatingUser}
           hasUserLocation={Boolean(userLocation)}
@@ -734,6 +737,7 @@ export default function App() {
           ) : null}
           <AreaLayer
             areas={areas}
+            occurrenceRecords={occurrenceRecords}
             statusHistory={statusHistory}
             recentlyUpdatedAreaId={recentlyUpdatedAreaId}
             drawingEnabled={isDrawingArea}
@@ -743,7 +747,10 @@ export default function App() {
             onLeaveArea={(areaId) => {
               setHoveredAreaId((current) => (current === areaId ? null : current));
             }}
-            onToggleArea={(areaId) => setActiveAreaId((current) => current === areaId ? null : areaId)}
+            onToggleArea={(areaId) => {
+              setActiveAreaId((current) => current === areaId ? null : areaId);
+              setOccurrenceForm((current) => ({ ...current, areaId }));
+            }}
             onCloseArea={(areaId) => setActiveAreaId((current) => (current === areaId ? null : current))}
             onAreaPointSelect={(area, point) => {
               setActiveAreaId(area.id);
@@ -757,6 +764,26 @@ export default function App() {
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} />
           </Pane>
         </MapContainer>
+        <BottomSheet
+          isOpen={openCard === "help"}
+          title="Ajuda rápida"
+          onClose={closeHelp}
+        >
+          <HelpGuide />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "occurrence-guide"}
+          title="Selecione uma área"
+          onClose={() => setOpenCard(null)}
+        >
+          <OccurrenceGuide
+            onSelectArea={() => {
+              setDataStatus("Selecione uma área cadastrada no mapa para registrar uma ocorrência.");
+              setOpenCard(null);
+            }}
+            onCreateArea={() => setOpenCard("area")}
+          />
+        </BottomSheet>
         <BottomSheet
           isOpen={openCard === "legend"}
           title="Legenda"
@@ -848,7 +875,7 @@ function StatusChangeToast({ notice, onClose }) {
   );
 }
 
-function AreaFeature({ area, history, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect }) {
+function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect }) {
   const polygonPositions = area.polygonCoords;
   return (
     <>
@@ -914,7 +941,7 @@ function AreaFeature({ area, history, isRecentlyUpdated, drawingEnabled, isHover
       ) : null}
       {isActive ? (
         <Popup position={[area.latitude, area.longitude]} eventHandlers={{ remove: onClose }}>
-          <DetailCard area={area} history={history} />
+          <DetailCard area={area} history={history} occurrences={occurrences} />
         </Popup>
       ) : null}
     </>
@@ -924,6 +951,7 @@ function AreaFeature({ area, history, isRecentlyUpdated, drawingEnabled, isHover
 function AreaLayer(props) {
   const {
     areas,
+    occurrenceRecords = [],
     statusHistory = [],
     recentlyUpdatedAreaId,
     drawingEnabled,
@@ -951,6 +979,7 @@ function AreaLayer(props) {
         key={area.id}
         area={area}
         history={getAreaStatusHistory(statusHistory, area.id)}
+        occurrences={getAreaOccurrences(occurrenceRecords, area.id)}
         isRecentlyUpdated={recentlyUpdatedAreaId === area.id || isRecentStatusChange(area)}
         drawingEnabled={drawingEnabled}
         isHovered={hoveredAreaId === area.id}
@@ -972,6 +1001,7 @@ function AreaLayer(props) {
           key={area.id}
           area={area}
           history={getAreaStatusHistory(statusHistory, area.id)}
+          occurrences={getAreaOccurrences(occurrenceRecords, area.id)}
           isRecentlyUpdated={recentlyUpdatedAreaId === area.id || isRecentStatusChange(area)}
           drawingEnabled={drawingEnabled}
           isHovered={hoveredAreaId === area.id}
@@ -1405,7 +1435,7 @@ function StatusContent({ areas, statusHistory = [] }) {
   );
 }
 
-function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenStatus, onOpenLayers, onLocateUser, isLocatingUser, hasUserLocation }) {
+function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenLegend, onOpenStatus, onOpenLayers, onOpenHelp, onLocateUser, isLocatingUser, hasUserLocation }) {
   return (
     <>
       <div className="mobile-side-rail" aria-label="Ações rápidas do mapa">
@@ -1424,8 +1454,11 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
           <StatusIcon />
         </MobileSideButton>
       </div>
-      <button type="button" className="mobile-add-button" onClick={onOpenArea} aria-label="Nova área">
+      <button type="button" className="mobile-add-button" onClick={onOpenArea} aria-label="Nova área" data-tooltip="Cadastre uma nova área para monitoramento.">
         +
+      </button>
+      <button type="button" className="mobile-help-button" onClick={onOpenHelp} aria-label="Abrir ajuda">
+        <span aria-hidden="true">?</span> Ajuda
       </button>
       {!isDrawingArea ? (
         <button type="button" className="mobile-status-card" onClick={onOpenLegend}>
@@ -1442,16 +1475,16 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
         </button>
       ) : null}
       <div className="mobile-fab-dock">
-        <MobileFabButton label="Legenda" onClick={onOpenLegend}>
+        <MobileFabButton label="Legenda" description="Entenda as cores e classificações do mapa." onClick={onOpenLegend}>
           <LegendIcon />
         </MobileFabButton>
-        <MobileFabButton label="Camadas" onClick={onOpenLayers}>
+        <MobileFabButton label="Camadas" description="Escolha as informações exibidas no mapa." onClick={onOpenLayers}>
           <LayersIcon />
         </MobileFabButton>
-        <MobileFabButton label="Ocorrência" onClick={onOpenOccurrence}>
+        <MobileFabButton label="Ocorrência" description="Registre uma ocorrência em uma área cadastrada." onClick={onOpenOccurrence}>
           <AlertIcon />
         </MobileFabButton>
-        <MobileFabButton label="Nova área" onClick={onOpenArea} primary>
+        <MobileFabButton label="Nova área" description="Cadastre uma nova área para monitoramento." onClick={onOpenArea} primary>
           <AreaIcon />
         </MobileFabButton>
       </div>
@@ -1473,12 +1506,58 @@ function MobileSideButton({ label, children, onClick, active = false, loading = 
   );
 }
 
-function MobileFabButton({ label, children, onClick, primary = false }) {
+function MobileFabButton({ label, description, children, onClick, primary = false }) {
   return (
-    <button type="button" className={`mobile-fab${primary ? " mobile-fab--primary" : ""}`} onClick={onClick}>
+    <button type="button" className={`mobile-fab${primary ? " mobile-fab--primary" : ""}`} onClick={onClick} aria-label={`${label}. ${description}`} data-tooltip={description}>
       <span className="mobile-fab__icon" aria-hidden="true">{children}</span>
       <span className="mobile-fab__label">{label}</span>
     </button>
+  );
+}
+
+function HelpGuide() {
+  const tips = [
+    { title: "Legenda", description: "Entenda as cores e classificações do mapa." },
+    { title: "Camadas", description: "Escolha as informações exibidas no mapa." },
+    { title: "Ocorrência", description: "Registre uma ocorrência em uma área cadastrada." },
+    { title: "Nova área", description: "Cadastre uma nova área para monitoramento." },
+  ];
+  return (
+    <div className="help-guide">
+      <p className="help-guide__intro">Use os atalhos do mapa para consultar informações e registrar o monitoramento ambiental.</p>
+      <div className="help-guide__tips">
+        {tips.map((tip, index) => (
+          <article className="help-tip" key={tip.title}>
+            <span>{index + 1}</span>
+            <div><strong>{tip.title}</strong><p>{tip.description}</p></div>
+          </article>
+        ))}
+      </div>
+      <div className="monitoring-flow" aria-label="Fluxo de monitoramento">
+        <strong>Cadastrar área</strong><span>→</span><strong>Selecionar área</strong><span>→</span><strong>Registrar ocorrência</strong><span>→</span><strong>Monitorar</strong>
+      </div>
+    </div>
+  );
+}
+
+function OccurrenceGuide({ onSelectArea, onCreateArea }) {
+  return (
+    <div className="occurrence-guide">
+      <div className="occurrence-guide__message">
+        <AlertIcon />
+        <div>
+          <strong>Selecione uma área cadastrada para registrar uma ocorrência.</strong>
+          <p>Toda ocorrência precisa ficar vinculada a uma área monitorada.</p>
+        </div>
+      </div>
+      <div className="monitoring-flow" aria-label="Fluxo para registrar ocorrência">
+        <strong>Cadastrar área</strong><span>→</span><strong>Selecionar área</strong><span>→</span><strong>Registrar ocorrência</strong><span>→</span><strong>Monitorar</strong>
+      </div>
+      <div className="occurrence-guide__actions">
+        <button type="button" className="btn btn--green" onClick={onSelectArea}>Selecionar área</button>
+        <button type="button" className="btn" onClick={onCreateArea}>Cadastrar nova área</button>
+      </div>
+    </div>
   );
 }
 
@@ -1666,7 +1745,7 @@ function UploadBox({ preview, onPreviewChange, required = false }) {
   return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" required={required && !preview} onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>Arraste uma imagem ou clique para selecionar</strong><span>PNG, JPG ou WEBP obrigatorio</span></div>}</label>;
 }
 
-function DetailCard({ area, history = [] }) {
+function DetailCard({ area, history = [], occurrences = [] }) {
   const latestChange = history[0] ?? null;
   return (
     <article className="detail-card">
@@ -1707,6 +1786,23 @@ function DetailCard({ area, history = [] }) {
             ))}
           </div>
         ) : null}
+        <div className="occurrence-history">
+          <strong>Histórico de ocorrências</strong>
+          {occurrences.length ? occurrences.map((occurrence) => (
+            <div className="occurrence-history__item" key={occurrence.id}>
+              <div>
+                <strong>{occurrence.impact || "Ocorrência registrada"}</strong>
+                <span>{formatDateTime(occurrence.created_at)}</span>
+              </div>
+              <p>{occurrence.description || "Sem descrição informada."}</p>
+              <small>
+                Status: {occurrence.status_updated && occurrence.new_status
+                  ? statusLabel(occurrence.new_status)
+                  : "Mantido"}
+              </small>
+            </div>
+          )) : <p className="occurrence-history__empty">Nenhuma ocorrência registrada para esta área.</p>}
+        </div>
       </div>
     </article>
   );
@@ -1755,6 +1851,23 @@ function loadAreas() {
     return Array.isArray(parsed) ? parsed.map(normalizeAreaShape) : [];
   } catch {
     return [];
+  }
+
+  function closeHelp() {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(MOBILE_HELP_KEY, "seen");
+    }
+    setOpenCard(null);
+  }
+
+  function openOccurrenceFlow() {
+    const selectedArea = areas.find((area) => area.id === activeAreaId) ?? null;
+    if (!selectedArea) {
+      setOpenCard("occurrence-guide");
+      return;
+    }
+    setOccurrenceForm((current) => ({ ...current, areaId: selectedArea.id }));
+    setOpenCard("occurrence");
   }
 }
 
@@ -1861,6 +1974,12 @@ function regionHasAreas(areas, regionName) {
 function countOccurrencesForAreas(occurrences, areas) {
   const areaIds = new Set(areas.map((area) => String(area.id)));
   return occurrences.filter((occurrence) => areaIds.has(String(occurrence.area_id))).length;
+}
+
+function getAreaOccurrences(occurrences, areaId) {
+  return (occurrences ?? [])
+    .filter((occurrence) => String(occurrence.area_id ?? occurrence.areaId ?? "") === String(areaId))
+    .sort((left, right) => new Date(right.created_at ?? right.createdAt ?? 0) - new Date(left.created_at ?? left.createdAt ?? 0));
 }
 
 function getAreaStatusHistory(history, areaId) {
