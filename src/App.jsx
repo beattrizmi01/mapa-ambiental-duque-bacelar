@@ -2092,13 +2092,41 @@ function CategoriaSelect({ value, onChange, required = false }) {
 
 function UploadBox({ preview, onPreviewChange, required = false }) {
   const [isDragOver, setIsDragOver] = useState(false);
-  function handleFile(file) {
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  async function handleFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => onPreviewChange(reader.result);
-    reader.readAsDataURL(file);
+    setIsOptimizing(true);
+    try {
+      onPreviewChange(await optimizeImageFile(file));
+    } finally {
+      setIsOptimizing(false);
+    }
   }
-  return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" required={required && !preview} onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>Arraste uma imagem ou clique para selecionar</strong><span>PNG, JPG ou WEBP obrigatorio</span></div>}</label>;
+  return <label className={`upload-box${isDragOver ? " is-dragover" : ""}`} onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }} onDragLeave={(event) => { event.preventDefault(); setIsDragOver(false); }} onDrop={(event) => { event.preventDefault(); setIsDragOver(false); handleFile(event.dataTransfer.files?.[0]); }}><input className="upload-box__input" type="file" accept="image/*" required={required && !preview} disabled={isOptimizing} onChange={(event) => handleFile(event.target.files?.[0])} />{preview ? <div className="upload-box__preview"><img src={preview} alt="Pre-visualizacao da imagem enviada" /><button type="button" className="upload-box__remove" onClick={(event) => { event.preventDefault(); onPreviewChange(null); }}>Remover imagem</button></div> : <div className="upload-box__prompt"><strong>{isOptimizing ? "Otimizando imagem..." : "Arraste uma imagem ou clique para selecionar"}</strong><span>{isOptimizing ? "Convertendo para um formato mais leve" : "PNG, JPG ou WEBP — otimização automática"}</span></div>}</label>;
+}
+
+async function optimizeImageFile(file) {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = reject;
+      element.src = sourceUrl;
+    });
+    const maxDimension = 1280;
+    const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d", { alpha: false });
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/webp", 0.72);
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
 }
 
 function DetailCard({ area, history = [], occurrences = [], onClose }) {
