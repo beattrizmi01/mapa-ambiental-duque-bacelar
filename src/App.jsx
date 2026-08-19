@@ -1643,11 +1643,6 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
           <StatusIcon />
         </MobileSideButton>
       </div>
-      {!isDrawingArea ? (
-        <button type="button" className="mobile-add-button" onClick={onOpenArea} aria-label="Nova área" data-tooltip="Cadastre uma nova área para monitoramento.">
-          +
-        </button>
-      ) : null}
       <button type="button" className="mobile-help-button" onClick={onOpenHelp} aria-label="Abrir ajuda">
         <span aria-hidden="true">?</span> Ajuda
       </button>

@@ -2005,8 +2005,7 @@ body {
 }
 
 @media (min-width: 901px) {
-  .mobile-fab::after,
-  .mobile-add-button::after {
+  .mobile-fab::after {
     content: attr(data-tooltip);
     position: absolute;
     left: 50%;
@@ -2032,9 +2031,7 @@ body {
   }
 
   .mobile-fab:hover::after,
-  .mobile-fab:focus-visible::after,
-  .mobile-add-button:hover::after,
-  .mobile-add-button:focus-visible::after {
+  .mobile-fab:focus-visible::after {
     opacity: 1;
     visibility: visible;
     transform: translate(-50%, 0);
@@ -2364,27 +2361,6 @@ body {
   color: #8f9eb2;
   font-size: 2rem;
   line-height: 1;
-}
-
-.mobile-add-button {
-  position: absolute;
-  right: 18px;
-  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 88px);
-  z-index: 1120;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 78px;
-  height: 78px;
-  border: 1px solid rgba(130, 226, 166, 0.28);
-  border-radius: 999px;
-  color: #f6fff9;
-  background: radial-gradient(circle at 34% 26%, #58d88a, #2aaa65 66%, #197949 100%);
-  box-shadow: 0 14px 28px rgba(22, 124, 72, 0.3);
-  font-size: 3.1rem;
-  font-weight: 300;
-  line-height: 1;
-  cursor: pointer;
 }
 
 .status-change-toast {
@@ -2847,15 +2823,6 @@ body {
     font-size: 1.45rem;
   }
 
-  .mobile-add-button {
-    right: 28px;
-    bottom: calc(max(22px, env(safe-area-inset-bottom)) + 74px);
-    width: 58px;
-    height: 58px;
-    font-size: 2.25rem;
-    box-shadow: 0 10px 22px rgba(22, 124, 72, 0.26);
-  }
-
   .mobile-fab-dock {
     left: 24px;
     bottom: max(22px, env(safe-area-inset-bottom));
@@ -3153,14 +3120,6 @@ body {
   .mobile-status-card__dots .legend-swatch {
     width: 12px;
     height: 12px;
-  }
-
-  .mobile-add-button {
-    right: 16px;
-    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 78px);
-    width: 68px;
-    height: 68px;
-    font-size: 2.7rem;
   }
 
   .mobile-drawing-bar {
