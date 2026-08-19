@@ -69,6 +69,7 @@ const RESPONSIBLE_ROLES = [
 export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
+  const [isLoadingAreas, setIsLoadingAreas] = useState(() => hasSupabaseConfig());
   const [activeBaseMap, setActiveBaseMap] = useState("satellite");
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
@@ -163,10 +164,12 @@ export default function App() {
         console.error(error);
         setDataMode("local");
         setDataStatus("Não foi possível carregar do Supabase. Exibindo dados locais.");
+        setIsLoadingAreas(false);
         return;
       }
       const mapped = (data ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
       setAreas(mapped);
+      setIsLoadingAreas(false);
       setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(mapped)));
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
@@ -204,7 +207,11 @@ export default function App() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(areas));
+      const lightweightAreas = areas.map((area) => ({
+        ...area,
+        image: typeof area.image === "string" && !area.image.startsWith("data:") ? area.image : "",
+      }));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweightAreas));
     } catch (error) {
       console.warn("Não foi possível salvar as áreas no armazenamento local.", error);
       setDataStatus("O armazenamento local está cheio. Os dados já salvos continuam disponíveis.");
@@ -813,6 +820,9 @@ export default function App() {
           <MapFocusController focus={mapFocus} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
+          {isLoadingAreas && !regionAreas.length ? (
+            <Marker position={FALLBACK_CENTER} icon={getLoadingClusterIcon()} interactive={false} />
+          ) : null}
           <MapClickHandler
             drawingEnabled={isDrawingArea}
             onMapBlankClick={() => {
@@ -2559,6 +2569,15 @@ function formatDateTime(value) {
     minute: "2-digit",
     timeZone: "America/Sao_Paulo",
   }).format(date);
+}
+
+function getLoadingClusterIcon() {
+  return L.divIcon({
+    className: "cluster-marker-icon",
+    html: '<span class="cluster-marker cluster-marker--loading"><span class="cluster-marker__count">…</span></span>',
+    iconSize: [58, 58],
+    iconAnchor: [29, 29],
+  });
 }
 
 function createPlaceholderImage(title, color) {
