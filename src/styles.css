@@ -1288,19 +1288,6 @@ body {
   box-shadow: var(--shadow);
 }
 
-.cluster-marker--loading {
-  color: #dce9f7;
-  background: rgba(12, 24, 39, 0.94);
-  animation: clusterLoadingPulse 1.1s ease-in-out infinite alternate;
-}
-
-@keyframes clusterLoadingPulse {
-  to {
-    transform: scale(1.07);
-    filter: brightness(1.2);
-  }
-}
-
 .hover-card__close {
   position: absolute;
   top: 8px;
