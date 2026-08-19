@@ -180,6 +180,20 @@ export default function App() {
       } catch (cacheError) {
         console.warn("Não foi possível atualizar a cópia rápida das áreas.", cacheError);
       }
+      supabase
+        .from("areas")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .then(({ data: detailedRows, error: detailedError }) => {
+          if (!active || detailedError) return;
+          const detailedAreas = (detailedRows ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
+          setAreas(detailedAreas);
+          detailedAreas.forEach((area) => {
+            if (!area.image || area.image.startsWith("data:image/svg+xml")) return;
+            const preload = new Image();
+            preload.src = area.image;
+          });
+        });
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
         .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
