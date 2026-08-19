@@ -69,6 +69,10 @@ body {
 }
 
 .compact-header__main {
+  display: grid;
+  justify-items: start;
+  gap: clamp(3px, 0.6vw, 7px);
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -86,6 +90,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.eyebrow--with-icon > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .eyebrow__icon {
@@ -1507,6 +1518,11 @@ body {
   letter-spacing: 0;
   text-align: left;
   cursor: pointer;
+}
+
+.region-toggle > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .region-toggle__chevron {
