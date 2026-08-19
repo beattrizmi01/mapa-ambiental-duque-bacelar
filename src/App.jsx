@@ -1872,7 +1872,13 @@ function LayersIcon() {
 }
 
 function LocationIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>;
+  return (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+      <circle cx="16" cy="16" r="8" />
+      <circle cx="16" cy="16" r="2.5" fill="currentColor" stroke="none" />
+      <path d="M16 3v5M16 24v5M3 16h5M24 16h5" />
+    </svg>
+  );
 }
 
 function StatusIcon() {

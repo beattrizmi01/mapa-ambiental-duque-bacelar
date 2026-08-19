@@ -2438,6 +2438,7 @@ body {
 }
 
 .mobile-side-button__icon svg {
+  display: block;
   width: 29px;
   height: 29px;
 }
