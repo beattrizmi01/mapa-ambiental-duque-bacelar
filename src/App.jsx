@@ -21,7 +21,6 @@ const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas:v2";
 const MOBILE_HELP_KEY = "mapa-ambiental-duque-bacelar:mobile-help:v1";
 const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
-const REGIONAL_ZOOM = 7;
 const LOCAL_ZOOM = 12;
 const MAX_MAP_ZOOM = 20;
 const REGIONS = [
@@ -794,8 +793,8 @@ export default function App() {
           </div>
         ) : null}
           <MapContainer
-            center={REGIONAL_CENTER}
-            zoom={isMobileViewport ? REGIONAL_ZOOM : 8}
+            center={FALLBACK_CENTER}
+            zoom={isMobileViewport ? 10 : 11}
           scrollWheelZoom={true}
           dragging={true}
           touchZoom={true}
