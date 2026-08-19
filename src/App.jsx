@@ -844,6 +844,7 @@ export default function App() {
           ) : (
             <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} />
           )}
+          <MapInteractionLock locked={Boolean(activeAreaId)} />
           <MapFocusController focus={mapFocus} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
@@ -1953,6 +1954,26 @@ function MapFocusController({ focus }) {
     if (!focus) return;
     map.setView(focus.center, focus.zoom, { animate: true });
   }, [focus, map]);
+
+  return null;
+}
+
+function MapInteractionLock({ locked }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const handlers = [
+      map.dragging,
+      map.scrollWheelZoom,
+      map.touchZoom,
+      map.doubleClickZoom,
+      map.boxZoom,
+      map.keyboard,
+      map.tap,
+    ].filter(Boolean);
+    handlers.forEach((handler) => locked ? handler.disable() : handler.enable());
+    return () => handlers.forEach((handler) => handler.enable());
+  }, [locked, map]);
 
   return null;
 }
