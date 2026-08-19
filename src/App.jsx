@@ -336,6 +336,30 @@ export default function App() {
       return true;
     } catch (error) {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
+      try {
+        const approximateLocation = await getNetworkLocation();
+        const detectedRegion = createRegion(
+          approximateLocation.city || REGIONS[0].name,
+          [approximateLocation.latitude, approximateLocation.longitude],
+          LOCAL_ZOOM,
+        );
+        setUserLocation(approximateLocation);
+        setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
+        setSelectedRegionId(detectedRegion.id);
+        setMapFocus({
+          id: `network-location-${Date.now()}`,
+          center: detectedRegion.center,
+          zoom: detectedRegion.zoom,
+        });
+        setDataStatus(
+          denied
+            ? "Localização precisa bloqueada pelo navegador. Exibindo uma posição aproximada pela rede."
+            : "Localização aproximada encontrada pela rede.",
+        );
+        return true;
+      } catch {
+        // Mantém abaixo a orientação original caso as duas formas falhem.
+      }
       setSelectedRegionId(REGIONS[0].id);
       setDataStatus(
         denied
@@ -1870,7 +1894,7 @@ function UserLocationLayer({ location }) {
         interactive={false}
       >
         <Tooltip permanent direction="top" offset={[0, -18]} className="selection-tooltip">
-          Você está aqui
+          {location.approximate ? "Localização aproximada" : "Você está aqui"}
         </Tooltip>
       </Marker>
     </>
@@ -2197,6 +2221,24 @@ function getBrowserPosition() {
       maximumAge: 300000,
     });
   });
+}
+
+async function getNetworkLocation() {
+  const response = await fetch("https://ipwho.is/");
+  if (!response.ok) throw new Error("Falha ao obter localização aproximada.");
+  const data = await response.json();
+  const latitude = Number(data?.latitude);
+  const longitude = Number(data?.longitude);
+  if (data?.success === false || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error("Localização aproximada indisponível.");
+  }
+  return {
+    latitude,
+    longitude,
+    accuracy: 5000,
+    approximate: true,
+    city: data?.city || data?.region || "",
+  };
 }
 
 async function reverseGeocodeCity(latitude, longitude) {
