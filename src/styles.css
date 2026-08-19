@@ -1431,6 +1431,20 @@ body {
   cursor: default;
 }
 
+@media (min-width: 901px) {
+  .detail-card {
+    max-height: calc(100vh - 205px);
+  }
+
+  .detail-card.is-expanded {
+    max-height: calc(100vh - 205px);
+  }
+
+  .detail-card.is-expanded > img {
+    height: calc(100vh - 205px);
+  }
+}
+
 .detail-card__extended > .impact-pill {
   display: block;
   width: 100%;
