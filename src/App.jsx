@@ -17,7 +17,7 @@ import {
 import duqueBacelarLimiteUrl from "./data/duque-bacelar-limite.geojson?url";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
-const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas";
+const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas:v2";
 const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const REGIONAL_ZOOM = 7;
@@ -50,12 +50,6 @@ const CATEGORIES = [
   "Educação ambiental",
   "Outro",
 ];
-const DEFAULT_AREAS = [
-  areaSeed("Reserva do Buritizal", "Vegetação nativa", "preservado", "Cobertura vegetal estável e vigilância comunitária ativa.", "Área com boa regeneração natural e trilhas monitoradas por agentes locais.", createAreaPolygon(-4.122, -42.991)),
-  areaSeed("Margem do Riacho Bacelar", "Recursos hídricos", "atencao", "Sinais de assoreamento e descarte irregular em pontos isolados.", "Trecho com pressão moderada, exigindo vistoria mais frequente e limpeza preventiva.", createAreaPolygon(-4.145, -42.951)),
-  areaSeed("Zona de Queimada Recente", "Áreas degradadas", "critico", "Solo exposto, focos de calor recorrentes e risco alto de erosão.", "Ocorrência severa registrada por moradores, com necessidade de resposta rápida.", createAreaPolygon(-4.101, -42.903)),
-];
-
 export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
@@ -1739,11 +1733,6 @@ function ClusterCard({ areas }) {
   );
 }
 
-function areaSeed(name, category, status, impact, description, polygonCoords) {
-  const [latitude, longitude] = computeCentroid(polygonCoords);
-  return { id: createId(), name, category, region: REGIONS[0].name, status, impact, description, polygonCoords, latitude, longitude, image: createPlaceholderImage(name, statusToColor(status)) };
-}
-
 function emptyAreaForm() {
   return { name: "", category: "", status: "preservado", impact: "", description: "", polygonCoords: [] };
 }
@@ -1762,10 +1751,9 @@ function loadAreas() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    const source = Array.isArray(parsed) && parsed.length ? parsed : DEFAULT_AREAS;
-    return source.map(normalizeAreaShape);
+    return Array.isArray(parsed) ? parsed.map(normalizeAreaShape) : [];
   } catch {
-    return DEFAULT_AREAS.map(normalizeAreaShape);
+    return [];
   }
 }
 
