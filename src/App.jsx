@@ -23,6 +23,7 @@ const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const REGIONAL_ZOOM = 7;
 const LOCAL_ZOOM = 12;
+const MAX_MAP_ZOOM = 20;
 const REGIONS = [
   { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
 ];
@@ -737,12 +738,13 @@ export default function App() {
           boxZoom={true}
           keyboard={true}
           tap={true}
+          maxZoom={MAX_MAP_ZOOM}
           className="leaflet-map"
         >
           {activeBaseMap === "satellite" ? (
-            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} />
+            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} maxNativeZoom={18} maxZoom={MAX_MAP_ZOOM} />
           ) : (
-            <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} />
+            <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} />
           )}
           <MapFocusController focus={mapFocus} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
@@ -818,7 +820,7 @@ export default function App() {
             }}
           />
           <Pane name="labels-pane" style={{ zIndex: 450, pointerEvents: "none" }}>
-            <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} />
+            <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} maxNativeZoom={18} maxZoom={MAX_MAP_ZOOM} />
           </Pane>
         </MapContainer>
         <BottomSheet
