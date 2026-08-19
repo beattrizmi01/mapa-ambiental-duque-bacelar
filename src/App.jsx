@@ -1135,6 +1135,7 @@ function AreaLayer(props) {
   } = props;
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
+  const [hasCenteredOnAreas, setHasCenteredOnAreas] = useState(false);
   const clusters = useMemo(() => createAreaClusters(areas, zoom), [areas, zoom]);
 
   useEffect(() => {
@@ -1142,6 +1143,15 @@ function AreaLayer(props) {
     map.on("zoomend", syncZoom);
     return () => map.off("zoomend", syncZoom);
   }, [map]);
+
+  useEffect(() => {
+    if (hasCenteredOnAreas || !areas.length) return;
+    const densestCluster = createAreaClusters(areas, 10)
+      .sort((left, right) => right.areas.length - left.areas.length)[0];
+    if (!densestCluster) return;
+    setHasCenteredOnAreas(true);
+    map.setView(densestCluster.center, 10, { animate: false });
+  }, [areas, hasCenteredOnAreas, map]);
 
   if (drawingEnabled) {
     return areas.map((area) => (
