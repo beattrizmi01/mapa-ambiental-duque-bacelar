@@ -391,6 +391,8 @@ export default function App() {
     setAreaErrorMessage("");
 
     const requiredAreaFields = [
+      [areaForm.reporterName, "Informe o nome de quem está realizando o cadastro."],
+      [areaForm.reporterRole, "Informe a função ou o órgão de quem está realizando o cadastro."],
       [areaForm.name, "Informe o nome da área."],
       [areaForm.category, "Informe a categoria da área."],
       [areaForm.status, "Informe o status da área."],
@@ -438,7 +440,7 @@ export default function App() {
       region: selectedRegion.name,
       status: areaForm.status,
       impact: areaForm.impact.trim(),
-      description: areaForm.description.trim(),
+      description: `${areaForm.description.trim()}\n\nCadastrado por: ${areaForm.reporterName.trim()} — ${areaForm.reporterRole.trim()}`,
       polygonCoords,
       latitude,
     longitude,
@@ -501,6 +503,12 @@ export default function App() {
       return;
     }
 
+    if (!occurrenceForm.reporterName.trim() || !occurrenceForm.reporterRole.trim()) {
+      setOccurrenceErrorMessage("Informe o nome e a função ou órgão de quem está registrando a ocorrência.");
+      setOpenCard("occurrence");
+      return;
+    }
+
     if (!occurrenceForm.impact.trim() || !occurrenceForm.description.trim()) {
       setOccurrenceErrorMessage("Preencha o impacto observado e os detalhes da ocorrência.");
       setOpenCard("occurrence");
@@ -533,7 +541,7 @@ export default function App() {
       occurrenceForm.nextStatus !== targetArea.status;
     const patch = {
       impact: occurrenceForm.impact.trim(),
-      description: `${baseDescription}${locationSuffix}`,
+      description: `${baseDescription}${locationSuffix}\n\nRegistrado por: ${occurrenceForm.reporterName.trim()} — ${occurrenceForm.reporterRole.trim()}`,
       status: shouldUpdateStatus ? occurrenceForm.nextStatus : targetArea.status,
       previousStatus: shouldUpdateStatus ? targetArea.status : null,
       statusUpdated: shouldUpdateStatus,
@@ -1330,6 +1338,14 @@ function AreaFormPanel(props) {
 
   return (
     <form className="dark-form" onSubmit={onSubmitArea}>
+      <div className="form-section-heading">
+        <strong>Identificação do responsável</strong>
+        <small>Informe quem está realizando este cadastro.</small>
+      </div>
+      <div className="field-row">
+        <Field label="Nome do responsável"><input required autoComplete="name" value={areaForm.reporterName} onChange={(event) => setAreaForm((current) => ({ ...current, reporterName: event.target.value }))} placeholder="Nome completo" /></Field>
+        <Field label="Função ou órgão"><input required value={areaForm.reporterRole} onChange={(event) => setAreaForm((current) => ({ ...current, reporterRole: event.target.value }))} placeholder="Ex.: Fiscal ambiental / Secretaria" /></Field>
+      </div>
       <Field label="Nome da área"><input required value={areaForm.name} onChange={(event) => setAreaForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Nascente do Riacho Fundo" /></Field>
       <Field label="Categoria">
         <CategoriaSelect
@@ -1399,6 +1415,14 @@ function OccurrenceFormPanel(props) {
 
   return (
     <form className="dark-form" onSubmit={onSubmitOccurrence}>
+      <div className="form-section-heading">
+        <strong>Identificação do responsável</strong>
+        <small>Informe quem está registrando esta ocorrência.</small>
+      </div>
+      <div className="field-row">
+        <Field label="Nome do responsável"><input required autoComplete="name" value={occurrenceForm.reporterName} onChange={(event) => setOccurrenceForm((current) => ({ ...current, reporterName: event.target.value }))} placeholder="Nome completo" /></Field>
+        <Field label="Função ou órgão"><input required value={occurrenceForm.reporterRole} onChange={(event) => setOccurrenceForm((current) => ({ ...current, reporterRole: event.target.value }))} placeholder="Ex.: Fiscal ambiental / Secretaria" /></Field>
+      </div>
       <Field label="Área vinculada"><select required value={occurrenceForm.areaId} onChange={(event) => setOccurrenceForm((current) => ({ ...current, areaId: event.target.value }))}>{areas.map((area) => <option key={area.id} value={area.id}>{area.name}</option>)}</select></Field>
       <div className="status-reference">
         <span className="status-reference__label">Categoria da área</span>
@@ -2048,12 +2072,14 @@ function ClusterCard({ areas }) {
 }
 
 function emptyAreaForm() {
-  return { name: "", category: "", status: "preservado", impact: "", description: "", polygonCoords: [] };
+  return { reporterName: "", reporterRole: "", name: "", category: "", status: "preservado", impact: "", description: "", polygonCoords: [] };
 }
 
 function emptyOccurrenceForm(areaId = "") {
   return {
     areaId,
+    reporterName: "",
+    reporterRole: "",
     impact: "",
     description: "",
     updateStatus: false,

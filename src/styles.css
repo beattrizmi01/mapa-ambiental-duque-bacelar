@@ -446,6 +446,24 @@ body {
   gap: 18px;
 }
 
+.form-section-heading {
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid #43d487;
+  padding: 2px 0 2px 12px;
+}
+
+.form-section-heading strong {
+  color: #eef8ff;
+  font-size: 0.96rem;
+}
+
+.form-section-heading small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .field {
   display: grid;
   gap: 8px;
