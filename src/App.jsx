@@ -166,6 +166,8 @@ export default function App() {
         return;
       }
       const mapped = (data ?? []).map(mapSupabaseAreaToApp).filter(Boolean);
+      setAreas(mapped);
+      setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(mapped)));
       const { data: occurrenceRows, error: occurrenceError } = await supabase
         .from("occurrences")
         .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
@@ -190,8 +192,6 @@ export default function App() {
           setStatusHistory((fallbackHistoryRows ?? []).map(mapStatusHistoryRowToApp));
         }
       }
-      setAreas(mapped);
-      setAvailableRegions((current) => mergeRegions(current, regionsFromAreas(mapped)));
       setDataMode("supabase");
       setDataStatus(mapped.length ? `Exibindo ${mapped.length} registro(s) do Supabase.` : "Supabase conectado, mas nenhuma área foi encontrada ainda.");
     }
@@ -202,7 +202,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (hasSupabaseConfig() || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(areas));
     } catch (error) {
