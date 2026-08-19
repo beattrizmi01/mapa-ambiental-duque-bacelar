@@ -74,7 +74,7 @@ body {
   gap: clamp(3px, 0.6vw, 7px);
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .eyebrow {
@@ -1646,7 +1646,7 @@ body {
   align-items: center;
   gap: 12px;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   border: 0;
   padding: 0;
   background: transparent;
