@@ -1650,20 +1650,6 @@ function MobileMapActions({ isDrawingArea, onOpenArea, onOpenOccurrence, onOpenL
           <strong>Ajuda</strong>
         </button>
       </div>
-      {!isDrawingArea ? (
-        <button type="button" className="mobile-status-card" onClick={onOpenLegend}>
-          <span className="mobile-status-card__dots" aria-hidden="true">
-            <span className="legend-swatch legend-swatch--green"></span>
-            <span className="legend-swatch legend-swatch--yellow"></span>
-            <span className="legend-swatch legend-swatch--red"></span>
-          </span>
-          <span className="mobile-status-card__copy">
-            <strong>Legenda</strong>
-            <span>Ver significado das cores</span>
-          </span>
-          <span className="mobile-status-card__chevron" aria-hidden="true">›</span>
-        </button>
-      ) : null}
       <div className="mobile-fab-dock">
         <MobileFabButton label="Legenda" description="Entenda as cores e classificações do mapa." onClick={onOpenLegend}>
           <LegendIcon />
