@@ -1539,7 +1539,7 @@ function MobileWorkspace({
   return (
     <div className={`mobile-workspace${overlayOpen ? " mobile-workspace--overlay-open" : ""}`}>
       <header className="mobile-gis-header">
-        <button type="button" className="mobile-gis-brand" onClick={() => { setWelcomeVisible(true); onGoHome(); }} aria-label="Voltar ao início">
+        <button type="button" className="mobile-gis-brand" onClick={() => { setWelcomeVisible(true); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
           <span className="mobile-gis-brand__mark"><LeafIcon /></span>
           <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
         </button>
@@ -1649,7 +1649,7 @@ function DesktopWorkspace({
   return (
     <div className="desktop-workspace">
       <header className="gis-header">
-        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setAboutExpanded(false); setLayersExpanded(false); setSummaryExpanded(false); onGoHome(); }} aria-label="Voltar ao início">
+        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setAboutExpanded(false); setLayersExpanded(false); setSummaryExpanded(false); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
           <span className="gis-brand__mark"><LeafIcon /></span>
           <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
         </button>
