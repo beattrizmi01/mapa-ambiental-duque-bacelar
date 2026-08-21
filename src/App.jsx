@@ -401,6 +401,16 @@ export default function App() {
         longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
       };
+      const boundaryRegionName = getRegionNameAtPoint(
+        boundaryData,
+        nextLocation.latitude,
+        nextLocation.longitude,
+      );
+      if (!boundaryRegionName && Number(nextLocation.accuracy) > 3000) {
+        const inaccurateError = new Error("A localização fornecida pelo dispositivo é muito imprecisa.");
+        inaccurateError.code = "LOCATION_INACCURATE";
+        throw inaccurateError;
+      }
       setUserLocation(nextLocation);
       setMapFocus({
         id: `user-location-${Date.now()}`,
@@ -409,11 +419,7 @@ export default function App() {
       });
       let cityName = "";
       try {
-        cityName = getRegionNameAtPoint(
-          boundaryData,
-          nextLocation.latitude,
-          nextLocation.longitude,
-        ) || await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
+        cityName = boundaryRegionName || await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
       } catch {
         // A localização continua válida mesmo se o serviço de nome da cidade falhar.
       }
@@ -433,39 +439,14 @@ export default function App() {
       return true;
     } catch (error) {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
-      try {
-        const approximateLocation = await getNetworkLocation();
-        const approximateRegionName = getRegionNameAtPoint(
-          boundaryData,
-          approximateLocation.latitude,
-          approximateLocation.longitude,
-        ) || approximateLocation.city || REGIONS[0].name;
-        const detectedRegion = createRegion(
-          approximateRegionName,
-          [approximateLocation.latitude, approximateLocation.longitude],
-          LOCAL_ZOOM,
-        );
-        setUserLocation(approximateLocation);
-        setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
-        setSelectedRegionId(detectedRegion.id);
-        setMapFocus({
-          id: `network-location-${Date.now()}`,
-          center: detectedRegion.center,
-          zoom: detectedRegion.zoom,
-        });
-        setDataStatus(
-          denied
-            ? "Localização precisa bloqueada pelo navegador. Exibindo uma posição aproximada pela rede."
-            : "Localização aproximada encontrada pela rede.",
-        );
-        return true;
-      } catch {
-        // Mantém abaixo a orientação original caso as duas formas falhem.
-      }
+      const inaccurate = error?.code === "LOCATION_INACCURATE";
+      setUserLocation(null);
       setSelectedRegionId(REGIONS[0].id);
       setDataStatus(
         denied
-          ? "Permissão de localização negada. Região padrão definida como Duque Bacelar."
+          ? "Permissão de localização negada. Autorize a localização precisa do dispositivo para identificar sua região."
+          : inaccurate
+            ? "A posição fornecida pelo dispositivo está imprecisa. Ative a localização precisa e tente novamente."
           : "Não foi possível detectar sua localização. Região atual mantida.",
       );
       return false;
@@ -2641,36 +2622,18 @@ function getBrowserPosition() {
 
   return requestPosition({
     enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 60000,
+    timeout: 20000,
+    maximumAge: 0,
   }).catch((error) => {
     const permissionDenied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
     if (permissionDenied) throw error;
 
     return requestPosition({
       enableHighAccuracy: false,
-      timeout: 20000,
-      maximumAge: 300000,
+      timeout: 30000,
+      maximumAge: 0,
     });
   });
-}
-
-async function getNetworkLocation() {
-  const response = await fetch("https://ipwho.is/");
-  if (!response.ok) throw new Error("Falha ao obter localização aproximada.");
-  const data = await response.json();
-  const latitude = Number(data?.latitude);
-  const longitude = Number(data?.longitude);
-  if (data?.success === false || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    throw new Error("Localização aproximada indisponível.");
-  }
-  return {
-    latitude,
-    longitude,
-    accuracy: 5000,
-    approximate: true,
-    city: data?.city || data?.region || "",
-  };
 }
 
 async function reverseGeocodeCity(latitude, longitude) {
