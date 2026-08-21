@@ -818,15 +818,24 @@ export default function App() {
     <div className={`app-shell${isMobileViewport && openCard ? " app-shell--mobile-overlay-open" : ""}`}>
       {isMobileViewport ? <MobileWorkspace
         overlayOpen={Boolean(openCard)}
+        activeCard={openCard}
         selectedRegion={selectedRegion}
         isLocatingUser={isLocatingUser}
         onLocateUser={locateUser}
         onSearch={searchLocation}
         onOpenAbout={() => setOpenCard("about-mobile")}
-        onOpenArea={() => setOpenCard("area")}
-        onOpenOccurrence={openOccurrenceFlow}
-        onOpenLegend={() => setOpenCard("legend")}
-        onOpenReports={() => setOpenCard("status")}
+        onOpenArea={() => {
+          if (openCard === "area") { resetAreaDraft(); setOpenCard(null); }
+          else setOpenCard("area");
+        }}
+        onOpenOccurrence={() => {
+          if (openCard === "occurrence" || openCard === "occurrence-guide") {
+            if (openCard === "occurrence") resetOccurrenceDraft();
+            setOpenCard(null);
+          } else openOccurrenceFlow();
+        }}
+        onOpenLegend={() => setOpenCard((current) => current === "legend" ? null : "legend")}
+        onOpenReports={() => setOpenCard((current) => current === "status" ? null : "status")}
         onOpenFilters={() => setOpenCard("layers")}
       /> : <DesktopWorkspace
         selectedRegion={selectedRegion}
@@ -1304,6 +1313,7 @@ function AreaLayer(props) {
 
 function MobileWorkspace({
   overlayOpen,
+  activeCard,
   selectedRegion,
   isLocatingUser,
   onLocateUser,
@@ -1327,7 +1337,7 @@ function MobileWorkspace({
   }
 
   return (
-    <div className={`mobile-workspace${overlayOpen ? " mobile-workspace--overlay-open" : ""}`} aria-hidden={overlayOpen || undefined}>
+    <div className={`mobile-workspace${overlayOpen ? " mobile-workspace--overlay-open" : ""}`}>
       <header className="mobile-gis-header">
         <div className="mobile-gis-brand">
           <span className="mobile-gis-brand__mark"><LeafIcon /></span>
@@ -1366,17 +1376,17 @@ function MobileWorkspace({
       </section> : null}
 
       <nav className="mobile-bottom-nav" aria-label="Ações principais">
-        <MobileNavAction icon={<AreaIcon />} label="Nova área" onClick={onOpenArea} />
-        <MobileNavAction icon={<AlertIcon />} label="Ocorrência" onClick={onOpenOccurrence} />
-        <MobileNavAction icon={<LegendIcon />} label="Legenda" onClick={onOpenLegend} />
-        <MobileNavAction icon={<StatusIcon />} label="Relatórios" onClick={onOpenReports} />
+        <MobileNavAction icon={<AreaIcon />} label="Nova área" onClick={onOpenArea} active={activeCard === "area"} />
+        <MobileNavAction icon={<AlertIcon />} label="Ocorrência" onClick={onOpenOccurrence} active={activeCard === "occurrence" || activeCard === "occurrence-guide"} />
+        <MobileNavAction icon={<LegendIcon />} label="Legenda" onClick={onOpenLegend} active={activeCard === "legend"} />
+        <MobileNavAction icon={<StatusIcon />} label="Relatórios" onClick={onOpenReports} active={activeCard === "status"} />
       </nav>
     </div>
   );
 }
 
-function MobileNavAction({ icon, label, onClick }) {
-  return <button type="button" onClick={onClick}>{icon}<span>{label}</span></button>;
+function MobileNavAction({ icon, label, onClick, active = false }) {
+  return <button type="button" className={active ? "is-active" : ""} onClick={onClick} aria-pressed={active}>{icon}<span>{label}</span></button>;
 }
 
 function MaximizeIcon() {
