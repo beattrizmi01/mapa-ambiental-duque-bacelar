@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useRef } from "react";
+import { createPortal } from "react-dom";
 import L from "leaflet";
 import {
   CircleMarker,
@@ -2169,8 +2170,8 @@ function AreaCreatedNextStep({ area, onRegisterOccurrence, onFinish }) {
 }
 
 function BottomSheet({ isOpen, title, onClose, children, large = false }) {
-  if (!isOpen) return null;
-  return (
+  if (!isOpen || typeof document === "undefined") return null;
+  return createPortal(
     <div className="bottom-sheet-backdrop" onClick={onClose}>
       <section className={`bottom-sheet${large ? " bottom-sheet--large" : ""}`} onClick={(event) => event.stopPropagation()}>
         <div className="bottom-sheet__handle" />
@@ -2207,7 +2208,8 @@ function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLaye
           </button>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
