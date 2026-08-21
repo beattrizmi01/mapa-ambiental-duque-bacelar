@@ -1037,7 +1037,7 @@ export default function App() {
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "occurrence-guide"}
-          title="Selecione uma área"
+          title="Registrar ocorrência"
           onClose={() => setOpenCard(null)}
         >
           <OccurrenceGuide
@@ -1415,7 +1415,7 @@ function DesktopWorkspace({
           </div>
         </section> : null}
         <section className={`gis-white-panel layers-overview${layersExpanded ? " is-expanded" : " is-collapsed"}`}>
-          <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Ocorrências</strong><span className="layers-chevron">⌃</span></button>
+          <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Filtros do mapa</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
             {layerOptions.map((option) => (
               <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span>{option.icon}</span><span>{option.label}</span><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
