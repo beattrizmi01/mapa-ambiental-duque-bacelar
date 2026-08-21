@@ -1353,6 +1353,7 @@ function DesktopWorkspace({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [layersExpanded, setLayersExpanded] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
   const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
     + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
@@ -1406,11 +1407,13 @@ function DesktopWorkspace({
             ))}
           </div> : null}
         </section>
-        <section className="gis-white-panel summary-overview">
-          <h2>Resumo geral</h2>
-          <SummaryRow tone="green" icon={<LeafIcon />} label="Áreas preservadas" value={preserved} />
-          <SummaryRow tone="yellow" icon={<AlertIcon />} label="Áreas de atenção" value={attention} />
-          <SummaryRow tone="red" icon={<FlameIcon />} label="Ocorrências registradas" value={occurrenceCount} />
+        <section className={`gis-white-panel summary-overview${summaryExpanded ? " is-expanded" : " is-collapsed"}`}>
+          <button type="button" className="gis-panel-title summary-panel-title" onClick={() => setSummaryExpanded((current) => !current)} aria-expanded={summaryExpanded}><StatusIcon /><strong>Resumo geral</strong><span className="summary-chevron">⌃</span></button>
+          {summaryExpanded ? <div className="summary-overview__content">
+            <SummaryRow tone="green" icon={<LeafIcon />} label="Áreas preservadas" value={preserved} />
+            <SummaryRow tone="yellow" icon={<AlertIcon />} label="Áreas de atenção" value={attention} />
+            <SummaryRow tone="red" icon={<FlameIcon />} label="Ocorrências registradas" value={occurrenceCount} />
+          </div> : null}
         </section>
       </aside>
 
