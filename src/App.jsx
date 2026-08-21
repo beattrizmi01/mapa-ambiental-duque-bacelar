@@ -364,7 +364,11 @@ export default function App() {
       });
       let cityName = "";
       try {
-        cityName = await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
+        cityName = getRegionNameAtPoint(
+          boundaryData,
+          nextLocation.latitude,
+          nextLocation.longitude,
+        ) || await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
       } catch {
         // A localização continua válida mesmo se o serviço de nome da cidade falhar.
       }
@@ -386,8 +390,13 @@ export default function App() {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
       try {
         const approximateLocation = await getNetworkLocation();
+        const approximateRegionName = getRegionNameAtPoint(
+          boundaryData,
+          approximateLocation.latitude,
+          approximateLocation.longitude,
+        ) || approximateLocation.city || REGIONS[0].name;
         const detectedRegion = createRegion(
-          approximateLocation.city || REGIONS[0].name,
+          approximateRegionName,
           [approximateLocation.latitude, approximateLocation.longitude],
           LOCAL_ZOOM,
         );
@@ -1320,10 +1329,7 @@ function CompactHeader({
         </span>
         <div className="compact-header__main">
           <span className="platform-brand">
-            <strong>
-              <span>Mapa Ambiental de</span>
-              <span className="platform-brand__place">Duque Bacelar</span>
-            </strong>
+            <strong>MAPA AMBIENTAL</strong>
           </span>
           <button
             type="button"
@@ -2513,6 +2519,42 @@ async function reverseGeocodeCity(latitude, longitude) {
     address.state ||
     ""
   );
+}
+
+function getRegionNameAtPoint(geojson, latitude, longitude) {
+  if (!geojson || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return "";
+  const features = geojson.type === "FeatureCollection" ? geojson.features : [geojson];
+  const matchingFeature = features.find((feature) => geometryContainsPoint(feature?.geometry, longitude, latitude));
+  return matchingFeature?.properties?.name || matchingFeature?.properties?.municipality || "";
+}
+
+function geometryContainsPoint(geometry, longitude, latitude) {
+  if (!geometry?.coordinates) return false;
+  const polygons = geometry.type === "Polygon"
+    ? [geometry.coordinates]
+    : geometry.type === "MultiPolygon"
+      ? geometry.coordinates
+      : [];
+  return polygons.some((polygon) => {
+    const [outerRing, ...holes] = polygon;
+    return pointIsInsideRing(longitude, latitude, outerRing)
+      && !holes.some((hole) => pointIsInsideRing(longitude, latitude, hole));
+  });
+}
+
+function pointIsInsideRing(longitude, latitude, ring = []) {
+  let inside = false;
+  for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index, index += 1) {
+    const [currentLongitude, currentLatitude] = ring[index] ?? [];
+    const [previousLongitude, previousLatitude] = ring[previous] ?? [];
+    const crossesLatitude = currentLatitude > latitude !== previousLatitude > latitude;
+    const intersectionLongitude = crossesLatitude
+      ? ((previousLongitude - currentLongitude) * (latitude - currentLatitude))
+        / (previousLatitude - currentLatitude) + currentLongitude
+      : Number.POSITIVE_INFINITY;
+    if (crossesLatitude && longitude < intersectionLongitude) inside = !inside;
+  }
+  return inside;
 }
 
 function normalizePolygonCoords(coords, fallbackLatitude, fallbackLongitude) {
