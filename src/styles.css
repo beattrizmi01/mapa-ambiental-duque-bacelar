@@ -598,7 +598,15 @@ body {
   .mobile-about-content { color: #334148; line-height: 1.5; }
   .mobile-about-content > strong { color: #24713a; font-size: 21px; }
   .mobile-about-content ul { padding-left: 20px; }
-  .mobile-about-content small { display: block; padding-top: 14px; border-top: 1px solid #d9e0df; }
+.mobile-about-content small { display: block; padding-top: 14px; border-top: 1px solid #d9e0df; }
+
+.location-permission-help { display: grid; gap: 14px; color: #dbe6f0; line-height: 1.45; }
+.location-permission-help > p { margin: 0; padding: 12px 13px; color: #ffe6a5; background: rgba(232, 186, 57, .1); border: 1px solid rgba(232, 186, 57, .28); border-radius: 14px; }
+.location-permission-help section { padding: 12px 14px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(161, 179, 201, .14); border-radius: 14px; }
+.location-permission-help section > strong { color: #7ee2a9; }
+.location-permission-help ol { margin: 8px 0 0; padding-left: 20px; }
+.location-permission-help li + li { margin-top: 5px; }
+.location-permission-help__actions { display: grid; gap: 9px; }
 
   .sidebar, .desktop-workspace, .mobile-fab-dock, .mobile-side-rail { display: none !important; }
 

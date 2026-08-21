@@ -103,7 +103,6 @@ export default function App() {
     typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false,
   );
   const boundaryData = DUQUE_BACELAR_BOUNDARY;
-  const hasRequestedLocation = useRef(false);
   const [dataMode, setDataMode] = useState(hasSupabaseConfig() ? "supabase" : "local");
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
   const [selectedRegionId, setSelectedRegionId] = useState(REGIONS[0].id);
@@ -187,12 +186,6 @@ export default function App() {
       setShowMobileTips(true);
     }
   }, [isMobileViewport]);
-
-  useEffect(() => {
-    if (hasRequestedLocation.current) return;
-    hasRequestedLocation.current = true;
-    void detectUserRegion();
-  }, []);
 
   useEffect(() => {
     if (!locationNotice || isLocatingUser) return undefined;
@@ -458,6 +451,7 @@ export default function App() {
       if (permission?.state === "denied") {
         setDataStatus("Permissão de localização bloqueada no navegador.");
         setLocationNotice("Localização bloqueada. Autorize-a nas configurações deste site e tente novamente.");
+        setOpenCard("location-permission");
         return false;
       }
     } catch {
@@ -533,6 +527,7 @@ export default function App() {
               ? "O GPS demorou para responder. Verifique se a localização está ativada e tente novamente."
               : "Não foi possível obter a localização. Verifique o GPS e tente novamente.",
       );
+      if (denied) setOpenCard("location-permission");
       return false;
     } finally {
       setIsLocatingUser(false);
@@ -1121,6 +1116,19 @@ export default function App() {
           </Pane> : null}
         </MapContainer>
         <BottomSheet
+          isOpen={openCard === "location-permission"}
+          title="Liberar localização"
+          onClose={() => setOpenCard(null)}
+        >
+          <LocationPermissionHelp
+            onRetry={() => {
+              setOpenCard(null);
+              window.setTimeout(() => { void detectUserRegion(); }, 150);
+            }}
+            onClose={() => setOpenCard(null)}
+          />
+        </BottomSheet>
+        <BottomSheet
           isOpen={openCard === "about-mobile"}
           title="Sobre o projeto"
           onClose={() => setOpenCard(null)}
@@ -1549,6 +1557,15 @@ function MobileAboutContent() {
       <li>Visualização por filtros e situação ambiental</li>
     </ul>
     <small>Projeto ligado à II HACKEPT — Maratona de Inovação dos Centros Educa Mais e EJATEC 2026.</small>
+  </div>;
+}
+
+function LocationPermissionHelp({ onRetry, onClose }) {
+  return <div className="location-permission-help">
+    <p>O navegador já está com a localização bloqueada e não pode mostrar novamente o botão “Permitir” até você alterar a permissão do site.</p>
+    <section><strong>Android — Chrome</strong><ol><li>Toque no ícone ao lado do endereço do site.</li><li>Abra “Permissões” ou “Configurações do site”.</li><li>Em “Localização”, escolha “Permitir”.</li></ol></section>
+    <section><strong>iPhone — Safari</strong><ol><li>Abra Ajustes → Privacidade e Segurança.</li><li>Entre em Serviços de Localização → Sites do Safari.</li><li>Escolha “Durante o uso do app”.</li></ol></section>
+    <div className="location-permission-help__actions"><button type="button" className="btn btn--green" onClick={onRetry}>Já permiti, tentar novamente</button><button type="button" className="btn btn--ghost" onClick={onClose}>Fechar</button></div>
   </div>;
 }
 
