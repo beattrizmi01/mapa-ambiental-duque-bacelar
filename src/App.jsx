@@ -735,6 +735,7 @@ export default function App() {
       occurrenceForm.updateStatus &&
       occurrenceForm.nextStatus &&
       occurrenceForm.nextStatus !== targetArea.status;
+    let statusWasUpdated = shouldUpdateStatus;
     const patch = {
       impact: occurrenceForm.impact.trim(),
       description: `${baseDescription}${locationSuffix}\n\nRegistrado por: ${occurrenceForm.reporterName.trim()} — ${occurrenceForm.reporterRole.trim()}`,
@@ -746,7 +747,7 @@ export default function App() {
       lastOccurrenceDescription: shouldUpdateStatus ? `${baseDescription}${locationSuffix}` : targetArea.lastOccurrenceDescription,
     };
     if (hasSupabaseConfig()) {
-      const { data: occurrenceResult, error: occurrenceError } = await supabase.rpc(
+      let { data: occurrenceResult, error: occurrenceError } = await supabase.rpc(
         "register_occurrence_with_status",
         {
           p_area_id: occurrenceForm.areaId,
@@ -760,6 +761,56 @@ export default function App() {
           p_changed_by: null,
         },
       );
+
+      if (occurrenceError && isMissingOccurrenceRpc(occurrenceError)) {
+        const { data: insertedOccurrence, error: insertError } = await supabase
+          .from("occurrences")
+          .insert({
+            area_id: occurrenceForm.areaId,
+            impact: patch.impact,
+            description: patch.description,
+            latitude: occurrenceLocation?.latitude ?? null,
+            longitude: occurrenceLocation?.longitude ?? null,
+            image_url: occurrencePreview ?? null,
+            previous_status: shouldUpdateStatus ? targetArea.status : null,
+            new_status: shouldUpdateStatus ? patch.status : null,
+            status_updated: shouldUpdateStatus,
+            created_by: null,
+          })
+          .select()
+          .single();
+
+        occurrenceError = insertError;
+        if (!insertError && insertedOccurrence) {
+          let updatedArea = targetArea;
+          if (shouldUpdateStatus) {
+            const { data: updatedRow, error: updateError } = await supabase
+              .from("areas")
+              .update({
+                status: patch.status,
+                impact: patch.impact,
+                description: patch.description,
+                image_url: occurrencePreview ?? targetArea.image,
+                last_occurrence_id: insertedOccurrence.id,
+                last_status_review_at: reviewTimestamp,
+              })
+              .eq("id", occurrenceForm.areaId)
+              .select()
+              .single();
+            if (updateError) {
+              console.error(updateError);
+              statusWasUpdated = false;
+            } else {
+              updatedArea = updatedRow;
+            }
+          }
+          occurrenceResult = {
+            occurrence_id: insertedOccurrence.id,
+            area: updatedArea,
+            status_changed: statusWasUpdated,
+          };
+        }
+      }
 
       if (occurrenceError) {
         console.error(occurrenceError);
@@ -776,13 +827,13 @@ export default function App() {
         ...targetArea,
         impact: patch.impact,
         description: patch.description,
-        status: patch.status,
+        status: statusWasUpdated ? patch.status : targetArea.status,
         image: occurrencePreview ?? targetArea.image,
       };
 
       setDataMode("supabase");
       setDataStatus(
-        shouldUpdateStatus
+        statusWasUpdated
           ? `Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`
           : "Ocorrência sincronizada sem alterar o status da área.",
       );
@@ -794,12 +845,12 @@ export default function App() {
           impact: patch.impact,
           description: patch.description,
           previous_status: patch.previousStatus,
-          new_status: shouldUpdateStatus ? patch.status : null,
-          status_updated: shouldUpdateStatus,
+          new_status: statusWasUpdated ? patch.status : null,
+          status_updated: statusWasUpdated,
           created_at: reviewTimestamp,
         },
       ]);
-      if (shouldUpdateStatus) {
+      if (statusWasUpdated) {
         const historyEntry = buildStatusHistoryEntry({
           area: targetArea,
           occurrenceId: occurrenceResult?.occurrence_id ?? createId(),
@@ -825,8 +876,8 @@ export default function App() {
             ? {
                 ...area,
                 ...mapped,
-                previousStatus: patch.previousStatus,
-                statusUpdated: patch.statusUpdated,
+                previousStatus: statusWasUpdated ? patch.previousStatus : null,
+                statusUpdated: statusWasUpdated,
                 lastStatusReviewAt: patch.lastStatusReviewAt,
                 lastStatusChangeReason: patch.impact,
                 lastOccurrenceDescription: patch.description,
@@ -835,7 +886,7 @@ export default function App() {
             : area,
         ),
       );
-      if (shouldUpdateStatus) {
+      if (statusWasUpdated) {
         setOccurrenceSuccessMessage(`Área ${targetArea.name} atualizada de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`);
       } else {
         setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
@@ -3066,6 +3117,12 @@ function getMarkerIcon(status, isRecentlyUpdated = false) {
     iconSize: [48, 48],
     iconAnchor: [24, 24],
   });
+}
+
+function isMissingOccurrenceRpc(error) {
+  const message = String(error?.message ?? "").toLowerCase();
+  return error?.code === "PGRST202"
+    || (message.includes("could not find the function") && message.includes("register_occurrence_with_status"));
 }
 
 function getMarkerSymbol(status) {
