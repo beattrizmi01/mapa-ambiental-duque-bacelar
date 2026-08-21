@@ -1086,7 +1086,7 @@ export default function App() {
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "status"}
-          title="Status das áreas"
+          title="Relatórios ambientais"
           onClose={() => setOpenCard(null)}
         >
           <StatusContent areas={areas} onSelectArea={openAreaFromStatus} />
@@ -1993,12 +1993,20 @@ function LegendContent() {
 }
 
 function StatusContent({ areas, onSelectArea }) {
+  const total = areas.length;
   const statusItems = [
     { status: "preservado", label: "Preservadas", swatch: "green" },
     { status: "atencao", label: "Em atenção", swatch: "yellow" },
     { status: "critico", label: "Críticas", swatch: "red" },
-  ];
-  const total = areas.length;
+  ].map((item) => {
+    const filteredAreas = areas.filter((area) => area.status === item.status);
+    return { ...item, filteredAreas, count: filteredAreas.length, percentage: total ? Math.round((filteredAreas.length / total) * 100) : 0 };
+  });
+  const preservedEnd = statusItems[0].percentage;
+  const attentionEnd = preservedEnd + statusItems[1].percentage;
+  const chartBackground = total
+    ? `conic-gradient(#2fbf7a 0 ${preservedEnd}%, #f5bd38 ${preservedEnd}% ${attentionEnd}%, #ef5a5f ${attentionEnd}% 100%)`
+    : "conic-gradient(#34424d 0 100%)";
 
   return (
     <div className="status-summary">
@@ -2006,19 +2014,29 @@ function StatusContent({ areas, onSelectArea }) {
         <span>Total monitorado</span>
         <strong>{total}</strong>
       </div>
+      <section className="status-chart" aria-label="Gráfico da situação ambiental das áreas">
+        <div className="status-chart__donut" style={{ background: chartBackground }} role="img" aria-label={`${statusItems[0].percentage}% preservadas, ${statusItems[1].percentage}% em atenção e ${statusItems[2].percentage}% críticas`}>
+          <span><strong>{total}</strong><small>áreas</small></span>
+        </div>
+        <div className="status-chart__bars">
+          {statusItems.map((item) => <div className={`status-chart__row status-chart__row--${item.swatch}`} key={item.status}>
+            <div><span>{item.label}</span><strong>{item.count} · {item.percentage}%</strong></div>
+            <i><b style={{ width: `${item.percentage}%` }} /></i>
+          </div>)}
+        </div>
+      </section>
       <div className="status-summary__grid">
         {statusItems.map((item) => {
-          const filteredAreas = areas.filter((area) => area.status === item.status);
           return (
             <section key={item.status} className="status-summary__card">
               <div className="status-summary__header">
                 <span className={`legend-swatch legend-swatch--${item.swatch}`}></span>
                 <span>{item.label}</span>
-                <strong>{filteredAreas.length}</strong>
+                <strong>{item.count}</strong>
               </div>
               <div className="status-summary__areas">
-                {filteredAreas.length ? (
-                  filteredAreas.map((area) => (
+                {item.filteredAreas.length ? (
+                  item.filteredAreas.map((area) => (
                     <button type="button" key={area.id} onClick={() => onSelectArea(area)}>
                       <span>{area.name}</span>
                       <span aria-hidden="true">›</span>
