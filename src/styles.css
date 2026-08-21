@@ -445,11 +445,11 @@ body {
     right: 12px;
     height: 44px;
     display: grid;
-    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     gap: 8px;
     pointer-events: auto;
   }
-  .mobile-region-bar button { min-width: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; color: #fff; border-radius: 23px; font-size: clamp(12px, 3.4vw, 14px); font-weight: 800; white-space: nowrap; }
+  .mobile-region-bar button { min-width: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 10px; color: #fff; border-radius: 23px; font-size: clamp(11px, 3.3vw, 14px); font-weight: 800; white-space: nowrap; overflow: hidden; }
   .mobile-region-bar svg { width: 19px; height: 19px; flex: 0 0 auto; }
   .mobile-region-button { background: rgba(3, 25, 31, .95); border: 1px solid rgba(255, 255, 255, .32); }
   .mobile-region-button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -463,6 +463,7 @@ body {
     right: 12px;
     display: grid;
     gap: 8px;
+    width: 44px;
     pointer-events: auto;
   }
 
@@ -504,7 +505,8 @@ body {
     border-top: 1px solid rgba(255, 255, 255, .12);
     pointer-events: auto;
   }
-  .mobile-bottom-nav button { min-width: 0; display: grid; place-items: center; align-content: center; gap: 5px; padding: 4px 2px; color: #fff; background: transparent; border: 0; border-radius: 12px; font-size: clamp(10px, 2.8vw, 12px); font-weight: 800; }
+  .mobile-bottom-nav button { min-width: 0; height: 66px; display: grid; grid-template-rows: 28px 16px; place-items: center; align-content: center; gap: 4px; padding: 4px 2px; color: #fff; background: transparent; border: 0; border-radius: 12px; font-size: clamp(9px, 2.7vw, 12px); line-height: 1; font-weight: 800; overflow: hidden; }
+  .mobile-bottom-nav button span { width: 100%; overflow: hidden; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
   .mobile-bottom-nav button:active { background: rgba(111, 204, 46, .14); }
   .mobile-bottom-nav svg { width: 25px; height: 25px; color: #75cf34; }
 
@@ -529,6 +531,21 @@ body {
   .mobile-gis-brand strong { font-size: 18px; }
   .mobile-gis-brand small { font-size: 8px; }
   .mobile-region-bar button { padding-inline: 8px; font-size: 11px; }
+}
+
+@media (max-width: 767px) and (max-height: 700px) {
+  .mobile-map-tools {
+    top: calc(200px + env(safe-area-inset-top));
+    left: 12px;
+    right: auto;
+    width: auto;
+    grid-template-columns: repeat(3, 44px);
+  }
+
+  .mobile-workspace .mobile-welcome-card {
+    height: 58px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
 }
 
 /* Composição mobile da plataforma GIS. */
