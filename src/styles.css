@@ -192,22 +192,22 @@ body {
   .gis-about svg { width: 21px; }
 
   .welcome-panel {
-    position: absolute; top: 118px; left: 22px; width: min(390px, 27vw); min-height: 306px;
+    position: absolute; top: 118px; left: 22px; width: min(430px, calc(100vw - 44px)); min-height: 306px;
     padding: 25px 24px 18px 27px; border-radius: 20px; color: #fff; background: rgba(3, 28, 30, .96);
     border-left: 3px solid #70bf30; box-shadow: 0 12px 30px rgba(0,0,0,.26);
   }
   .welcome-panel > span { font-size: 16px; font-weight: 650; }
   .welcome-panel h1 { margin: 5px 0 8px; font-size: clamp(25px, 1.75vw, 31px); line-height: 1.1; }
   .welcome-panel > p { max-width: 335px; margin: 0 0 18px; font-size: 14px; line-height: 1.5; }
-  .welcome-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .welcome-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .welcome-grid article {
-    height: 74px; display: grid; grid-template-columns: 31px 1fr; align-items: center; gap: 10px;
-    padding: 10px; border-radius: 12px; background: rgba(8, 52, 45, .72);
+    min-width: 0; height: 78px; display: grid; grid-template-columns: 27px minmax(0, 1fr); align-items: center; gap: 9px;
+    padding: 10px 11px; border-radius: 12px; background: rgba(8, 52, 45, .72);
   }
-  .welcome-grid article > svg { width: 28px; height: 28px; color: #79d331; }
+  .welcome-grid article > svg { width: 26px; height: 26px; color: #79d331; }
   .welcome-grid article span { display: grid; gap: 3px; min-width: 0; }
-  .welcome-grid article strong { font-size: 13px; }
-  .welcome-grid article small { color: #d4dddd; font-size: 10.5px; line-height: 1.25; }
+  .welcome-grid article strong { font-size: 13px; line-height: 1.15; white-space: nowrap; }
+  .welcome-grid article small { color: #d4dddd; font-size: 10.5px; line-height: 1.25; overflow-wrap: normal; }
 
   .gis-region-controls {
     position: absolute; top: 116px; left: 50%; transform: translateX(-50%);
@@ -304,7 +304,7 @@ body {
   .gis-brand__mark svg { width: 32px; height: 32px; }
   .gis-search { height: 50px; }
   .gis-about { height: 48px; }
-  .welcome-panel { top: 96px; width: 340px; min-height: 268px; padding: 18px 20px; }
+  .welcome-panel { top: 96px; width: 430px; min-height: 268px; padding: 18px 20px; }
   .welcome-panel > p { margin-bottom: 12px; }
   .welcome-grid article { height: 62px; }
   .gis-region-controls { top: 96px; }
@@ -325,7 +325,7 @@ body {
   .gis-brand__mark { width: 50px; height: 50px; }
   .gis-brand small { font-size: 10px; }
   .gis-about { width: 150px; }
-  .welcome-panel { left: 14px; width: 300px; }
+  .welcome-panel { left: 14px; width: 360px; }
   .gis-right-rail { right: 14px; width: 285px; }
   .gis-region-controls { left: 49%; }
   .gis-region-pill { width: 180px; }
@@ -4797,7 +4797,9 @@ body {
   .gis-brand strong { font-size: 19px; }
   .gis-brand small { font-size: 8.5px; }
   .gis-about { width: 132px; font-size: 12px; }
-  .welcome-panel { left: 14px; width: 270px; }
+  .welcome-panel { left: 14px; width: 280px; }
+  .welcome-grid { grid-template-columns: 1fr; }
+  .welcome-grid article { height: 52px; }
   .gis-right-rail { right: 14px; width: 260px; }
   .gis-region-controls { left: 49%; gap: 8px; }
   .gis-region-pill { width: 160px; }
