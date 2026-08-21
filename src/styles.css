@@ -136,7 +136,7 @@ body {
 @media (min-width: 901px) {
   :root {
     --gis-header: 96px;
-    --gis-footer: 78px;
+    --gis-footer: 0px;
     --gis-lime: #73c62f;
     --gis-deep: #03181d;
   }
@@ -155,8 +155,7 @@ body {
   .desktop-workspace input,
   .welcome-panel,
   .gis-right-rail,
-  .gis-legend,
-  .gis-footer { pointer-events: auto; }
+  .gis-legend { pointer-events: auto; }
 
   .gis-header {
     position: absolute; inset: 0 0 auto; height: var(--gis-header);
@@ -271,18 +270,6 @@ body {
   .desktop-action--purple { background: linear-gradient(135deg, #4930b7, #7049dc); }
   .desktop-action--teal { background: linear-gradient(135deg, #0e716b, #15948a); }
 
-  .gis-footer {
-    position: absolute; inset: auto 0 0; height: var(--gis-footer); display: grid; grid-template-columns: 1.2fr 1fr 1.1fr; align-items: center;
-    gap: 30px; padding: 0 28px; color: #e7efee; background: #03191d; border-top: 1px solid rgba(92,180,50,.22); font-size: 11.5px;
-  }
-  .gis-footer > div { min-width: 0; display: flex; align-items: center; gap: 12px; }
-  .gis-footer > div:nth-child(2) { padding-left: 30px; border-left: 1px solid rgba(255,255,255,.18); }
-  .gis-footer > div:last-child { justify-content: flex-end; text-align: right; }
-  .gis-footer svg { width: 19px; height: 19px; flex: 0 0 auto; color: #75c834; }
-  .gis-footer span { display: grid; gap: 4px; }
-  .gis-footer small { color: #aebbbb; font-size: 10.5px; }
-  .gis-footer strong { color: #78ca35; }
-
   .leaflet-top.leaflet-left { top: 372px; left: 20px; }
   .leaflet-control-zoom { border: 1px solid rgba(255,255,255,.2) !important; border-radius: 18px !important; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,.25) !important; }
   .leaflet-control-zoom a { width: 52px !important; height: 52px !important; line-height: 50px !important; color: #fff !important; background: #071c22 !important; border-color: rgba(255,255,255,.15) !important; }
@@ -308,11 +295,10 @@ body {
   .desktop-action { width: 148px; padding-inline: 12px; }
   .desktop-action > svg { width: 30px; }
   .desktop-action strong { font-size: 14px; }
-  .gis-footer { gap: 14px; padding-inline: 16px; font-size: 10px; }
 }
 
 @media (min-width: 901px) and (max-height: 820px) {
-  :root { --gis-header: 82px; --gis-footer: 64px; }
+  :root { --gis-header: 82px; --gis-footer: 0px; }
   .gis-header { padding-block: 10px; }
   .gis-brand__mark { width: 54px; height: 54px; }
   .gis-brand__mark svg { width: 32px; height: 32px; }
@@ -4795,8 +4781,7 @@ body {
     height: 100%;
   }
 
-  .desktop-workspace .gis-header,
-  .desktop-workspace .gis-footer {
+  .desktop-workspace .gis-header {
     display: grid;
   }
 

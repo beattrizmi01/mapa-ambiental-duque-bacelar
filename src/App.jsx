@@ -1427,11 +1427,6 @@ function DesktopWorkspace({
         <DesktopAction tone="teal" icon={<StatusIcon />} title="Relatórios" text="Ver análises" onClick={onOpenReports} />
       </nav>
 
-      <footer className="gis-footer">
-        <div><LeafIcon /><span>Desenvolvido pelo <strong>Projeto Mapa Ambiental</strong><small>Ligado à <strong>II HACKEPT</strong> · Maratona de Inovação dos Centros Educa Mais e EJATEC 2026</small></span></div>
-        <div><StatusIcon /><span>Plataforma colaborativa para a gestão ambiental<small>Dados seguros e atualizados</small></span></div>
-        <div><span>Conectando pessoas, dados e ações em prol do meio ambiente.</span><LeafIcon /></div>
-      </footer>
     </div>
   );
 }
