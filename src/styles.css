@@ -358,6 +358,179 @@ body {
   .mobile-fab { min-height: 48px; grid-template-columns: 22px 1fr; }
 }
 
+/* Aplicativo móvel compacto. Escopo restrito para não alterar a versão desktop. */
+@media (max-width: 767px) {
+  html, body, #root, .app-shell {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .map-stage, .leaflet-map {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .mobile-workspace {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .mobile-gis-header {
+    position: fixed;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(132px + env(safe-area-inset-top));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-rows: 52px 46px;
+    gap: 10px 12px;
+    padding: calc(10px + env(safe-area-inset-top)) 12px 12px;
+    background: #03191d;
+    border-bottom: 1px solid rgba(111, 204, 46, .24);
+    pointer-events: auto;
+  }
+
+  .mobile-gis-brand { min-width: 0; display: flex; align-items: center; gap: 10px; color: #fff; }
+  .mobile-gis-brand__mark { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; color: #74cf32; border: 2px solid currentColor; border-radius: 50%; }
+  .mobile-gis-brand__mark svg { width: 25px; height: 25px; }
+  .mobile-gis-brand > span:last-child { min-width: 0; display: grid; }
+  .mobile-gis-brand strong { overflow: hidden; font-size: clamp(19px, 5.5vw, 23px); line-height: 1; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+  .mobile-gis-brand small { margin-top: 5px; color: #74cf32; font-size: clamp(8px, 2.5vw, 10px); font-weight: 900; letter-spacing: .025em; white-space: nowrap; }
+
+  .mobile-about-button, .mobile-map-tools button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: #fff;
+    background: rgba(4, 25, 30, .94);
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 14px;
+  }
+  .mobile-about-button svg, .mobile-map-tools svg { width: 23px; height: 23px; }
+
+  .mobile-gis-search {
+    grid-column: 1 / -1;
+    height: 46px;
+    display: grid;
+    grid-template-columns: 25px minmax(0, 1fr) 32px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px 0 14px;
+    border: 1px solid rgba(111, 204, 46, .58);
+    border-radius: 23px;
+    background: #04191e;
+  }
+  .mobile-gis-search > svg { width: 23px; height: 23px; color: #fff; }
+  .mobile-gis-search input { min-width: 0; color: #fff; background: transparent; border: 0; outline: 0; font-size: 15px; }
+  .mobile-gis-search input::placeholder { color: rgba(255, 255, 255, .78); }
+  .mobile-gis-search button { width: 32px; height: 32px; padding: 5px; color: #73cf2f; background: transparent; border: 0; }
+
+  .mobile-region-bar {
+    position: fixed;
+    z-index: 4;
+    top: calc(144px + env(safe-area-inset-top));
+    left: 12px;
+    right: 12px;
+    height: 44px;
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .mobile-region-bar button { min-width: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; color: #fff; border-radius: 23px; font-size: clamp(12px, 3.4vw, 14px); font-weight: 800; white-space: nowrap; }
+  .mobile-region-bar svg { width: 19px; height: 19px; flex: 0 0 auto; }
+  .mobile-region-button { background: rgba(3, 25, 31, .95); border: 1px solid rgba(255, 255, 255, .32); }
+  .mobile-region-button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .mobile-region-button svg:last-child { width: 14px; }
+  .mobile-location-button { background: #59b52f; border: 1px solid #70ce3e; }
+
+  .mobile-map-tools {
+    position: fixed;
+    z-index: 4;
+    top: calc(300px + env(safe-area-inset-top));
+    right: 12px;
+    display: grid;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .mobile-workspace .mobile-welcome-card {
+    position: fixed;
+    z-index: 4;
+    left: 12px;
+    right: 12px;
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    color: #fff;
+    text-align: left;
+    background: rgba(3, 25, 30, .96);
+    border: 1px solid rgba(111, 204, 46, .62);
+    border-radius: 20px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .3);
+    pointer-events: auto;
+  }
+  .mobile-welcome-card span { display: grid; gap: 3px; }
+  .mobile-welcome-card strong { font-size: 16px; }
+  .mobile-welcome-card small { color: rgba(255, 255, 255, .72); font-size: 12px; }
+  .mobile-welcome-card > svg { width: 18px; transform: rotate(180deg); }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    z-index: 6;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(78px + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 6px 4px env(safe-area-inset-bottom);
+    background: rgba(2, 20, 24, .98);
+    border-top: 1px solid rgba(255, 255, 255, .12);
+    pointer-events: auto;
+  }
+  .mobile-bottom-nav button { min-width: 0; display: grid; place-items: center; align-content: center; gap: 5px; padding: 4px 2px; color: #fff; background: transparent; border: 0; border-radius: 12px; font-size: clamp(10px, 2.8vw, 12px); font-weight: 800; }
+  .mobile-bottom-nav button:active { background: rgba(111, 204, 46, .14); }
+  .mobile-bottom-nav svg { width: 25px; height: 25px; color: #75cf34; }
+
+  .leaflet-top.leaflet-left { top: calc(200px + env(safe-area-inset-top)) !important; left: auto !important; right: 12px !important; }
+  .leaflet-control-zoom { margin: 0 !important; border: 1px solid rgba(255, 255, 255, .28) !important; border-radius: 14px !important; overflow: hidden; }
+  .leaflet-control-zoom a { width: 44px !important; height: 44px !important; line-height: 42px !important; color: #fff !important; background: rgba(3, 25, 30, .96) !important; }
+
+  .mobile-welcome-sheet > p { margin: 0 0 16px; color: #526068; line-height: 1.5; }
+  .mobile-welcome-sheet__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mobile-welcome-sheet__grid article { min-width: 0; min-height: 82px; display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; padding: 12px; color: #fff; background: #07362f; border-radius: 14px; }
+  .mobile-welcome-sheet__grid svg { width: 25px; color: #78d62f; }
+  .mobile-welcome-sheet__grid strong, .mobile-welcome-sheet__grid small { overflow-wrap: anywhere; }
+  .mobile-about-content { color: #334148; line-height: 1.5; }
+  .mobile-about-content > strong { color: #24713a; font-size: 21px; }
+  .mobile-about-content ul { padding-left: 20px; }
+  .mobile-about-content small { display: block; padding-top: 14px; border-top: 1px solid #d9e0df; }
+
+  .sidebar, .desktop-workspace, .mobile-fab-dock, .mobile-side-rail { display: none !important; }
+}
+
+@media (max-width: 370px) {
+  .mobile-gis-brand strong { font-size: 18px; }
+  .mobile-gis-brand small { font-size: 8px; }
+  .mobile-region-bar button { padding-inline: 8px; font-size: 11px; }
+}
+
 /* Composição mobile da plataforma GIS. */
 @media (max-width: 900px) {
   .desktop-workspace {

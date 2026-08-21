@@ -95,7 +95,7 @@ export default function App() {
   const [showMapLabels, setShowMapLabels] = useState(false);
   const [layerFilters, setLayerFilters] = useState(DEFAULT_LAYER_FILTERS);
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false,
   );
   const boundaryData = DUQUE_BACELAR_BOUNDARY;
   const hasRequestedLocation = useRef(false);
@@ -157,7 +157,7 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
-    const mediaQuery = window.matchMedia("(max-width: 900px), (pointer: coarse)");
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
     const syncViewport = (event) => {
       setIsMobileViewport(event.matches);
     };
@@ -818,7 +818,19 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <DesktopWorkspace
+      {isMobileViewport ? <MobileWorkspace
+        selectedRegion={selectedRegion}
+        isLocatingUser={isLocatingUser}
+        onLocateUser={locateUser}
+        onSearch={searchLocation}
+        onOpenAbout={() => setOpenCard("about-mobile")}
+        onOpenWelcome={() => setOpenCard("welcome-mobile")}
+        onOpenArea={() => setOpenCard("area")}
+        onOpenOccurrence={openOccurrenceFlow}
+        onOpenLegend={() => setOpenCard("legend")}
+        onOpenReports={() => setOpenCard("status")}
+        onOpenFilters={() => setOpenCard("layers")}
+      /> : <DesktopWorkspace
         selectedRegion={selectedRegion}
         regionSummary={regionSummary}
         occurrenceCount={occurrenceRecords.length}
@@ -831,7 +843,7 @@ export default function App() {
         onOpenOccurrence={openOccurrenceFlow}
         onOpenLegend={() => setOpenCard("legend")}
         onOpenReports={() => setOpenCard("status")}
-      />
+      />}
       <main className="map-stage">
         <StatusChangeToast notice={statusChangeNotice} onClose={() => setStatusChangeNotice(null)} />
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
@@ -969,6 +981,20 @@ export default function App() {
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} maxNativeZoom={18} maxZoom={MAX_MAP_ZOOM} />
           </Pane> : null}
         </MapContainer>
+        <BottomSheet
+          isOpen={openCard === "about-mobile"}
+          title="Sobre o projeto"
+          onClose={() => setOpenCard(null)}
+        >
+          <MobileAboutContent />
+        </BottomSheet>
+        <BottomSheet
+          isOpen={openCard === "welcome-mobile"}
+          title="Mapa Ambiental"
+          onClose={() => setOpenCard(null)}
+        >
+          <MobileWelcomeContent />
+        </BottomSheet>
         <BottomSheet
           isOpen={openCard === "notifications"}
           title="Notificações"
@@ -1283,6 +1309,103 @@ function AreaLayer(props) {
       </Marker>
     );
   });
+}
+
+function MobileWorkspace({
+  selectedRegion,
+  isLocatingUser,
+  onLocateUser,
+  onSearch,
+  onOpenAbout,
+  onOpenWelcome,
+  onOpenArea,
+  onOpenOccurrence,
+  onOpenLegend,
+  onOpenReports,
+  onOpenFilters,
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  }
+
+  return (
+    <div className="mobile-workspace">
+      <header className="mobile-gis-header">
+        <div className="mobile-gis-brand">
+          <span className="mobile-gis-brand__mark"><LeafIcon /></span>
+          <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
+        </div>
+        <button type="button" className="mobile-about-button" onClick={onOpenAbout} aria-label="Sobre o projeto"><InfoIcon /></button>
+        <form className="mobile-gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
+          <SearchIcon />
+          <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar localidade..." aria-label="Buscar localidade" />
+          <button type="submit" aria-label="Buscar"><TargetIcon /></button>
+        </form>
+      </header>
+
+      <div className="mobile-region-bar">
+        <button type="button" className="mobile-region-button" onClick={onLocateUser}><MapPinIcon /><span>{selectedRegion.name}</span><ChevronDownIcon /></button>
+        <button type="button" className="mobile-location-button" onClick={onLocateUser} disabled={isLocatingUser}><TargetIcon /><span>{isLocatingUser ? "Localizando..." : "Minha localização"}</span></button>
+      </div>
+
+      <div className="mobile-map-tools" aria-label="Controles do mapa">
+        <button type="button" onClick={onLocateUser} aria-label="Minha posição"><TargetIcon /></button>
+        <button type="button" onClick={toggleFullscreen} aria-label="Tela cheia"><MaximizeIcon /></button>
+        <button type="button" onClick={onOpenFilters} aria-label="Filtros do mapa"><LayersIcon /></button>
+      </div>
+
+      <button type="button" className="mobile-welcome-card" onClick={onOpenWelcome}>
+        <span><strong>Mapa Ambiental</strong><small>Explore, registre e monitore.</small></span>
+        <ChevronDownIcon />
+      </button>
+
+      <nav className="mobile-bottom-nav" aria-label="Ações principais">
+        <MobileNavAction icon={<AreaIcon />} label="Nova área" onClick={onOpenArea} />
+        <MobileNavAction icon={<AlertIcon />} label="Ocorrência" onClick={onOpenOccurrence} />
+        <MobileNavAction icon={<LegendIcon />} label="Legenda" onClick={onOpenLegend} />
+        <MobileNavAction icon={<StatusIcon />} label="Relatórios" onClick={onOpenReports} />
+      </nav>
+    </div>
+  );
+}
+
+function MobileNavAction({ icon, label, onClick }) {
+  return <button type="button" onClick={onClick}>{icon}<span>{label}</span></button>;
+}
+
+function MaximizeIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" /></svg>;
+}
+
+function MobileWelcomeContent() {
+  return <div className="mobile-welcome-sheet">
+    <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
+    <div className="mobile-welcome-sheet__grid">
+      <FeatureMiniCard icon={<MapPinIcon />} title="Mapeamento" text="Áreas em tempo real" />
+      <FeatureMiniCard icon={<StatusIcon />} title="Monitoramento" text="Acompanhamento contínuo" />
+      <FeatureMiniCard icon={<AlertIcon />} title="Ocorrências" text="Registros de impactos" />
+      <FeatureMiniCard icon={<LeafIcon />} title="Preservação" text="Ações e conservação" />
+    </div>
+  </div>;
+}
+
+function MobileAboutContent() {
+  return <div className="mobile-about-content">
+    <strong>Mapa Ambiental</strong>
+    <p>Plataforma colaborativa para mapear, registrar e monitorar áreas ambientais e ocorrências em diferentes localidades.</p>
+    <ul>
+      <li>Cadastro e acompanhamento de áreas ambientais</li>
+      <li>Registro de impactos e ocorrências</li>
+      <li>Visualização por filtros e situação ambiental</li>
+    </ul>
+    <small>Projeto ligado à II HACKEPT — Maratona de Inovação dos Centros Educa Mais e EJATEC 2026.</small>
+  </div>;
 }
 
 function DesktopWorkspace({
