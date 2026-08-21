@@ -421,6 +421,21 @@ body {
   }
 }
 
+@media (max-width: 900px) {
+  body > .bottom-sheet-backdrop .bottom-sheet__content:has(.status-summary) {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+
+  .status-summary {
+    padding-bottom: 12px;
+  }
+
+  .status-summary__grid {
+    padding-bottom: 8px;
+  }
+}
+
 /* Aplicativo móvel compacto. Escopo restrito para não alterar a versão desktop. */
 @media (max-width: 767px) {
   html, body, #root, .app-shell {
