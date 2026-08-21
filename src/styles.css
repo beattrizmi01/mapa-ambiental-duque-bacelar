@@ -1826,36 +1826,31 @@ body {
 
 .environment-marker {
   position: relative;
-  display: block;
-  width: 28px;
-  height: 34px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 22px rgba(2, 8, 17, 0.3);
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 2px dashed currentColor;
+  border-radius: 50%;
+  background: rgba(3, 24, 29, 0.88);
+  box-shadow: 0 9px 22px rgba(2, 8, 17, 0.38);
 }
 
-.environment-marker::after {
-  content: "";
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+.environment-marker svg {
+  width: 25px;
+  height: 25px;
 }
 
 .environment-marker--preservado {
-  background: var(--green);
+  color: #72d42c;
 }
 
 .environment-marker--atencao {
-  background: var(--yellow);
+  color: #ffb800;
 }
 
 .environment-marker--critico {
-  background: var(--red);
+  color: #ff343e;
 }
 
 .environment-marker--recent {
