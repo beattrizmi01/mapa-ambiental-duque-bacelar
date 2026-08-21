@@ -2634,7 +2634,8 @@ function preloadImageSource(source) {
 function DetailCard({ area, history = [], occurrences = [], onClose }) {
   const latestChange = history[0] ?? null;
   const [expanded, setExpanded] = useState(false);
-  return (
+  const isMobileCard = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  const card = (
     <article className={`detail-card${expanded ? " is-expanded" : " is-collapsed"}`}>
       <div className="detail-card__close-row">
         <button type="button" onClick={onClose} aria-label="Fechar detalhes da área">×</button>
@@ -2706,6 +2707,15 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
       </div>
     </article>
   );
+  if (expanded && isMobileCard) {
+    return createPortal(
+      <div className="detail-card-modal" onClick={() => setExpanded(false)}>
+        <div className="detail-card-modal__panel" onClick={(event) => event.stopPropagation()}>{card}</div>
+      </div>,
+      document.body,
+    );
+  }
+  return card;
 }
 
 function HoverCard({ area, onClose }) {
