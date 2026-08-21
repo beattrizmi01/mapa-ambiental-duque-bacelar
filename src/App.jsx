@@ -71,6 +71,12 @@ const CATEGORY_HINTS = {
   "Educação ambiental": "ações, projetos e campanhas",
   "Outro": "categoria não listada",
 };
+const SEARCH_RESULT_ICON = L.divIcon({
+  className: "search-result-marker",
+  html: '<span aria-hidden="true"></span>',
+  iconSize: [34, 42],
+  iconAnchor: [17, 42],
+});
 const RESPONSIBLE_ROLES = [
   "Professor(a)",
   "Pesquisador(a)",
@@ -111,6 +117,7 @@ export default function App() {
   const [activeAreaId, setActiveAreaId] = useState(null);
   const [mapFocus, setMapFocus] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [searchedLocation, setSearchedLocation] = useState(null);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [locationNotice, setLocationNotice] = useState("");
   const [occurrenceLocation, setOccurrenceLocation] = useState(null);
@@ -409,7 +416,8 @@ export default function App() {
       );
       setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
       setSelectedRegionId(detectedRegion.id);
-      setMapFocus({ id: `search-${Date.now()}`, center: detectedRegion.center, zoom: detectedRegion.zoom });
+      setSearchedLocation({ latitude, longitude, name: detectedRegion.name });
+      setMapFocus({ id: `search-${Date.now()}`, center: [latitude, longitude], zoom: Math.max(14, detectedRegion.zoom) });
       setDataStatus(`Local encontrado: ${detectedRegion.name}.`);
       return detectedRegion;
     } catch {
@@ -965,6 +973,7 @@ export default function App() {
           <MapFocusController focus={mapFocus} />
           {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
+          <SearchResultLayer result={searchedLocation} />
           <MapClickHandler
             drawingEnabled={isDrawingArea}
             onMapBlankClick={() => {
@@ -2831,6 +2840,13 @@ function regionsFromAreas(areas) {
 function filterAreasByRegion(areas, regionName) {
   const normalizedRegion = normalizeAreaName(regionName);
   return areas.filter((area) => normalizeAreaName(area.region || REGIONS[0].name) === normalizedRegion);
+}
+
+function SearchResultLayer({ result }) {
+  if (!result) return null;
+  return <Marker position={[result.latitude, result.longitude]} icon={SEARCH_RESULT_ICON} zIndexOffset={900}>
+    <Tooltip permanent direction="top" offset={[0, -38]} opacity={1} className="search-result-tooltip">{result.name}</Tooltip>
+  </Marker>;
 }
 
 function MapViewportSync() {
