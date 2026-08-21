@@ -588,6 +588,7 @@ export default function App() {
     const duplicateArea = areas.find((area) => normalizeAreaName(area.name) === normalizedName);
     if (duplicateArea) {
       setDataStatus("Já existe uma área cadastrada com esse nome. Escolha outro nome para continuar.");
+      setAreaErrorMessage("Cadastro não realizado. Já existe uma área com esse nome.");
       setOpenCard("area");
       return;
     }
@@ -595,6 +596,7 @@ export default function App() {
     const polygonCoords = areaForm.polygonCoords.length ? areaForm.polygonCoords : draftPolygonCoords;
     if (polygonCoords.length < 3) {
       setDataStatus("Desenhe a área no mapa e conclua a demarcação antes de salvar.");
+      setAreaErrorMessage("Cadastro não realizado. Demarque a área com pelo menos 3 pontos e toque em Concluir.");
       setOpenCard("area");
       return;
     }
@@ -618,28 +620,20 @@ export default function App() {
     createdAt: new Date().toISOString(),
     };
     if (hasSupabaseConfig()) {
-      const { data, error } = await supabase.from("areas").insert({
-        name: draft.name,
-        category: draft.category,
-        region: draft.region,
-        status: draft.status,
-        impact: draft.impact,
-        description: draft.description,
-        latitude: draft.latitude,
-        longitude: draft.longitude,
-        image_url: draft.image,
-        polygon_coords: draft.polygonCoords,
-      }).select().single();
-      if (error) {
-        console.error(error);
-        const friendlyError = getSupabaseFriendlyError(error);
-        setDataMode("supabase");
-        setDataStatus("Cadastro não realizado. A área não foi salva no banco de dados.");
-        setAreaErrorMessage(`Cadastro não realizado. A área não foi salva no banco de dados. ${friendlyError}`);
-        setIsSavingArea(false);
-        setOpenCard("area");
-        return;
-      } else {
+      try {
+        const { data, error } = await supabase.from("areas").insert({
+          name: draft.name,
+          category: draft.category,
+          region: draft.region,
+          status: draft.status,
+          impact: draft.impact,
+          description: draft.description,
+          latitude: draft.latitude,
+          longitude: draft.longitude,
+          image_url: draft.image,
+          polygon_coords: draft.polygonCoords,
+        }).select().single();
+        if (error) throw error;
         const mapped = mapSupabaseAreaToApp(data) ?? draft;
         setDataMode("supabase");
         setDataStatus("Nova área salva e sincronizada com o Supabase.");
@@ -648,6 +642,15 @@ export default function App() {
         setMapFocus(createMapFocus(mapped));
         setAreaSuccessMessage("Área cadastrada com sucesso no banco de dados.");
         setCreatedAreaForOccurrence(mapped);
+      } catch (error) {
+        console.error(error);
+        const friendlyError = getSupabaseFriendlyError(error);
+        setDataMode("supabase");
+        setDataStatus("Cadastro não realizado. A área não foi salva no banco de dados.");
+        setAreaErrorMessage(`Cadastro não realizado. Verifique sua conexão e tente novamente. ${friendlyError}`);
+        setIsSavingArea(false);
+        setOpenCard("area");
+        return;
       }
     } else {
       setAreas((current) => [draft, ...current]);
@@ -1793,6 +1796,8 @@ function AreaFormPanel(props) {
         <strong>Identificação do responsável</strong>
         <small>Informe quem está realizando este cadastro.</small>
       </div>
+      {areaErrorMessage ? <div className="form-feedback form-feedback--error" role="alert">{areaErrorMessage}</div> : null}
+      {areaSuccessMessage ? <div className="form-feedback form-feedback--success" role="status">{areaSuccessMessage}</div> : null}
       <div className="field-row">
         <Field label="Nome do responsável"><input required autoComplete="name" value={areaForm.reporterName} onChange={(event) => setAreaForm((current) => ({ ...current, reporterName: event.target.value }))} placeholder="Nome completo" /></Field>
         <Field label="Função ou órgão"><ResponsibleRoleSelect required value={areaForm.reporterRole} onChange={(value) => setAreaForm((current) => ({ ...current, reporterRole: value }))} /></Field>
@@ -1852,8 +1857,6 @@ function AreaFormPanel(props) {
           {areaReady ? "Área demarcada com sucesso." : "Adicione pelo menos 3 pontos para formar a área."}
         </div>
       </section>
-      {areaErrorMessage ? <div className="form-feedback form-feedback--error">{areaErrorMessage}</div> : null}
-      {areaSuccessMessage ? <div className="form-feedback form-feedback--success">{areaSuccessMessage}</div> : null}
       <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} required />
       <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingArea}>{isSavingArea ? "Salvando..." : "Salvar área"}</button><button className="btn btn--red" type="button" onClick={onCancelArea} disabled={isSavingArea}>Cancelar</button></div>
     </form>
@@ -2467,7 +2470,7 @@ async function optimizeImageFile(file) {
       element.onerror = reject;
       element.src = sourceUrl;
     });
-    const maxDimension = 1280;
+    const maxDimension = 960;
     const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
@@ -2476,7 +2479,7 @@ async function optimizeImageFile(file) {
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = "high";
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/webp", 0.72);
+    return canvas.toDataURL("image/webp", 0.64);
   } finally {
     URL.revokeObjectURL(sourceUrl);
   }
