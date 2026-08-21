@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { useRef } from "react";
 import L from "leaflet";
 import {
   CircleMarker,
@@ -14,12 +15,13 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import duqueBacelarLimiteUrl from "./data/duque-bacelar-limite.geojson?url";
+import duqueBacelarLimiteRaw from "./data/duque-bacelar-limite.geojson?raw";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
 
 const STORAGE_KEY = "mapa-ambiental-duque-bacelar:areas:v2";
 const MOBILE_HELP_KEY = "mapa-ambiental-duque-bacelar:mobile-help:v1";
 const IMAGE_PRELOAD_CACHE = new Map();
+const DUQUE_BACELAR_BOUNDARY = JSON.parse(duqueBacelarLimiteRaw);
 const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const LOCAL_ZOOM = 12;
@@ -74,7 +76,8 @@ export default function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
   );
-  const [boundaryData, setBoundaryData] = useState(null);
+  const boundaryData = DUQUE_BACELAR_BOUNDARY;
+  const hasRequestedLocation = useRef(false);
   const [dataMode, setDataMode] = useState(hasSupabaseConfig() ? "supabase" : "local");
   const [dataStatus, setDataStatus] = useState(hasSupabaseConfig() ? "Conectando ao Supabase..." : "Usando armazenamento local do navegador.");
   const [selectedRegionId, setSelectedRegionId] = useState(REGIONS[0].id);
@@ -148,10 +151,9 @@ export default function App() {
   }, [isMobileViewport]);
 
   useEffect(() => {
-    fetch(duqueBacelarLimiteUrl)
-      .then((response) => response.json())
-      .then((data) => setBoundaryData(data))
-      .catch(() => setBoundaryData(null));
+    if (hasRequestedLocation.current) return;
+    hasRequestedLocation.current = true;
+    void detectUserRegion();
   }, []);
 
   useEffect(() => {
