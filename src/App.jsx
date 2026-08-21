@@ -92,6 +92,7 @@ export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
   const [activeBaseMap, setActiveBaseMap] = useState("satellite");
+  const [showMapLabels, setShowMapLabels] = useState(false);
   const [layerFilters, setLayerFilters] = useState(DEFAULT_LAYER_FILTERS);
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
@@ -186,6 +187,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => setShowMapLabels(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     let active = true;
     async function loadFromSupabase() {
       if (!hasSupabaseConfig()) return;
@@ -212,37 +218,21 @@ export default function App() {
       } catch (cacheError) {
         console.warn("Não foi possível atualizar a cópia rápida das áreas.", cacheError);
       }
-      mapped.forEach((area) => {
+      const [occurrenceResult, historyResult] = await Promise.all([
         supabase
-          .from("areas")
-          .select("image_url")
-          .eq("id", area.id)
-          .single()
-          .then(async ({ data: imageRow, error: imageError }) => {
-            if (!active || imageError || !imageRow?.image_url) return;
-            await preloadImageSource(imageRow.image_url);
-            if (!active) return;
-            setAreas((current) => current.map((currentArea) =>
-              String(currentArea.id) === String(area.id)
-                ? { ...currentArea, image: imageRow.image_url }
-                : currentArea,
-            ));
-          });
-      });
-      const { data: occurrenceRows, error: occurrenceError } = await supabase
-        .from("occurrences")
-        .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at");
+          .from("occurrences")
+          .select("id, area_id, impact, description, previous_status, new_status, status_updated, created_by, created_at"),
+        supabase
+          .from("area_status_history")
+          .select("id, area_id, occurrence_id, previous_status, new_status, occurrence_impact, occurrence_description, changed_by, changed_at")
+          .order("changed_at", { ascending: false }),
+      ]);
       if (!active) return;
-      if (!occurrenceError) {
-        setOccurrenceRecords(occurrenceRows ?? []);
+      if (!occurrenceResult.error) {
+        setOccurrenceRecords(occurrenceResult.data ?? []);
       }
-      const { data: historyRows, error: historyError } = await supabase
-        .from("area_status_history")
-        .select("id, area_id, occurrence_id, previous_status, new_status, occurrence_impact, occurrence_description, changed_by, changed_at, occurrences(id, impact, description, created_at, created_by)")
-        .order("changed_at", { ascending: false });
-      if (!active) return;
-      if (!historyError) {
-        setStatusHistory((historyRows ?? []).map(mapStatusHistoryRowToApp));
+      if (!historyResult.error) {
+        setStatusHistory((historyResult.data ?? []).map(mapStatusHistoryRowToApp));
       } else {
         const { data: fallbackHistoryRows, error: fallbackHistoryError } = await supabase
           .from("area_status_history")
@@ -1028,9 +1018,9 @@ export default function App() {
               setOpenCard("occurrence");
             }}
           />
-          <Pane name="labels-pane" style={{ zIndex: 450, pointerEvents: "none" }}>
+          {showMapLabels ? <Pane name="labels-pane" style={{ zIndex: 450, pointerEvents: "none" }}>
             <TileLayer attribution={LABEL_TILES.attribution} url={LABEL_TILES.url} maxNativeZoom={18} maxZoom={MAX_MAP_ZOOM} />
-          </Pane>
+          </Pane> : null}
         </MapContainer>
         <BottomSheet
           isOpen={openCard === "notifications"}
