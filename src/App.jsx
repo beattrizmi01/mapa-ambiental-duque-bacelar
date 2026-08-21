@@ -2712,7 +2712,6 @@ function preloadImageSource(source) {
 function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToReports }) {
   const latestChange = history[0] ?? null;
   const [expanded, setExpanded] = useState(false);
-  const isMobileCard = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
   function toggleExpanded(event) {
     event.preventDefault();
@@ -2720,8 +2719,8 @@ function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToR
     setExpanded((current) => !current);
   }
 
-  const card = (
-    <article className={`detail-card${expanded ? " is-expanded" : " is-collapsed"}`}>
+  function renderCard(isExpanded) {
+    return <article className={`detail-card${isExpanded ? " is-expanded" : " is-collapsed"}`}>
       <div className="detail-card__close-row">
         <button type="button" onClick={onClose} aria-label="Fechar detalhes da área">×</button>
       </div>
@@ -2739,9 +2738,9 @@ function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToR
           className="detail-card__expand"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={toggleExpanded}
-          aria-expanded={expanded}
+          aria-expanded={isExpanded}
         >
-          {expanded ? "Recolher cartão ↑" : "Expandir cartão ↗"}
+          {isExpanded ? "Recolher cartão ↑" : "Expandir cartão ↗"}
         </button>
         <div className="detail-card__extended">
         {onReturnToReports ? <button type="button" className="detail-card__back-report" onClick={onReturnToReports}>← Voltar aos relatórios</button> : null}
@@ -2792,17 +2791,21 @@ function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToR
         </div>
         </div>
       </div>
-    </article>
-  );
-  if (expanded && isMobileCard) {
-    return createPortal(
-      <div className="detail-card-modal" onClick={() => setExpanded(false)}>
-        <div className="detail-card-modal__panel" onClick={(event) => event.stopPropagation()}>{card}</div>
-      </div>,
-      document.body,
-    );
+    </article>;
   }
-  return card;
+
+  if (expanded && typeof document !== "undefined") {
+    return <>
+      {renderCard(false)}
+      {createPortal(
+        <div className="detail-card-modal" onClick={() => setExpanded(false)}>
+          <div className="detail-card-modal__panel" onClick={(event) => event.stopPropagation()}>{renderCard(true)}</div>
+        </div>,
+        document.body,
+      )}
+    </>;
+  }
+  return renderCard(false);
 }
 
 function HoverCard({ area, onClose }) {

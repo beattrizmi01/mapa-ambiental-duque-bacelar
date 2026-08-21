@@ -4482,6 +4482,12 @@ body {
 .detail-card-modal .detail-card__body { padding: 14px 16px 20px; }
 .detail-card-modal .detail-card__close-row { top: 10px; right: 10px; }
 
+@media (min-width: 768px) {
+  .detail-card-modal { align-items: center; padding: 24px; }
+  .detail-card-modal .detail-card.is-expanded { width: min(100%, 640px); max-width: 640px; max-height: calc(100dvh - 48px); }
+  .detail-card-modal .detail-card.is-expanded > img { max-height: min(30dvh, 240px); }
+}
+
 @media (max-width: 480px) {
   .detail-card-modal { padding-inline: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
   .detail-card-modal .detail-card.is-expanded { max-height: calc(100svh - 18px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); border-radius: 18px; }
