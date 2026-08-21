@@ -1063,7 +1063,7 @@ export default function App() {
           onClose={() => setOpenCard(null)}
         >
           <OccurrenceGuide
-            areas={regionAreas.length ? regionAreas : areas}
+            areas={areas}
             onSelectArea={(area) => {
               setActiveAreaId(area.id);
               setHoveredAreaId(null);
@@ -2186,6 +2186,13 @@ function MobileFirstVisitTips({ onDismiss }) {
 }
 
 function OccurrenceGuide({ areas, onSelectArea, onCreateArea, onCancel }) {
+  const [query, setQuery] = useState("");
+  const [selectedAreaId, setSelectedAreaId] = useState("");
+  const normalizedQuery = normalizeAreaName(query);
+  const filteredAreas = areas.filter((area) => !normalizedQuery || [area.name, area.category, area.region, area.impact]
+    .some((value) => normalizeAreaName(value || "").includes(normalizedQuery)));
+  const selectedArea = areas.find((area) => String(area.id) === String(selectedAreaId)) ?? null;
+
   return (
     <div className="occurrence-guide">
       <div className="occurrence-guide__message">
@@ -2195,14 +2202,20 @@ function OccurrenceGuide({ areas, onSelectArea, onCreateArea, onCancel }) {
           <p>Toda ocorrência precisa ficar vinculada a uma área monitorada.</p>
         </div>
       </div>
-      {areas.length ? <div className="occurrence-area-list" aria-label="Áreas disponíveis">
-        {areas.map((area) => <button type="button" key={area.id} className="occurrence-area-option" onClick={() => onSelectArea(area)}>
+      {areas.length ? <>
+        <label className="occurrence-area-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, região ou categoria..." aria-label="Buscar área cadastrada" /></label>
+        <div className="occurrence-area-list" aria-label="Áreas disponíveis">
+        {filteredAreas.map((area) => <button type="button" key={area.id} className={`occurrence-area-option${String(selectedAreaId) === String(area.id) ? " is-selected" : ""}`} onClick={() => setSelectedAreaId(area.id)} aria-pressed={String(selectedAreaId) === String(area.id)}>
           <span className={`legend-swatch legend-swatch--${area.status === "preservado" ? "green" : area.status === "atencao" ? "yellow" : "red"}`} />
-          <span><strong>{area.name || "Área cadastrada"}</strong><small>{area.category || "Sem categoria"} · {statusLabel(area.status)}</small></span>
-          <ChevronDownIcon />
+          <span><strong>{area.name || "Área cadastrada"}</strong><small>{area.region || "Região não informada"}</small><small>{area.category || "Sem categoria"} · {statusLabel(area.status)}</small></span>
+          <i className="occurrence-area-option__check" aria-hidden="true">✓</i>
         </button>)}
-      </div> : <p className="occurrence-guide__empty">Nenhuma área cadastrada nesta região. Cadastre uma área antes de registrar a ocorrência.</p>}
+        {!filteredAreas.length ? <p className="occurrence-guide__empty">Nenhuma área corresponde à busca.</p> : null}
+        </div>
+        {selectedArea ? <div className="occurrence-selected-area"><span>Área escolhida</span><strong>{selectedArea.name}</strong><small>{selectedArea.impact || selectedArea.description || "Sem observação informada."}</small></div> : null}
+      </> : <p className="occurrence-guide__empty">Nenhuma área cadastrada. Cadastre uma área antes de registrar a ocorrência.</p>}
       <div className="occurrence-guide__actions">
+        {areas.length ? <button type="button" className="btn btn--green" onClick={() => onSelectArea(selectedArea)} disabled={!selectedArea}>Continuar com esta área</button> : null}
         <button type="button" className="btn btn--ghost" onClick={onCreateArea}>Cadastrar nova área</button>
         <button type="button" className="btn btn--red" onClick={onCancel}>Cancelar</button>
       </div>
