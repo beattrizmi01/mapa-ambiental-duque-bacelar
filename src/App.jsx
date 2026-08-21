@@ -26,6 +26,14 @@ const FALLBACK_CENTER = [-4.1533881, -42.9459142];
 const REGIONAL_CENTER = [-4.62, -43.72];
 const LOCAL_ZOOM = 12;
 const MAX_MAP_ZOOM = 20;
+const DEFAULT_LAYER_FILTERS = {
+  conservation: true,
+  risk: true,
+  occurrences: true,
+  vegetation: true,
+  hydrography: false,
+  boundaries: true,
+};
 const REGIONS = [
   { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
 ];
@@ -73,6 +81,7 @@ export default function App() {
   const [openCard, setOpenCard] = useState(null);
   const [areas, setAreas] = useState(() => loadAreas());
   const [activeBaseMap, setActiveBaseMap] = useState("satellite");
+  const [layerFilters, setLayerFilters] = useState(DEFAULT_LAYER_FILTERS);
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 900px), (pointer: coarse)").matches : false,
   );
@@ -123,7 +132,16 @@ export default function App() {
     () => createNotificationSummary(areas, occurrenceRecords),
     [areas, occurrenceRecords],
   );
+  const visibleAreas = useMemo(
+    () => filterAreasByLayers(areas, layerFilters),
+    [areas, layerFilters],
+  );
+  const visibleOccurrenceRecords = layerFilters.occurrences ? occurrenceRecords : [];
   const hasRegionData = regionAreas.length > 0;
+
+  function toggleLayerFilter(filterKey) {
+    setLayerFilters((current) => ({ ...current, [filterKey]: !current[filterKey] }));
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -803,15 +821,15 @@ export default function App() {
         <DesktopWorkspace
           selectedRegion={selectedRegion}
           regionSummary={regionSummary}
-          areas={areas}
           occurrenceCount={occurrenceRecords.length}
+          layerFilters={layerFilters}
+          onToggleLayer={toggleLayerFilter}
           isLocatingUser={isLocatingUser}
           onLocateUser={locateUser}
           onSearch={searchLocation}
           onOpenAbout={() => setOpenCard("help")}
           onOpenArea={() => setOpenCard("area")}
           onOpenOccurrence={openOccurrenceFlow}
-          onOpenLayers={() => setOpenCard("layers")}
           onOpenReports={() => setOpenCard("status")}
         />
       ) : <Sidebar
@@ -915,7 +933,7 @@ export default function App() {
           )}
           <MapInteractionLock locked={Boolean(activeAreaId)} />
           <MapFocusController focus={mapFocus} />
-          {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
+          {boundaryData && layerFilters.boundaries ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
           <MapClickHandler
             drawingEnabled={isDrawingArea}
@@ -967,8 +985,8 @@ export default function App() {
             </CircleMarker>
           ) : null}
           <AreaLayer
-            areas={areas}
-            occurrenceRecords={occurrenceRecords}
+            areas={visibleAreas}
+            occurrenceRecords={visibleOccurrenceRecords}
             statusHistory={statusHistory}
             recentlyUpdatedAreaId={recentlyUpdatedAreaId}
             drawingEnabled={isDrawingArea}
@@ -1052,6 +1070,8 @@ export default function App() {
           <LayerSheet
             activeBaseMap={activeBaseMap}
             onChangeBaseMap={setActiveBaseMap}
+            layerFilters={layerFilters}
+            onToggleLayer={toggleLayerFilter}
           />
         </BottomSheet>
         <BottomSheet
@@ -1320,28 +1340,29 @@ function AreaLayer(props) {
 function DesktopWorkspace({
   selectedRegion,
   regionSummary,
-  areas,
   occurrenceCount,
+  layerFilters,
+  onToggleLayer,
   isLocatingUser,
   onLocateUser,
   onSearch,
   onOpenAbout,
   onOpenArea,
   onOpenOccurrence,
-  onOpenLayers,
   onOpenReports,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [layersExpanded, setLayersExpanded] = useState(false);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
   const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
     + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
-  const layerLabels = [
-    "Unidades de Conservação",
-    "Áreas de Risco",
-    "Ocorrências Ambientais",
-    "Cobertura Vegetal",
-    "Hidrografia",
-    "Limites territoriais",
+  const layerOptions = [
+    { key: "conservation", label: "Unidades de Conservação", icon: <LeafIcon /> },
+    { key: "risk", label: "Áreas de Risco", icon: <AlertIcon /> },
+    { key: "occurrences", label: "Ocorrências Ambientais", icon: <FlameIcon /> },
+    { key: "vegetation", label: "Cobertura Vegetal", icon: <LeafIcon /> },
+    { key: "hydrography", label: "Hidrografia", icon: <LeafIcon /> },
+    { key: "boundaries", label: "Limites territoriais", icon: <LeafIcon /> },
   ];
 
   return (
@@ -1377,13 +1398,13 @@ function DesktopWorkspace({
       </div>
 
       <aside className="gis-right-rail">
-        <section className="gis-white-panel layers-overview">
-          <button type="button" className="gis-panel-title" onClick={onOpenLayers}><LayersIcon /><strong>Camadas</strong><span>⌃</span></button>
-          <div className="gis-layer-list">
-            {layerLabels.map((label, index) => (
-              <button type="button" key={label} onClick={onOpenLayers}><span>{index === 2 ? <FlameIcon /> : index === 1 ? <AlertIcon /> : <LeafIcon />}</span><span>{label}</span><i className={`gis-switch${index === 4 ? "" : " is-on"}`} /></button>
+        <section className={`gis-white-panel layers-overview${layersExpanded ? " is-expanded" : " is-collapsed"}`}>
+          <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Camadas</strong><span className="layers-chevron">⌃</span></button>
+          {layersExpanded ? <div className="gis-layer-list">
+            {layerOptions.map((option) => (
+              <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span>{option.icon}</span><span>{option.label}</span><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
             ))}
-          </div>
+          </div> : null}
         </section>
         <section className="gis-white-panel summary-overview">
           <h2>Resumo geral</h2>
@@ -1404,7 +1425,7 @@ function DesktopWorkspace({
       <nav className="gis-primary-actions" aria-label="Ações principais">
         <DesktopAction tone="green" icon={<AreaIcon />} title="Nova área" text="Registrar área" onClick={onOpenArea} />
         <DesktopAction tone="blue" icon={<AlertIcon />} title="Ocorrência" text="Registrar impacto" onClick={onOpenOccurrence} />
-        <DesktopAction tone="purple" icon={<LayersIcon />} title="Camadas" text="Gerenciar camadas" onClick={onOpenLayers} />
+        <DesktopAction tone="purple" icon={<LayersIcon />} title="Camadas" text="Gerenciar camadas" onClick={() => setLayersExpanded(true)} />
         <DesktopAction tone="teal" icon={<StatusIcon />} title="Relatórios" text="Ver análises" onClick={onOpenReports} />
       </nav>
 
@@ -2072,7 +2093,15 @@ function BottomSheet({ isOpen, title, onClose, children, large = false }) {
   );
 }
 
-function LayerSheet({ activeBaseMap, onChangeBaseMap }) {
+function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLayer }) {
+  const filters = [
+    ["conservation", "Unidades de Conservação"],
+    ["risk", "Áreas de Risco"],
+    ["occurrences", "Ocorrências Ambientais"],
+    ["vegetation", "Cobertura Vegetal"],
+    ["hydrography", "Hidrografia"],
+    ["boundaries", "Limites territoriais"],
+  ];
   return (
     <div className="layer-sheet">
       <button type="button" className={`layer-sheet__option${activeBaseMap === "satellite" ? " is-active" : ""}`} onClick={() => onChangeBaseMap("satellite")}>
@@ -2083,6 +2112,13 @@ function LayerSheet({ activeBaseMap, onChangeBaseMap }) {
         <strong>Mapa padrão</strong>
         <span>Melhor leitura de localidades, vias e nomes da região.</span>
       </button>
+      <div className="layer-sheet__filters">
+        {filters.map(([key, label]) => (
+          <button type="button" key={key} className="layer-sheet__filter" onClick={() => onToggleLayer(key)} aria-pressed={layerFilters[key]}>
+            <span>{label}</span><i className={`gis-switch${layerFilters[key] ? " is-on" : ""}`} />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -2578,6 +2614,19 @@ function regionsFromAreas(areas) {
 function filterAreasByRegion(areas, regionName) {
   const normalizedRegion = normalizeAreaName(regionName);
   return areas.filter((area) => normalizeAreaName(area.region || REGIONS[0].name) === normalizedRegion);
+}
+
+function filterAreasByLayers(areas, filters) {
+  return areas.filter((area) => {
+    const category = normalizeAreaName(area.category || "");
+    const isVegetation = category.includes("vegetacao") || category.includes("preservacao");
+    const isHydrography = category.includes("hidrico") || category.includes("agua") || category.includes("nascente");
+    const statusVisible = area.status === "preservado" ? filters.conservation : filters.risk;
+    if (!statusVisible) return false;
+    if (isVegetation && !filters.vegetation) return false;
+    if (isHydrography && !filters.hydrography) return false;
+    return true;
+  });
 }
 
 function regionHasAreas(areas, regionName) {
