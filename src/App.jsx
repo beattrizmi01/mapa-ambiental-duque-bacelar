@@ -1038,7 +1038,7 @@ export default function App() {
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "layers"}
-          title="Camadas do mapa"
+          title="Filtros do mapa"
           onClose={() => setOpenCard(null)}
         >
           <LayerSheet
@@ -1431,12 +1431,12 @@ function DesktopWorkspace({
   const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
     + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
   const layerOptions = [
-    { key: "conservation", label: "Unidades de Conservação", icon: <LeafIcon /> },
-    { key: "risk", label: "Áreas de Risco", icon: <AlertIcon /> },
-    { key: "occurrences", label: "Ocorrências Ambientais", icon: <FlameIcon /> },
-    { key: "vegetation", label: "Cobertura Vegetal", icon: <LeafIcon /> },
-    { key: "hydrography", label: "Hidrografia", icon: <LeafIcon /> },
-    { key: "boundaries", label: "Limites territoriais", icon: <LeafIcon /> },
+    { key: "conservation", label: "Unidades de Conservação", icon: <LeafIcon />, tone: "green" },
+    { key: "risk", label: "Áreas de Risco", icon: <AlertIcon />, tone: "yellow" },
+    { key: "occurrences", label: "Ocorrências Ambientais", icon: <FlameIcon />, tone: "red" },
+    { key: "vegetation", label: "Cobertura Vegetal", icon: <LeafIcon />, tone: "green" },
+    { key: "hydrography", label: "Hidrografia", icon: <WaterIcon />, tone: "blue" },
+    { key: "boundaries", label: "Limites territoriais", icon: <BoundaryIcon />, tone: "boundary" },
   ];
 
   return (
@@ -1489,7 +1489,7 @@ function DesktopWorkspace({
           <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Filtros do mapa</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
             {layerOptions.map((option) => (
-              <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span>{option.icon}</span><span>{option.label}</span><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
+              <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span className={`filter-icon filter-icon--${option.tone}`}>{option.icon}</span><span>{option.label}</span><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
             ))}
           </div> : null}
         </section>
@@ -2192,12 +2192,12 @@ function BottomSheet({ isOpen, title, onClose, children, large = false }) {
 
 function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLayer }) {
   const filters = [
-    ["conservation", "Unidades de Conservação"],
-    ["risk", "Áreas de Risco"],
-    ["occurrences", "Ocorrências Ambientais"],
-    ["vegetation", "Cobertura Vegetal"],
-    ["hydrography", "Hidrografia"],
-    ["boundaries", "Limites territoriais"],
+    { key: "conservation", label: "Unidades de Conservação", icon: <LeafIcon />, tone: "green" },
+    { key: "risk", label: "Áreas de Risco", icon: <AlertIcon />, tone: "yellow" },
+    { key: "occurrences", label: "Ocorrências Ambientais", icon: <FlameIcon />, tone: "red" },
+    { key: "vegetation", label: "Cobertura Vegetal", icon: <LeafIcon />, tone: "green" },
+    { key: "hydrography", label: "Hidrografia", icon: <WaterIcon />, tone: "blue" },
+    { key: "boundaries", label: "Limites territoriais", icon: <BoundaryIcon />, tone: "boundary" },
   ];
   return (
     <div className="layer-sheet">
@@ -2210,9 +2210,9 @@ function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLaye
         <span>Melhor leitura de localidades, vias e nomes da região.</span>
       </button>
       <div className="layer-sheet__filters">
-        {filters.map(([key, label]) => (
-          <button type="button" key={key} className="layer-sheet__filter" onClick={() => onToggleLayer(key)} aria-pressed={layerFilters[key]}>
-            <span>{label}</span><i className={`gis-switch${layerFilters[key] ? " is-on" : ""}`} />
+        {filters.map((filter) => (
+          <button type="button" key={filter.key} className="layer-sheet__filter" onClick={() => onToggleLayer(filter.key)} aria-pressed={layerFilters[filter.key]}>
+            <span className={`filter-icon filter-icon--${filter.tone}`}>{filter.icon}</span><span className="layer-sheet__filter-label">{filter.label}</span><i className={`gis-switch${layerFilters[filter.key] ? " is-on" : ""}`} />
           </button>
         ))}
       </div>
@@ -2711,6 +2711,14 @@ function regionsFromAreas(areas) {
 function filterAreasByRegion(areas, regionName) {
   const normalizedRegion = normalizeAreaName(regionName);
   return areas.filter((area) => normalizeAreaName(area.region || REGIONS[0].name) === normalizedRegion);
+}
+
+function WaterIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/><path d="M9 15.5c.6 1.2 1.6 1.8 3 1.8"/></svg>;
+}
+
+function BoundaryIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="4" y="4" width="16" height="16" rx="2" strokeDasharray="3 3" /></svg>;
 }
 
 function filterAreasByLayers(areas, filters) {

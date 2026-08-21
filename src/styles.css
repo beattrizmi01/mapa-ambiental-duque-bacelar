@@ -958,10 +958,10 @@ body {
 .layer-sheet__filter {
   width: 100%;
   min-height: 48px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 38px;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   padding: 10px 14px;
   border: 1px solid rgba(161, 179, 201, 0.15);
   border-radius: 14px;
@@ -971,6 +971,30 @@ body {
   text-align: left;
   cursor: pointer;
 }
+
+.layer-sheet__filter-label {
+  min-width: 0;
+}
+
+.filter-icon {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+}
+
+.filter-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.filter-icon--green { color: #69c52e; }
+.filter-icon--yellow { color: #f4b517; }
+.filter-icon--red { color: #f13c49; }
+.filter-icon--blue { color: #2da7e8; }
+.filter-icon--boundary { color: #e9f1f2; }
+
+.gis-white-panel .filter-icon--boundary { color: #243337; }
 
 .layer-sheet__filter .gis-switch {
   position: relative;
