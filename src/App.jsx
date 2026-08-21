@@ -27,12 +27,9 @@ const REGIONAL_CENTER = [-4.62, -43.72];
 const LOCAL_ZOOM = 12;
 const MAX_MAP_ZOOM = 20;
 const DEFAULT_LAYER_FILTERS = {
-  conservation: true,
-  risk: true,
-  occurrences: true,
-  vegetation: true,
-  hydrography: false,
-  boundaries: true,
+  preservado: true,
+  atencao: true,
+  critico: true,
 };
 const REGIONS = [
   { id: "duque-bacelar", name: "Duque Bacelar", center: FALLBACK_CENTER, zoom: 11 },
@@ -148,7 +145,7 @@ export default function App() {
     () => filterAreasByLayers(areas, layerFilters),
     [areas, layerFilters],
   );
-  const visibleOccurrenceRecords = layerFilters.occurrences ? occurrenceRecords : [];
+  const visibleOccurrenceRecords = occurrenceRecords;
   const hasRegionData = regionAreas.length > 0;
 
   function toggleLayerFilter(filterKey) {
@@ -893,7 +890,7 @@ export default function App() {
           )}
           <MapInteractionLock locked={Boolean(activeAreaId)} />
           <MapFocusController focus={mapFocus} />
-          {boundaryData && layerFilters.boundaries ? <BoundaryLayer geojson={boundaryData} /> : null}
+          {boundaryData ? <BoundaryLayer geojson={boundaryData} /> : null}
           <UserLocationLayer location={userLocation} />
           <MapClickHandler
             drawingEnabled={isDrawingArea}
@@ -1431,12 +1428,9 @@ function DesktopWorkspace({
   const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
     + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
   const layerOptions = [
-    { key: "conservation", label: "Unidades de Conservação", icon: <LeafIcon />, tone: "green" },
-    { key: "risk", label: "Áreas de Risco", icon: <AlertIcon />, tone: "yellow" },
-    { key: "occurrences", label: "Ocorrências Ambientais", icon: <FlameIcon />, tone: "red" },
-    { key: "vegetation", label: "Cobertura Vegetal", icon: <LeafIcon />, tone: "green" },
-    { key: "hydrography", label: "Hidrografia", icon: <WaterIcon />, tone: "blue" },
-    { key: "boundaries", label: "Limites territoriais", icon: <BoundaryIcon />, tone: "boundary" },
+    { key: "preservado", label: "Áreas preservadas", icon: <span className="legend-swatch legend-swatch--green" />, tone: "green" },
+    { key: "atencao", label: "Áreas em atenção", icon: <span className="legend-swatch legend-swatch--yellow" />, tone: "yellow" },
+    { key: "critico", label: "Áreas críticas", icon: <span className="legend-swatch legend-swatch--red" />, tone: "red" },
   ];
 
   return (
@@ -2192,12 +2186,9 @@ function BottomSheet({ isOpen, title, onClose, children, large = false }) {
 
 function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLayer }) {
   const filters = [
-    { key: "conservation", label: "Unidades de Conservação", icon: <LeafIcon />, tone: "green" },
-    { key: "risk", label: "Áreas de Risco", icon: <AlertIcon />, tone: "yellow" },
-    { key: "occurrences", label: "Ocorrências Ambientais", icon: <FlameIcon />, tone: "red" },
-    { key: "vegetation", label: "Cobertura Vegetal", icon: <LeafIcon />, tone: "green" },
-    { key: "hydrography", label: "Hidrografia", icon: <WaterIcon />, tone: "blue" },
-    { key: "boundaries", label: "Limites territoriais", icon: <BoundaryIcon />, tone: "boundary" },
+    { key: "preservado", label: "Áreas preservadas", icon: <span className="legend-swatch legend-swatch--green" />, tone: "green" },
+    { key: "atencao", label: "Áreas em atenção", icon: <span className="legend-swatch legend-swatch--yellow" />, tone: "yellow" },
+    { key: "critico", label: "Áreas críticas", icon: <span className="legend-swatch legend-swatch--red" />, tone: "red" },
   ];
   return (
     <div className="layer-sheet">
@@ -2722,16 +2713,7 @@ function BoundaryIcon() {
 }
 
 function filterAreasByLayers(areas, filters) {
-  return areas.filter((area) => {
-    const category = normalizeAreaName(area.category || "");
-    const isVegetation = category.includes("vegetacao") || category.includes("preservacao");
-    const isHydrography = category.includes("hidrico") || category.includes("agua") || category.includes("nascente");
-    const statusVisible = area.status === "preservado" ? filters.conservation : filters.risk;
-    if (!statusVisible) return false;
-    if (isVegetation && !filters.vegetation) return false;
-    if (isHydrography && !filters.hydrography) return false;
-    return true;
-  });
+  return areas.filter((area) => filters[area.status] !== false);
 }
 
 function regionHasAreas(areas, regionName) {
