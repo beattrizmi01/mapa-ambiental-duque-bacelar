@@ -112,6 +112,7 @@ export default function App() {
   const [mapFocus, setMapFocus] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [isLocatingUser, setIsLocatingUser] = useState(false);
+  const [locationNotice, setLocationNotice] = useState("");
   const [occurrenceLocation, setOccurrenceLocation] = useState(null);
   const [areaPreview, setAreaPreview] = useState(null);
   const [occurrencePreview, setOccurrencePreview] = useState(null);
@@ -184,6 +185,12 @@ export default function App() {
     hasRequestedLocation.current = true;
     void detectUserRegion();
   }, []);
+
+  useEffect(() => {
+    if (!locationNotice || isLocatingUser) return undefined;
+    const timer = window.setTimeout(() => setLocationNotice(""), 6000);
+    return () => window.clearTimeout(timer);
+  }, [isLocatingUser, locationNotice]);
 
   useEffect(() => {
     setBaseMapReady(false);
@@ -412,11 +419,30 @@ export default function App() {
   async function detectUserRegion() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDataStatus("Seu navegador não oferece suporte à localização.");
+      setLocationNotice("Este navegador não oferece suporte à localização.");
       return false;
+    }
+
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setDataStatus("A localização exige uma conexão segura (HTTPS).");
+      setLocationNotice("A localização só funciona em uma conexão segura (HTTPS).");
+      return false;
+    }
+
+    try {
+      const permission = await navigator.permissions?.query?.({ name: "geolocation" });
+      if (permission?.state === "denied") {
+        setDataStatus("Permissão de localização bloqueada no navegador.");
+        setLocationNotice("Localização bloqueada. Autorize-a nas configurações deste site e tente novamente.");
+        return false;
+      }
+    } catch {
+      // Alguns navegadores móveis não implementam a consulta de permissões.
     }
 
     setIsLocatingUser(true);
     setDataStatus("Buscando sua localização atual...");
+    setLocationNotice("Solicitando a localização do dispositivo...");
 
     try {
       const position = await getBrowserPosition();
@@ -460,6 +486,7 @@ export default function App() {
           ? `Região detectada: ${detectedRegion.name}. Dados carregados.`
           : `Região detectada: ${detectedRegion.name}. Ainda não há áreas monitoradas nesta região.`,
       );
+      setLocationNotice(`Localização encontrada: ${detectedRegion.name}.`);
       return true;
     } catch (error) {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
@@ -472,6 +499,15 @@ export default function App() {
           : inaccurate
             ? "A posição fornecida pelo dispositivo está imprecisa. Ative a localização precisa e tente novamente."
           : "Não foi possível detectar sua localização. Região atual mantida.",
+      );
+      setLocationNotice(
+        denied
+          ? "Permissão negada. Autorize a localização nas configurações deste site."
+          : inaccurate
+            ? "Localização imprecisa. Ative a localização precisa e tente novamente."
+            : error?.code === 3
+              ? "O GPS demorou para responder. Verifique se a localização está ativada e tente novamente."
+              : "Não foi possível obter a localização. Verifique o GPS e tente novamente.",
       );
       return false;
     } finally {
@@ -826,6 +862,7 @@ export default function App() {
       {isMobileViewport ? <MobileWorkspace
         overlayOpen={Boolean(openCard)}
         activeCard={openCard}
+        locationNotice={locationNotice}
         selectedRegion={selectedRegion}
         isLocatingUser={isLocatingUser}
         onLocateUser={locateUser}
@@ -1322,6 +1359,7 @@ function AreaLayer(props) {
 function MobileWorkspace({
   overlayOpen,
   activeCard,
+  locationNotice,
   selectedRegion,
   isLocatingUser,
   onLocateUser,
@@ -1363,6 +1401,8 @@ function MobileWorkspace({
         <button type="button" className="mobile-region-button" onClick={onLocateUser}><MapPinIcon /><span>{selectedRegion.name}</span><ChevronDownIcon /></button>
         <button type="button" className="mobile-location-button" onClick={onLocateUser} disabled={isLocatingUser}><TargetIcon /><span>{isLocatingUser ? "Localizando..." : "Minha localização"}</span></button>
       </div>
+
+      {locationNotice ? <div className={`mobile-location-notice${isLocatingUser ? " is-loading" : ""}`} role="status" aria-live="polite">{locationNotice}</div> : null}
 
       <div className="mobile-map-tools" aria-label="Controles do mapa">
         <button type="button" onClick={onLocateUser} aria-label="Minha posição"><TargetIcon /></button>
@@ -2791,16 +2831,16 @@ function getBrowserPosition() {
   });
 
   return requestPosition({
-    enableHighAccuracy: true,
-    timeout: 20000,
-    maximumAge: 0,
+    enableHighAccuracy: false,
+    timeout: 8000,
+    maximumAge: 120000,
   }).catch((error) => {
     const permissionDenied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
     if (permissionDenied) throw error;
 
     return requestPosition({
-      enableHighAccuracy: false,
-      timeout: 30000,
+      enableHighAccuracy: true,
+      timeout: 15000,
       maximumAge: 0,
     });
   });
