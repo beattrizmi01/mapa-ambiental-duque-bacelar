@@ -830,6 +830,7 @@ export default function App() {
           onOpenAbout={() => setOpenCard("help")}
           onOpenArea={() => setOpenCard("area")}
           onOpenOccurrence={openOccurrenceFlow}
+          onOpenLegend={() => setOpenCard("legend")}
           onOpenReports={() => setOpenCard("status")}
         />
       ) : <Sidebar
@@ -1349,6 +1350,7 @@ function DesktopWorkspace({
   onOpenAbout,
   onOpenArea,
   onOpenOccurrence,
+  onOpenLegend,
   onOpenReports,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -1428,7 +1430,7 @@ function DesktopWorkspace({
       <nav className="gis-primary-actions" aria-label="Ações principais">
         <DesktopAction tone="green" icon={<AreaIcon />} title="Nova área" text="Registrar área" onClick={onOpenArea} />
         <DesktopAction tone="blue" icon={<AlertIcon />} title="Ocorrência" text="Registrar impacto" onClick={onOpenOccurrence} />
-        <DesktopAction tone="purple" icon={<LayersIcon />} title="Ocorrências" text="Filtrar visualização" onClick={() => setLayersExpanded(true)} />
+        <DesktopAction tone="purple" icon={<LegendIcon />} title="Legenda" text="Consultar símbolos" onClick={onOpenLegend} />
         <DesktopAction tone="teal" icon={<StatusIcon />} title="Relatórios" text="Ver análises" onClick={onOpenReports} />
       </nav>
 
