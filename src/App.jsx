@@ -1353,6 +1353,7 @@ function DesktopWorkspace({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [welcomeVisible, setWelcomeVisible] = useState(true);
   const [layersExpanded, setLayersExpanded] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
@@ -1382,7 +1383,8 @@ function DesktopWorkspace({
         <button type="button" className="gis-about" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /> Sobre o projeto</button>
       </header>
 
-      <section className="welcome-panel">
+      {welcomeVisible ? <section className="welcome-panel">
+        <button type="button" className="welcome-panel__close" onClick={() => setWelcomeVisible(false)} aria-label="Fechar mensagem de boas-vindas"><CloseIcon /></button>
         <span>Bem-vindo ao</span>
         <h1>Mapa Ambiental</h1>
         <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
@@ -1392,7 +1394,7 @@ function DesktopWorkspace({
           <FeatureMiniCard icon={<AlertIcon />} title="Ocorrências" text="Registros de impactos" />
           <FeatureMiniCard icon={<LeafIcon />} title="Preservação" text="Ações e conservação" />
         </div>
-      </section>
+      </section> : null}
 
       <div className="gis-region-controls">
         <button type="button" className="gis-region-pill" onClick={onLocateUser}><MapPinIcon /><span>{selectedRegion.name}</span><span className="gis-chevron">⌄</span></button>
@@ -1471,6 +1473,10 @@ function TargetIcon() {
 
 function InfoIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></svg>;
+}
+
+function CloseIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m6 6 12 12M18 6 6 18" /></svg>;
 }
 
 function Sidebar(props) {

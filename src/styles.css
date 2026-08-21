@@ -195,7 +195,11 @@ body {
     position: absolute; top: 118px; left: 22px; width: min(430px, calc(100vw - 44px)); min-height: 306px;
     padding: 25px 24px 18px 27px; border-radius: 20px; color: #fff; background: rgba(3, 28, 30, .96);
     border-left: 3px solid #70bf30; box-shadow: 0 12px 30px rgba(0,0,0,.26);
+    animation: welcome-panel-in 520ms cubic-bezier(.2,.8,.2,1) both;
   }
+  .welcome-panel__close { position: absolute; top: 13px; right: 13px; width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: 10px; color: #dce8e5; background: rgba(255,255,255,.06); cursor: pointer; transition: background-color 160ms ease, transform 160ms ease; }
+  .welcome-panel__close:hover, .welcome-panel__close:focus-visible { background: rgba(255,255,255,.14); transform: scale(1.04); outline: 2px solid rgba(115,198,47,.5); }
+  .welcome-panel__close svg { width: 18px; height: 18px; }
   .welcome-panel > span { font-size: 16px; font-weight: 650; }
   .welcome-panel h1 { margin: 5px 0 8px; font-size: clamp(25px, 1.75vw, 31px); line-height: 1.1; }
   .welcome-panel > p { max-width: 335px; margin: 0 0 18px; font-size: 14px; line-height: 1.5; }
@@ -208,6 +212,11 @@ body {
   .welcome-grid article span { display: grid; gap: 3px; min-width: 0; }
   .welcome-grid article strong { font-size: 13px; line-height: 1.15; white-space: nowrap; }
   .welcome-grid article small { color: #d4dddd; font-size: 10.5px; line-height: 1.25; overflow-wrap: normal; }
+
+  @keyframes welcome-panel-in {
+    from { opacity: 0; transform: translate3d(-22px, 12px, 0) scale(.98); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
 
   .gis-region-controls {
     position: absolute; top: 116px; left: 50%; transform: translateX(-50%);
@@ -347,6 +356,10 @@ body {
   .mobile-side-button, .mobile-side-help { width: 42px; min-height: 42px; }
   .mobile-fab-dock { left: 50%; right: auto; width: min(520px, calc(100vw - 120px)); transform: translateX(-50%); }
   .mobile-fab { min-height: 48px; grid-template-columns: 22px 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-panel { animation: none; }
 }
 
 /* Ajustes finais para celular e tablet. */
