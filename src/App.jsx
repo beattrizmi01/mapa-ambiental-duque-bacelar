@@ -1400,9 +1400,8 @@ function DesktopWorkspace({
       </div>
 
       <aside className="gis-right-rail">
-        <section className={`gis-white-panel about-project-panel${aboutExpanded ? " is-expanded" : " is-collapsed"}`}>
-          <button type="button" className="gis-panel-title about-project-title" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /><strong>Sobre o projeto</strong><span className="about-chevron">⌃</span></button>
-          {aboutExpanded ? <div className="about-project-content">
+        {aboutExpanded ? <section className="gis-white-panel about-project-panel">
+          <div className="about-project-content">
             <strong>Mapa Ambiental</strong>
             <p>Plataforma colaborativa para mapear, registrar e monitorar áreas ambientais e ocorrências em diferentes localidades.</p>
             <ul>
@@ -1411,8 +1410,8 @@ function DesktopWorkspace({
               <li>Visualização por filtros e situação ambiental</li>
             </ul>
             <small>Projeto ligado à II HACKEPT — Maratona de Inovação dos Centros Educa Mais e EJATEC 2026.</small>
-          </div> : null}
-        </section>
+          </div>
+        </section> : null}
         <section className={`gis-white-panel layers-overview${layersExpanded ? " is-expanded" : " is-collapsed"}`}>
           <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Ocorrências</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
