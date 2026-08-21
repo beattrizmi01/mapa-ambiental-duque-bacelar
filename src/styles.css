@@ -224,7 +224,7 @@ body {
   .gis-chevron { margin-left: auto; font-size: 18px; }
   .gis-location-pill { width: 220px; border: 0; background: linear-gradient(135deg, #559f2e, #78c53c); }
 
-  .gis-right-rail { position: absolute; top: 114px; right: 22px; width: min(350px, 25vw); display: grid; gap: 15px; }
+  .gis-right-rail { position: absolute; top: 114px; right: 22px; width: min(350px, 25vw); max-height: calc(100dvh - 130px); display: grid; gap: 15px; overflow-y: auto; scrollbar-width: thin; }
   .gis-white-panel { overflow: hidden; border-radius: 20px; color: #142023; background: #f8faf8; box-shadow: 0 12px 30px rgba(0,0,0,.22); }
   .gis-panel-title { width: 100%; height: 58px; display: grid; grid-template-columns: 25px 1fr auto; align-items: center; gap: 12px; padding: 0 22px; border: 0; border-bottom: 1px solid #e1e6e3; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
   .gis-panel-title svg { width: 23px; }
@@ -247,6 +247,13 @@ body {
   .summary-row--green { color: #397b2e; border-color: #c9e3c1; background: #edf6ea; }
   .summary-row--yellow { color: #c36b00; border-color: #f2d7a7; background: #fff8e9; }
   .summary-row--red { color: #d22532; border-color: #f1c2c5; background: #fff0f1; }
+  .about-project-title { border-bottom-color: transparent; }
+  .about-project-panel.is-expanded .about-project-title { border-bottom-color: #e1e6e3; }
+  .about-project-content { padding: 17px 20px 19px; }
+  .about-project-content > strong { color: #246e31; font-size: 18px; }
+  .about-project-content p { margin: 8px 0 11px; color: #354346; font-size: 12.5px; line-height: 1.5; }
+  .about-project-content ul { display: grid; gap: 6px; margin: 0 0 12px; padding-left: 18px; color: #263537; font-size: 11.5px; line-height: 1.35; }
+  .about-project-content small { display: block; padding-top: 10px; border-top: 1px solid #dfe7e2; color: #637174; font-size: 10.5px; line-height: 1.4; }
 
   .gis-legend {
     position: absolute; left: 50%; bottom: 110px; transform: translateX(-50%);
@@ -614,6 +621,15 @@ body {
 }
 
 .summary-overview.is-collapsed .summary-chevron {
+  transform: rotate(180deg);
+}
+
+.about-chevron {
+  display: inline-block;
+  transition: transform 180ms ease;
+}
+
+.about-project-panel.is-collapsed .about-chevron {
   transform: rotate(180deg);
 }
 

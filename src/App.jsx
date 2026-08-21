@@ -827,7 +827,6 @@ export default function App() {
           isLocatingUser={isLocatingUser}
           onLocateUser={locateUser}
           onSearch={searchLocation}
-          onOpenAbout={() => setOpenCard("help")}
           onOpenArea={() => setOpenCard("area")}
           onOpenOccurrence={openOccurrenceFlow}
           onOpenLegend={() => setOpenCard("legend")}
@@ -1347,13 +1346,13 @@ function DesktopWorkspace({
   isLocatingUser,
   onLocateUser,
   onSearch,
-  onOpenAbout,
   onOpenArea,
   onOpenOccurrence,
   onOpenLegend,
   onOpenReports,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [aboutExpanded, setAboutExpanded] = useState(false);
   const [layersExpanded, setLayersExpanded] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
@@ -1380,7 +1379,7 @@ function DesktopWorkspace({
           <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Digite um local, cidade, estado ou coordenadas..." aria-label="Buscar local" />
           <button type="submit" aria-label="Buscar"><TargetIcon /></button>
         </form>
-        <button type="button" className="gis-about" onClick={onOpenAbout}><InfoIcon /> Sobre o projeto</button>
+        <button type="button" className="gis-about" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /> Sobre o projeto</button>
       </header>
 
       <section className="welcome-panel">
@@ -1401,6 +1400,19 @@ function DesktopWorkspace({
       </div>
 
       <aside className="gis-right-rail">
+        <section className={`gis-white-panel about-project-panel${aboutExpanded ? " is-expanded" : " is-collapsed"}`}>
+          <button type="button" className="gis-panel-title about-project-title" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /><strong>Sobre o projeto</strong><span className="about-chevron">⌃</span></button>
+          {aboutExpanded ? <div className="about-project-content">
+            <strong>Mapa Ambiental</strong>
+            <p>Plataforma colaborativa para mapear, registrar e monitorar áreas ambientais e ocorrências em diferentes localidades.</p>
+            <ul>
+              <li>Cadastro e acompanhamento de áreas ambientais</li>
+              <li>Registro de impactos e ocorrências</li>
+              <li>Visualização por filtros e situação ambiental</li>
+            </ul>
+            <small>Projeto ligado à II HACKEPT — Maratona de Inovação dos Centros Educa Mais e EJATEC 2026.</small>
+          </div> : null}
+        </section>
         <section className={`gis-white-panel layers-overview${layersExpanded ? " is-expanded" : " is-collapsed"}`}>
           <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Ocorrências</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
