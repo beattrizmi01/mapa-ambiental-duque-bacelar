@@ -370,6 +370,57 @@ body {
   .mobile-fab { min-height: 48px; grid-template-columns: 22px 1fr; }
 }
 
+/* Mantém o seletor de área e suas ações inteiros acima da navegação móvel. */
+@media (max-width: 900px) {
+  body > .bottom-sheet-backdrop {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 86px - env(safe-area-inset-bottom));
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet__header {
+    flex: 0 0 auto;
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet__content {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    padding-bottom: 0;
+  }
+
+  .occurrence-guide__actions {
+    position: sticky;
+    z-index: 4;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-inline: -2px;
+    padding: 12px 2px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(10, 18, 31, 0), #0a121f 22%);
+  }
+
+  .occurrence-guide__actions .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+    padding: 11px 8px;
+    line-height: 1.15;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 560px) {
+  .occurrence-guide__actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Aplicativo móvel compacto. Escopo restrito para não alterar a versão desktop. */
 @media (max-width: 767px) {
   html, body, #root, .app-shell {
