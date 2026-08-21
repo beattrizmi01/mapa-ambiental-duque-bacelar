@@ -431,6 +431,129 @@ body {
   }
 }
 
+/* Proteções gerais contra recorte de textos e falta de espaço nos painéis. */
+@media (max-width: 767px) {
+  .bottom-sheet__header {
+    align-items: flex-start;
+  }
+
+  .bottom-sheet__header h2 {
+    min-width: 0;
+    padding-top: 7px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .bottom-sheet__close {
+    flex: 0 0 auto;
+  }
+
+  .bottom-sheet__content {
+    min-width: 0;
+    scroll-padding-block: 16px 32px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bottom-sheet__content > *,
+  .dark-form > *,
+  .status-summary > *,
+  .status-summary__grid > *,
+  .occurrence-guide > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .occurrence-area-option {
+    align-items: flex-start;
+    min-height: 76px;
+    height: auto;
+  }
+
+  .occurrence-area-option strong,
+  .occurrence-area-option small,
+  .occurrence-selected-area strong,
+  .occurrence-selected-area small,
+  .status-summary__areas button span:first-child {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .occurrence-area-option__check {
+    margin-top: 3px;
+  }
+
+  .status-summary__card,
+  .status-chart,
+  .occurrence-guide__message,
+  .occurrence-selected-area,
+  .area-change-card,
+  .occurrence-history__item {
+    overflow-wrap: anywhere;
+  }
+
+  .dark-form label,
+  .dark-form legend,
+  .field > span,
+  .btn,
+  .form-actions .btn {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-welcome-panel {
+    max-height: calc(100dvh - 220px - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .mobile-welcome-panel__grid article {
+    height: auto;
+    min-height: 58px;
+  }
+
+  .mobile-welcome-panel__grid article strong {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 370px) {
+  .mobile-region-bar {
+    gap: 5px;
+  }
+
+  .mobile-region-bar button {
+    gap: 4px;
+    padding-inline: 5px;
+    font-size: 10.5px;
+  }
+
+  .mobile-region-bar svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mobile-region-button svg:last-child {
+    width: 10px;
+  }
+
+  .mobile-welcome-panel__grid article {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .mobile-welcome-panel__grid article > svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
 @media (max-width: 900px) {
   body > .bottom-sheet-backdrop .bottom-sheet__content:has(.status-summary) {
     padding-bottom: calc(28px + env(safe-area-inset-bottom));
