@@ -1599,6 +1599,21 @@ body {
   gap: 18px;
 }
 
+.area-location-search { display: grid; gap: 7px; }
+.area-location-search > label { color: #eef8ff; font-size: .82rem; font-weight: 800; }
+.area-location-search > div { min-height: 50px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 5px 6px 5px 12px; background: rgba(3, 13, 23, .72); border: 1px solid rgba(161, 179, 201, .2); border-radius: 14px; }
+.area-location-search svg { width: 21px; color: #79d83a; }
+.area-location-search input { min-width: 0; color: #fff; background: transparent; border: 0; outline: 0; font: inherit; }
+.area-location-search input::placeholder { color: #8496a9; }
+.area-location-search button { min-height: 38px; padding: 0 12px; color: #fff; background: #379b52; border: 0; border-radius: 10px; font-size: .76rem; font-weight: 800; cursor: pointer; }
+.area-location-search button:disabled { opacity: .55; cursor: default; }
+.area-location-search > small { color: #9fafc2; font-size: .72rem; line-height: 1.35; }
+
+@media (max-width: 420px) {
+  .area-location-search > div { grid-template-columns: 20px minmax(0, 1fr); padding: 9px 10px; }
+  .area-location-search button { grid-column: 1 / -1; width: 100%; min-height: 42px; }
+}
+
 .form-section-heading {
   display: grid;
   gap: 4px;

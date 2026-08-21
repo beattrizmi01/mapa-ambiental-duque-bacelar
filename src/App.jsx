@@ -411,9 +411,24 @@ export default function App() {
       setSelectedRegionId(detectedRegion.id);
       setMapFocus({ id: `search-${Date.now()}`, center: detectedRegion.center, zoom: detectedRegion.zoom });
       setDataStatus(`Local encontrado: ${detectedRegion.name}.`);
+      return detectedRegion;
     } catch {
       setDataStatus("Não foi possível encontrar esse local. Tente cidade, estado ou latitude e longitude.");
+      return null;
     }
+  }
+
+  async function searchAndStartAreaDrawing(query) {
+    setAreaErrorMessage("");
+    const detectedRegion = await searchLocation(query);
+    if (!detectedRegion) {
+      setAreaErrorMessage("Local não encontrado. Tente informar cidade, estado ou latitude e longitude.");
+      setOpenCard("area");
+      return false;
+    }
+    startAreaDrawing();
+    setDataStatus(`Local encontrado: ${detectedRegion.name}. Toque no mapa para marcar os limites da área.`);
+    return true;
   }
 
   async function detectUserRegion() {
@@ -1120,6 +1135,7 @@ export default function App() {
             onConcludeAreaDrawing={concludeAreaDrawing}
             onClearAreaDrawing={clearAreaDrawing}
             onLocateAndStartDrawing={locateAndStartDrawing}
+            onSearchAndStartDrawing={searchAndStartAreaDrawing}
             isLocatingUser={isLocatingUser}
             hasUserLocation={Boolean(userLocation)}
             onSubmitArea={handleAreaSubmit}
@@ -1787,8 +1803,20 @@ function createRegionSummary(areas, occurrenceCount) {
 }
 
 function AreaFormPanel(props) {
-  const { areaForm, setAreaForm, areaPreview, setAreaPreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onLocateAndStartDrawing, isLocatingUser, hasUserLocation, onSubmitArea, isSavingArea, areaSuccessMessage, areaErrorMessage, onCancelArea, mobile = false } = props;
+  const { areaForm, setAreaForm, areaPreview, setAreaPreview, isDrawingArea, draftPolygonCoords, onStartAreaDrawing, onConcludeAreaDrawing, onClearAreaDrawing, onLocateAndStartDrawing, onSearchAndStartDrawing, isLocatingUser, hasUserLocation, onSubmitArea, isSavingArea, areaSuccessMessage, areaErrorMessage, onCancelArea, mobile = false } = props;
   const areaReady = areaForm.polygonCoords.length >= 3 || draftPolygonCoords.length >= 3;
+  const [areaLocationQuery, setAreaLocationQuery] = useState("");
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+
+  async function handleAreaLocationSearch() {
+    if (!areaLocationQuery.trim() || isSearchingLocation) return;
+    setIsSearchingLocation(true);
+    try {
+      await onSearchAndStartDrawing(areaLocationQuery);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  }
 
   return (
     <form className="dark-form" onSubmit={onSubmitArea}>
@@ -1819,6 +1847,12 @@ function AreaFormPanel(props) {
             <h3>Demarque a área</h3>
             {mobile ? <p>Marque os limites direto no mapa e volte para salvar.</p> : null}
           </div>
+        </div>
+
+        <div className="area-location-search">
+          <label htmlFor="area-location-query">Buscar a região da área</label>
+          <div><SearchIcon /><input id="area-location-query" value={areaLocationQuery} onChange={(event) => setAreaLocationQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void handleAreaLocationSearch(); } }} placeholder="Ex.: Duque Bacelar, MA ou coordenadas" /><button type="button" onClick={handleAreaLocationSearch} disabled={!areaLocationQuery.trim() || isSearchingLocation}>{isSearchingLocation ? "Buscando..." : "Buscar e demarcar"}</button></div>
+          <small>O mapa será centralizado na região encontrada para você marcar os limites.</small>
         </div>
 
         <button
