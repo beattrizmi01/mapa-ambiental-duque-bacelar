@@ -128,7 +128,7 @@ body {
 }
 
 .sidebar__header--mobile .platform-brand .platform-brand__place {
-  color: #69dfa1 !important;
+  color: #45b8ff !important;
   font-size: 1.08em;
 }
 
@@ -4314,7 +4314,7 @@ body {
   .sidebar {
     top: 18px;
     left: 18px;
-    width: min(560px, calc(100vw - 140px));
+    width: min(640px, calc(100vw - 140px));
   }
 
   .sidebar__header--mobile {
@@ -4340,11 +4340,13 @@ body {
     display: flex;
     align-items: baseline;
     gap: 0.28em;
-    white-space: nowrap;
+    flex-wrap: wrap;
+    white-space: normal;
   }
 
   .platform-brand strong span {
     display: inline;
+    white-space: nowrap;
   }
 
   .sidebar__header--mobile .eyebrow__icon {
