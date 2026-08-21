@@ -823,7 +823,6 @@ export default function App() {
         onLocateUser={locateUser}
         onSearch={searchLocation}
         onOpenAbout={() => setOpenCard("about-mobile")}
-        onOpenWelcome={() => setOpenCard("welcome-mobile")}
         onOpenArea={() => setOpenCard("area")}
         onOpenOccurrence={openOccurrenceFlow}
         onOpenLegend={() => setOpenCard("legend")}
@@ -986,13 +985,6 @@ export default function App() {
           onClose={() => setOpenCard(null)}
         >
           <MobileAboutContent />
-        </BottomSheet>
-        <BottomSheet
-          isOpen={openCard === "welcome-mobile"}
-          title="Mapa Ambiental"
-          onClose={() => setOpenCard(null)}
-        >
-          <MobileWelcomeContent />
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "notifications"}
@@ -1317,7 +1309,6 @@ function MobileWorkspace({
   onLocateUser,
   onSearch,
   onOpenAbout,
-  onOpenWelcome,
   onOpenArea,
   onOpenOccurrence,
   onOpenLegend,
@@ -1325,6 +1316,7 @@ function MobileWorkspace({
   onOpenFilters,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [welcomeVisible, setWelcomeVisible] = useState(true);
 
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
@@ -1360,10 +1352,18 @@ function MobileWorkspace({
         <button type="button" onClick={onOpenFilters} aria-label="Filtros do mapa"><LayersIcon /></button>
       </div>
 
-      <button type="button" className="mobile-welcome-card" onClick={onOpenWelcome}>
-        <span><strong>Mapa Ambiental</strong><small>Explore, registre e monitore.</small></span>
-        <ChevronDownIcon />
-      </button>
+      {welcomeVisible ? <section className="mobile-welcome-panel">
+        <button type="button" className="mobile-welcome-panel__close" onClick={() => setWelcomeVisible(false)} aria-label="Fechar bloco informativo"><CloseIcon /></button>
+        <span>Bem-vindo ao</span>
+        <h2>Mapa Ambiental</h2>
+        <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
+        <div className="mobile-welcome-panel__grid">
+          <FeatureMiniCard icon={<MapPinIcon />} title="Mapeamento" text="Áreas em tempo real" />
+          <FeatureMiniCard icon={<StatusIcon />} title="Monitoramento" text="Acompanhamento contínuo" />
+          <FeatureMiniCard icon={<AlertIcon />} title="Ocorrências" text="Registros de impactos" />
+          <FeatureMiniCard icon={<LeafIcon />} title="Preservação" text="Ações e conservação" />
+        </div>
+      </section> : null}
 
       <nav className="mobile-bottom-nav" aria-label="Ações principais">
         <MobileNavAction icon={<AreaIcon />} label="Nova área" onClick={onOpenArea} />
@@ -1381,18 +1381,6 @@ function MobileNavAction({ icon, label, onClick }) {
 
 function MaximizeIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" /></svg>;
-}
-
-function MobileWelcomeContent() {
-  return <div className="mobile-welcome-sheet">
-    <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
-    <div className="mobile-welcome-sheet__grid">
-      <FeatureMiniCard icon={<MapPinIcon />} title="Mapeamento" text="Áreas em tempo real" />
-      <FeatureMiniCard icon={<StatusIcon />} title="Monitoramento" text="Acompanhamento contínuo" />
-      <FeatureMiniCard icon={<AlertIcon />} title="Ocorrências" text="Registros de impactos" />
-      <FeatureMiniCard icon={<LeafIcon />} title="Preservação" text="Ações e conservação" />
-    </div>
-  </div>;
 }
 
 function MobileAboutContent() {

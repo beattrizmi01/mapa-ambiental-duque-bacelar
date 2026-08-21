@@ -503,6 +503,33 @@ body {
   .mobile-welcome-card small { color: rgba(255, 255, 255, .72); font-size: 12px; }
   .mobile-welcome-card > svg { width: 18px; transform: rotate(180deg); }
 
+  .mobile-welcome-panel {
+    position: fixed;
+    z-index: 4;
+    left: 12px;
+    right: 12px;
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    min-height: 238px;
+    padding: 15px 14px 14px;
+    color: #fff;
+    background: rgba(3, 27, 29, .97);
+    border: 1px solid rgba(111, 204, 46, .66);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .36);
+    pointer-events: auto;
+  }
+  .mobile-welcome-panel > span { display: block; padding-right: 38px; font-size: 12px; }
+  .mobile-welcome-panel h2 { margin: 3px 38px 5px 0; font-size: 21px; line-height: 1.05; }
+  .mobile-welcome-panel > p { max-width: 90%; margin: 0 0 11px; color: rgba(255, 255, 255, .82); font-size: 11px; line-height: 1.35; }
+  .mobile-welcome-panel__close { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; display: grid; place-items: center; padding: 7px; color: #fff; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .2); border-radius: 11px; }
+  .mobile-welcome-panel__close svg { width: 18px; height: 18px; }
+  .mobile-welcome-panel__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .mobile-welcome-panel__grid article { min-width: 0; height: 66px; display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 8px; padding: 9px; background: rgba(6, 57, 48, .78); border-radius: 13px; }
+  .mobile-welcome-panel__grid article > svg { width: 25px; height: 25px; color: #78d632; }
+  .mobile-welcome-panel__grid article span { min-width: 0; display: grid; gap: 3px; }
+  .mobile-welcome-panel__grid article strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+  .mobile-welcome-panel__grid article small { color: rgba(255, 255, 255, .78); font-size: 8.5px; line-height: 1.2; }
+
   .mobile-bottom-nav {
     position: fixed;
     z-index: 6;
@@ -558,6 +585,14 @@ body {
     height: 58px;
     bottom: calc(84px + env(safe-area-inset-bottom));
   }
+
+  .mobile-welcome-panel {
+    min-height: 210px;
+    padding-block: 12px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+  .mobile-welcome-panel > p { margin-bottom: 8px; }
+  .mobile-welcome-panel__grid article { height: 55px; padding-block: 6px; }
 }
 
 /* Composição mobile da plataforma GIS. */
