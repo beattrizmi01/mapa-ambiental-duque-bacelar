@@ -1681,7 +1681,7 @@ function AreaFormPanel(props) {
         />
       </Field>
       <Field label="Status"><select required value={areaForm.status} onChange={(event) => setAreaForm((current) => ({ ...current, status: event.target.value }))}><option value="preservado">Preservado</option><option value="atencao">Atenção</option><option value="critico">Crítico</option></select></Field>
-      <Field label="Impacto"><input required value={areaForm.impact} onChange={(event) => setAreaForm((current) => ({ ...current, impact: event.target.value }))} placeholder="Ex.: Pressão moderada por descarte irregular" /></Field>
+      <Field label="Condição ou impacto observado"><input required value={areaForm.impact} onChange={(event) => setAreaForm((current) => ({ ...current, impact: event.target.value }))} placeholder={areaStatusObservationPlaceholder(areaForm.status)} /></Field>
       <Field label="Descrição"><textarea required rows="4" value={areaForm.description} onChange={(event) => setAreaForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descreva rapidamente a situação observada." /></Field>
       <section className={`demarcation-panel${mobile ? " demarcation-panel--mobile" : ""}`}>
         <div className="demarcation-panel__header">
@@ -2937,6 +2937,12 @@ function statusLabel(status) {
   if (status === "preservado") return "Preservado";
   if (status === "atencao") return "Atenção";
   return "Crítico";
+}
+
+function areaStatusObservationPlaceholder(status) {
+  if (status === "preservado") return "Ex.: Área conservada, sem impactos ambientais visíveis";
+  if (status === "critico") return "Ex.: Degradação intensa com necessidade de intervenção";
+  return "Ex.: Pressão moderada por descarte irregular";
 }
 
 function statusUpdateLabel(status) {
