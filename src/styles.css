@@ -4278,6 +4278,42 @@ body {
   gap: 10px;
 }
 
+.occurrence-area-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(38dvh, 330px);
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.occurrence-area-option {
+  width: 100%;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  color: #eef6ff;
+  text-align: left;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(161, 179, 201, .16);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.occurrence-area-option:hover,
+.occurrence-area-option:focus-visible {
+  background: rgba(47, 179, 111, .12);
+  border-color: rgba(47, 179, 111, .55);
+}
+
+.occurrence-area-option > span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
+.occurrence-area-option strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.occurrence-area-option small { overflow: hidden; color: #aebed1; font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
+.occurrence-area-option > svg { width: 16px; transform: rotate(-90deg); }
+.occurrence-guide__empty { padding: 14px; border: 1px dashed rgba(161, 179, 201, .24); border-radius: 14px; }
+
 .area-created-step {
   display: grid;
   gap: 16px;

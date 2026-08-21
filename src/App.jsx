@@ -1060,11 +1060,18 @@ export default function App() {
           onClose={() => setOpenCard(null)}
         >
           <OccurrenceGuide
-            onSelectArea={() => {
-              setDataStatus("Selecione uma área cadastrada no mapa para registrar uma ocorrência.");
-              setOpenCard(null);
+            areas={regionAreas.length ? regionAreas : areas}
+            onSelectArea={(area) => {
+              setActiveAreaId(area.id);
+              setHoveredAreaId(null);
+              setOccurrenceForm(emptyOccurrenceForm(area.id));
+              setOccurrenceLocation(null);
+              setMapFocus(createMapFocus(area));
+              loadAreaImage(area.id);
+              setOpenCard("occurrence");
             }}
             onCreateArea={() => setOpenCard("area")}
+            onCancel={() => setOpenCard(null)}
           />
         </BottomSheet>
         <BottomSheet
@@ -2175,7 +2182,7 @@ function MobileFirstVisitTips({ onDismiss }) {
   );
 }
 
-function OccurrenceGuide({ onSelectArea, onCreateArea }) {
+function OccurrenceGuide({ areas, onSelectArea, onCreateArea, onCancel }) {
   return (
     <div className="occurrence-guide">
       <div className="occurrence-guide__message">
@@ -2185,12 +2192,16 @@ function OccurrenceGuide({ onSelectArea, onCreateArea }) {
           <p>Toda ocorrência precisa ficar vinculada a uma área monitorada.</p>
         </div>
       </div>
-      <div className="monitoring-flow" aria-label="Fluxo para registrar ocorrência">
-        <strong>Cadastrar área</strong><span>→</span><strong>Selecionar área</strong><span>→</span><strong>Registrar ocorrência</strong><span>→</span><strong>Monitorar</strong>
-      </div>
+      {areas.length ? <div className="occurrence-area-list" aria-label="Áreas disponíveis">
+        {areas.map((area) => <button type="button" key={area.id} className="occurrence-area-option" onClick={() => onSelectArea(area)}>
+          <span className={`legend-swatch legend-swatch--${area.status === "preservado" ? "green" : area.status === "atencao" ? "yellow" : "red"}`} />
+          <span><strong>{area.name || "Área cadastrada"}</strong><small>{area.category || "Sem categoria"} · {statusLabel(area.status)}</small></span>
+          <ChevronDownIcon />
+        </button>)}
+      </div> : <p className="occurrence-guide__empty">Nenhuma área cadastrada nesta região. Cadastre uma área antes de registrar a ocorrência.</p>}
       <div className="occurrence-guide__actions">
-        <button type="button" className="btn btn--green" onClick={onSelectArea}>Selecionar área</button>
         <button type="button" className="btn btn--ghost" onClick={onCreateArea}>Cadastrar nova área</button>
+        <button type="button" className="btn btn--red" onClick={onCancel}>Cancelar</button>
       </div>
     </div>
   );
