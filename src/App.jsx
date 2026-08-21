@@ -2181,7 +2181,8 @@ function BottomSheet({ isOpen, title, onClose, children, large = false }) {
         </header>
         <div className="bottom-sheet__content">{children}</div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -2208,8 +2209,7 @@ function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLaye
           </button>
         ))}
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
