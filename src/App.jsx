@@ -977,7 +977,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app-shell${isMobileViewport && openCard ? " app-shell--mobile-overlay-open" : ""}`}>
+    <div className={`app-shell${isMobileViewport && openCard ? " app-shell--mobile-overlay-open" : ""}${isDrawingArea || draftPolygonCoords.length > 0 ? " app-shell--drawing" : ""}`}>
       {isMobileViewport ? <MobileWorkspace
         overlayOpen={Boolean(openCard)}
         activeCard={openCard}

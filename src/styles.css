@@ -554,6 +554,34 @@ body {
   }
 }
 
+/* Modo de demarcação no computador: substitui os elementos inferiores pela barra de desenho. */
+@media (min-width: 768px) {
+  .app-shell--drawing .gis-legend,
+  .app-shell--drawing .gis-primary-actions {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .app-shell--drawing .mobile-drawing-bar {
+    z-index: 1450;
+    left: 50%;
+    right: auto;
+    bottom: 24px;
+    width: min(720px, calc(100vw - 40px));
+    padding: 10px;
+    border: 1px solid rgba(161, 179, 201, .2);
+    border-radius: 20px;
+    background: rgba(3, 24, 29, .97);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .36);
+    transform: translateX(-50%);
+  }
+
+  .app-shell--drawing .mobile-drawing-bar__button {
+    min-height: 58px;
+  }
+}
+
 @media (max-width: 900px) {
   body > .bottom-sheet-backdrop .bottom-sheet__content:has(.status-summary) {
     padding-bottom: calc(28px + env(safe-area-inset-bottom));
