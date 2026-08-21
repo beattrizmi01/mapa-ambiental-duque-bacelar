@@ -163,7 +163,7 @@ body {
     align-items: center; gap: 28px; padding: 14px 28px;
     color: #fff; background: #03181d; border-bottom: 1px solid rgba(92, 180, 50, 0.25);
   }
-  .gis-brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .gis-brand { display: flex; align-items: center; gap: 16px; min-width: 0; border: 0; padding: 0; color: inherit; background: transparent; font: inherit; text-align: left; cursor: pointer; }
   .gis-brand__mark {
     display: grid; place-items: center; width: 62px; height: 62px; flex: 0 0 auto;
     border: 3px solid #6ec22e; border-radius: 50%; color: #74cc34;
@@ -313,6 +313,18 @@ body {
   .desktop-action strong { font-size: 14px; }
 }
 
+.gis-brand:focus-visible,
+.mobile-gis-brand:focus-visible {
+  outline: 2px solid #78ce34;
+  outline-offset: 5px;
+  border-radius: 12px;
+}
+
+.gis-brand:hover,
+.mobile-gis-brand:hover {
+  filter: brightness(1.08);
+}
+
 @media (max-width: 900px) {
   .app-shell, .map-stage, .leaflet-map { width: 100vw; height: 100dvh; min-height: 100dvh; }
   .sidebar { top: max(10px, env(safe-area-inset-top)); left: 10px; width: calc(100vw - 20px); max-width: none; }
@@ -426,7 +438,7 @@ body {
     pointer-events: auto;
   }
 
-  .mobile-gis-brand { min-width: 0; display: flex; align-items: center; gap: 10px; color: #fff; }
+  .mobile-gis-brand { min-width: 0; display: flex; align-items: center; gap: 10px; border: 0; padding: 0; color: #fff; background: transparent; font: inherit; text-align: left; cursor: pointer; }
   .mobile-gis-brand__mark { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; color: #74cf32; border: 2px solid currentColor; border-radius: 50%; }
   .mobile-gis-brand__mark svg { width: 25px; height: 25px; }
   .mobile-gis-brand > span:last-child { min-width: 0; display: grid; }

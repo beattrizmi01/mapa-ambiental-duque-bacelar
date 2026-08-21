@@ -547,6 +547,22 @@ export default function App() {
     setDataStatus(`Região alterada para ${region.name}. Resumo atualizado.`);
   }
 
+  function goToHome() {
+    setOpenCard(null);
+    setActiveAreaId(null);
+    setHoveredAreaId(null);
+    setDetailOrigin(null);
+    setSearchedLocation(null);
+    setIsDrawingArea(false);
+    setDraftPolygonCoords([]);
+    setMapFocus({
+      id: `home-${Date.now()}`,
+      center: selectedRegion.center,
+      zoom: selectedRegion.zoom,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function openAreaFromStatus(area) {
     setOpenCard(null);
     setDetailOrigin("status");
@@ -970,6 +986,7 @@ export default function App() {
         isLocatingUser={isLocatingUser}
         onLocateUser={locateUser}
         onSearch={searchLocation}
+        onGoHome={goToHome}
         onOpenAbout={() => setOpenCard("about-mobile")}
         onOpenArea={() => {
           if (openCard === "area") { resetAreaDraft(); setOpenCard(null); }
@@ -993,6 +1010,7 @@ export default function App() {
         isLocatingUser={isLocatingUser}
         onLocateUser={locateUser}
         onSearch={searchLocation}
+        onGoHome={goToHome}
         onOpenArea={() => setOpenCard("area")}
         onOpenOccurrence={openOccurrenceFlow}
         onOpenLegend={() => setOpenCard("legend")}
@@ -1499,6 +1517,7 @@ function MobileWorkspace({
   isLocatingUser,
   onLocateUser,
   onSearch,
+  onGoHome,
   onOpenAbout,
   onOpenArea,
   onOpenOccurrence,
@@ -1520,10 +1539,10 @@ function MobileWorkspace({
   return (
     <div className={`mobile-workspace${overlayOpen ? " mobile-workspace--overlay-open" : ""}`}>
       <header className="mobile-gis-header">
-        <div className="mobile-gis-brand">
+        <button type="button" className="mobile-gis-brand" onClick={() => { setWelcomeVisible(true); onGoHome(); }} aria-label="Voltar ao início">
           <span className="mobile-gis-brand__mark"><LeafIcon /></span>
           <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
-        </div>
+        </button>
         <button type="button" className="mobile-about-button" onClick={onOpenAbout} aria-label="Sobre o projeto"><InfoIcon /></button>
         <form className="mobile-gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
           <SearchIcon />
@@ -1607,6 +1626,7 @@ function DesktopWorkspace({
   isLocatingUser,
   onLocateUser,
   onSearch,
+  onGoHome,
   onOpenArea,
   onOpenOccurrence,
   onOpenLegend,
@@ -1629,10 +1649,10 @@ function DesktopWorkspace({
   return (
     <div className="desktop-workspace">
       <header className="gis-header">
-        <div className="gis-brand">
+        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setAboutExpanded(false); setLayersExpanded(false); setSummaryExpanded(false); onGoHome(); }} aria-label="Voltar ao início">
           <span className="gis-brand__mark"><LeafIcon /></span>
           <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
-        </div>
+        </button>
         <form className="gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
           <SearchIcon />
           <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Digite um local, cidade, estado ou coordenadas..." aria-label="Buscar local" />
