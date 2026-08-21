@@ -197,7 +197,7 @@ export default function App() {
       if (!hasSupabaseConfig()) return;
       const { data, error } = await supabase
         .from("areas")
-        .select("id, name, category, region, status, impact, description, polygon_coords, latitude, longitude, created_at, last_occurrence_id, last_status_review_at")
+        .select("id, name, category, region, status, impact, description, polygon_coords, latitude, longitude, created_at")
         .order("created_at", { ascending: false });
       if (!active) return;
       if (error) {
