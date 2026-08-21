@@ -358,6 +358,131 @@ body {
   .mobile-fab { min-height: 48px; grid-template-columns: 22px 1fr; }
 }
 
+/* Composição mobile da plataforma GIS. */
+@media (max-width: 900px) {
+  .desktop-workspace {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    pointer-events: none;
+    scrollbar-width: none;
+  }
+
+  .desktop-workspace::-webkit-scrollbar { display: none; }
+  .map-stage { position: fixed !important; inset: 0 !important; z-index: 0; }
+
+  .gis-header {
+    position: relative;
+    width: 100%;
+    height: 298px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px;
+    grid-template-rows: 124px 112px;
+    align-items: center;
+    gap: 0 10px;
+    padding: max(14px, env(safe-area-inset-top)) 16px 18px;
+    color: #fff;
+    background: #03181d;
+    border-bottom: 1px solid rgba(92,180,50,.25);
+    pointer-events: auto;
+  }
+
+  .gis-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .gis-brand__mark { width: 62px; height: 62px; display: grid; place-items: center; flex: 0 0 auto; border: 3px solid #70c432; border-radius: 50%; color: #78ce34; }
+  .gis-brand__mark svg { width: 36px; height: 36px; }
+  .gis-brand > span:last-child { display: grid; gap: 3px; min-width: 0; }
+  .gis-brand strong { font-size: clamp(20px, 6vw, 29px); line-height: 1; white-space: nowrap; }
+  .gis-brand small { color: #78ce34; font-size: clamp(9px, 2.8vw, 13px); font-weight: 800; white-space: nowrap; }
+
+  .gis-about { width: 56px; height: 56px; display: grid; place-items: center; justify-self: end; border: 1px solid rgba(255,255,255,.3); border-radius: 17px; color: #fff; background: rgba(5,24,28,.7); font-size: 0; cursor: pointer; }
+  .gis-about svg { width: 25px; height: 25px; }
+
+  .gis-search { grid-column: 1 / -1; width: 100%; height: 72px; display: grid; grid-template-columns: 28px 1fr 32px; align-items: center; gap: 12px; padding: 0 18px; border: 1px solid rgba(115,198,47,.58); border-radius: 27px; background: #071d21; }
+  .gis-search > svg { width: 28px; color: #fff; }
+  .gis-search input { min-width: 0; border: 0; outline: 0; color: #fff; background: transparent; font: inherit; font-size: clamp(13px, 3.8vw, 17px); }
+  .gis-search input::placeholder { color: rgba(255,255,255,.82); }
+  .gis-search button { display: grid; place-items: center; border: 0; color: #79ce31; background: transparent; }
+  .gis-search button svg { width: 28px; }
+
+  .gis-region-controls { position: absolute; top: 314px; left: 50%; z-index: 2; width: calc(100vw - 32px); display: grid; grid-template-columns: 1fr 1.08fr; gap: 10px; transform: translateX(-50%); pointer-events: auto; }
+  .gis-region-controls button { min-width: 0; height: 58px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 29px; color: #fff; font: inherit; font-size: clamp(12px, 3.4vw, 15px); font-weight: 750; }
+  .gis-region-pill { padding: 0 13px; border: 1px solid rgba(255,255,255,.24); background: #071c22; }
+  .gis-region-pill span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gis-chevron { margin-left: auto; }
+  .gis-location-pill { border: 0; background: linear-gradient(135deg,#559f2e,#78c53c); }
+  .gis-region-controls svg { width: 21px; height: 21px; flex: 0 0 auto; }
+
+  .leaflet-top.leaflet-left { top: 390px !important; left: auto !important; right: 12px !important; }
+  .leaflet-control-zoom a { width: 48px !important; height: 48px !important; line-height: 46px !important; color: #fff !important; background: #071c22 !important; }
+
+  .welcome-panel {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: calc(100% - 28px);
+    min-height: 0;
+    margin: 640px 14px 16px;
+    padding: 24px 18px 20px;
+    border-left: 2px solid #70bf30;
+    border-radius: 22px;
+    color: #fff;
+    background: rgba(3,28,30,.97);
+    pointer-events: auto;
+  }
+  .welcome-panel > span { font-size: 15px; }
+  .welcome-panel h1 { margin: 6px 0 10px; font-size: 26px; }
+  .welcome-panel > p { margin: 0 0 18px; font-size: 14px; line-height: 1.5; }
+  .welcome-panel__close { top: 12px; right: 12px; }
+  .welcome-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+  .welcome-grid article { min-width: 0; min-height: 86px; display: grid; grid-template-columns: 27px minmax(0,1fr); align-items: center; gap: 8px; padding: 11px 9px; border-radius: 14px; background: rgba(8,52,45,.76); }
+  .welcome-grid article > svg { width: 25px; height: 25px; color: #79d331; }
+  .welcome-grid article span { display: grid; gap: 4px; min-width: 0; }
+  .welcome-grid article strong { font-size: clamp(11px, 3vw, 13px); line-height: 1.15; }
+  .welcome-grid article small { font-size: clamp(9px, 2.6vw, 11px); line-height: 1.25; }
+
+  .gis-right-rail { position: relative; top: auto; right: auto; width: calc(100% - 28px); max-height: none; display: grid; gap: 10px; margin: 0 14px; overflow: visible; pointer-events: auto; }
+  .desktop-workspace:not(:has(.welcome-panel)) .gis-right-rail { margin-top: 640px; }
+  .gis-white-panel { overflow: hidden; border-radius: 18px; color: #142023; background: #f8faf8; box-shadow: 0 9px 24px rgba(0,0,0,.22); }
+  .gis-panel-title { width: 100%; min-height: 68px; display: grid; grid-template-columns: 25px 1fr auto; align-items: center; gap: 12px; padding: 0 20px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+  .gis-panel-title svg { width: 24px; height: 24px; }
+  .gis-panel-title strong { font-size: 16px; }
+  .gis-layer-list { padding: 5px 0 9px; }
+  .gis-layer-list button { width: 100%; min-height: 48px; display: grid; grid-template-columns: 22px 1fr 38px; align-items: center; gap: 11px; padding: 0 18px; border: 0; background: transparent; color: #1b292c; font: inherit; font-size: 13px; text-align: left; }
+  .gis-layer-list svg { width: 19px; height: 19px; }
+  .gis-switch { position: relative; width: 36px; height: 21px; border-radius: 22px; background: #cdd2d1; }
+  .gis-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: #fff; }
+  .gis-switch.is-on { background: #468d35; }
+  .gis-switch.is-on::after { transform: translateX(15px); }
+  .summary-overview__content { padding: 6px 14px 14px; }
+  .summary-row { min-height: 48px; display: grid; grid-template-columns: 21px 1fr auto; align-items: center; gap: 10px; margin-top: 8px; padding: 0 12px; border: 1px solid; border-radius: 9px; font-size: 12px; }
+  .about-project-content { padding: 16px 18px; }
+
+  .gis-legend { display: none; }
+  .gis-primary-actions { position: relative; left: auto; bottom: auto; width: calc(100% - 28px); display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; margin: 16px 14px max(18px,env(safe-area-inset-bottom)); transform: none; pointer-events: auto; }
+  .desktop-action { min-width: 0; width: auto; height: 120px; display: grid; grid-template-columns: 1fr; place-items: center; align-content: center; gap: 7px; padding: 10px 5px; border: 0; border-radius: 17px; color: #fff; text-align: center; }
+  .desktop-action > svg { width: 32px; height: 32px; }
+  .desktop-action span { display: grid; gap: 4px; min-width: 0; }
+  .desktop-action strong { font-size: clamp(11px,3vw,14px); white-space: nowrap; }
+  .desktop-action small { font-size: clamp(8px,2.4vw,10px); line-height: 1.2; }
+  .desktop-action--green { background: linear-gradient(135deg,#4a872b,#69ad38); }
+  .desktop-action--blue { background: linear-gradient(135deg,#086ed1,#168fe9); }
+  .desktop-action--purple { background: linear-gradient(135deg,#4930b7,#7049dc); }
+  .desktop-action--teal { background: linear-gradient(135deg,#0e716b,#15948a); }
+}
+
+@media (max-width: 430px) {
+  .gis-brand strong { font-size: clamp(18px,5.7vw,24px); }
+  .gis-brand small { font-size: 9px; }
+  .gis-brand__mark { width: 54px; height: 54px; }
+  .gis-header { grid-template-columns: minmax(0,1fr) 52px; padding-inline: 12px; }
+  .gis-about { width: 50px; height: 50px; }
+  .gis-primary-actions { gap: 6px; }
+  .desktop-action { height: 108px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .welcome-panel { animation: none; }
 }

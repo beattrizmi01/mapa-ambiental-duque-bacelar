@@ -818,74 +818,21 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {!isMobileViewport ? (
-        <DesktopWorkspace
-          selectedRegion={selectedRegion}
-          regionSummary={regionSummary}
-          occurrenceCount={occurrenceRecords.length}
-          layerFilters={layerFilters}
-          onToggleLayer={toggleLayerFilter}
-          isLocatingUser={isLocatingUser}
-          onLocateUser={locateUser}
-          onSearch={searchLocation}
-          onOpenArea={() => setOpenCard("area")}
-          onOpenOccurrence={openOccurrenceFlow}
-          onOpenLegend={() => setOpenCard("legend")}
-          onOpenReports={() => setOpenCard("status")}
-        />
-      ) : <Sidebar
-        isMobileViewport={isMobileViewport}
-        openCard={openCard}
-        onToggle={(cardName) => setOpenCard((current) => (current === cardName ? null : cardName))}
+      <DesktopWorkspace
         selectedRegion={selectedRegion}
         regionSummary={regionSummary}
-        hasRegionData={hasRegionData}
-        isRegionPanelOpen={isRegionPanelOpen}
-        onToggleRegionPanel={() => setIsRegionPanelOpen((current) => !current)}
-        onUseCurrentLocation={locateUser}
+        occurrenceCount={occurrenceRecords.length}
+        layerFilters={layerFilters}
+        onToggleLayer={toggleLayerFilter}
         isLocatingUser={isLocatingUser}
-        notificationSummary={notificationSummary}
-        onOpenNotifications={() => setOpenCard("notifications")}
-        areas={areas}
-        areaForm={areaForm}
-        setAreaForm={setAreaForm}
-        areaPreview={areaPreview}
-        setAreaPreview={setAreaPreview}
-        occurrenceForm={occurrenceForm}
-        setOccurrenceForm={setOccurrenceForm}
-        occurrencePreview={occurrencePreview}
-        setOccurrencePreview={setOccurrencePreview}
-        isDrawingArea={isDrawingArea}
-        draftPolygonCoords={draftPolygonCoords}
-        onStartAreaDrawing={startAreaDrawing}
-        onConcludeAreaDrawing={concludeAreaDrawing}
-        onClearAreaDrawing={clearAreaDrawing}
-        onSubmitArea={handleAreaSubmit}
-        onSubmitOccurrence={handleOccurrenceSubmit}
-        isSavingArea={isSavingArea}
-        isSavingOccurrence={isSavingOccurrence}
-        areaSuccessMessage={areaSuccessMessage}
-        areaErrorMessage={areaErrorMessage}
-        occurrenceSuccessMessage={occurrenceSuccessMessage}
-        occurrenceErrorMessage={occurrenceErrorMessage}
-        onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
-        occurrenceLocation={occurrenceLocation}
-        onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
-      />}
+        onLocateUser={locateUser}
+        onSearch={searchLocation}
+        onOpenArea={() => setOpenCard("area")}
+        onOpenOccurrence={openOccurrenceFlow}
+        onOpenLegend={() => setOpenCard("legend")}
+        onOpenReports={() => setOpenCard("status")}
+      />
       <main className="map-stage">
-        {isMobileViewport ? <MobileMapActions
-          isDrawingArea={isDrawingArea}
-          onOpenArea={() => setOpenCard("area")}
-          onOpenOccurrence={openOccurrenceFlow}
-          onOpenLegend={() => setOpenCard("legend")}
-          onOpenStatus={() => setOpenCard("status")}
-          onOpenLayers={() => setOpenCard("layers")}
-          onOpenHelp={() => setOpenCard("help")}
-          onLocateUser={locateUser}
-          isLocatingUser={isLocatingUser}
-          hasUserLocation={Boolean(userLocation)}
-        /> : null}
-        {showMobileTips ? <MobileFirstVisitTips onDismiss={dismissMobileTips} /> : null}
         <StatusChangeToast notice={statusChangeNotice} onClose={() => setStatusChangeNotice(null)} />
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
           <div className="mobile-drawing-bar">
