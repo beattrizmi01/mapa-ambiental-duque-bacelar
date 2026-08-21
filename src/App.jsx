@@ -91,6 +91,7 @@ export default function App() {
   const [areas, setAreas] = useState(() => loadAreas());
   const [activeBaseMap, setActiveBaseMap] = useState("satellite");
   const [showMapLabels, setShowMapLabels] = useState(false);
+  const [baseMapReady, setBaseMapReady] = useState(false);
   const [layerFilters, setLayerFilters] = useState(DEFAULT_LAYER_FILTERS);
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false,
@@ -185,9 +186,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setShowMapLabels(true), 1200);
+    setBaseMapReady(false);
+    setShowMapLabels(false);
+  }, [activeBaseMap]);
+
+  useEffect(() => {
+    if (!baseMapReady) return undefined;
+    const timer = window.setTimeout(() => setShowMapLabels(true), isMobileViewport ? 2500 : 500);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [baseMapReady, isMobileViewport]);
 
   useEffect(() => {
     let active = true;
@@ -893,10 +900,11 @@ export default function App() {
           maxZoom={MAX_MAP_ZOOM}
           className="leaflet-map"
         >
+          <MapViewportSync />
           {activeBaseMap === "satellite" ? (
-            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} maxNativeZoom={17} maxZoom={MAX_MAP_ZOOM} />
+            <TileLayer attribution={SATELLITE_TILES.attribution} url={SATELLITE_TILES.url} maxNativeZoom={17} maxZoom={MAX_MAP_ZOOM} keepBuffer={isMobileViewport ? 1 : 2} updateWhenZooming={false} detectRetina={false} eventHandlers={{ load: () => setBaseMapReady(true) }} />
           ) : (
-            <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} />
+            <TileLayer attribution={STREET_TILES.attribution} url={STREET_TILES.url} maxNativeZoom={19} maxZoom={MAX_MAP_ZOOM} keepBuffer={isMobileViewport ? 1 : 2} updateWhenZooming={false} detectRetina={false} eventHandlers={{ load: () => setBaseMapReady(true) }} />
           )}
           <MapInteractionLock locked={Boolean(activeAreaId)} />
           <MapFocusController focus={mapFocus} />
@@ -2704,6 +2712,30 @@ function regionsFromAreas(areas) {
 function filterAreasByRegion(areas, regionName) {
   const normalizedRegion = normalizeAreaName(regionName);
   return areas.filter((area) => normalizeAreaName(area.region || REGIONS[0].name) === normalizedRegion);
+}
+
+function MapViewportSync() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    const refresh = () => map.invalidateSize({ animate: false, pan: false });
+    const frame = window.requestAnimationFrame(() => window.requestAnimationFrame(refresh));
+    const timers = [150, 500, 1200].map((delay) => window.setTimeout(refresh, delay));
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(refresh) : null;
+    observer?.observe(container);
+    window.addEventListener("resize", refresh, { passive: true });
+    window.addEventListener("orientationchange", refresh, { passive: true });
+    return () => {
+      window.cancelAnimationFrame(frame);
+      timers.forEach((timer) => window.clearTimeout(timer));
+      observer?.disconnect();
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("orientationchange", refresh);
+    };
+  }, [map]);
+
+  return null;
 }
 
 function WaterIcon() {
