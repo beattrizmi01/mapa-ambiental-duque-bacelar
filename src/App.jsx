@@ -2713,6 +2713,13 @@ function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToR
   const latestChange = history[0] ?? null;
   const [expanded, setExpanded] = useState(false);
   const isMobileCard = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+
+  function toggleExpanded(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setExpanded((current) => !current);
+  }
+
   const card = (
     <article className={`detail-card${expanded ? " is-expanded" : " is-collapsed"}`}>
       <div className="detail-card__close-row">
@@ -2730,7 +2737,8 @@ function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToR
         <button
           type="button"
           className="detail-card__expand"
-          onClick={() => setExpanded((current) => !current)}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={toggleExpanded}
           aria-expanded={expanded}
         >
           {expanded ? "Recolher cartão ↑" : "Expandir cartão ↗"}
