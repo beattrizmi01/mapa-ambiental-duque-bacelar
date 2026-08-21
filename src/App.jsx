@@ -342,6 +342,49 @@ export default function App() {
     if (located) startAreaDrawing();
   }
 
+  async function searchLocation(query) {
+    const searchTerm = query.trim();
+    if (!searchTerm) return;
+    setDataStatus(`Buscando ${searchTerm}...`);
+    try {
+      const coordinateMatch = searchTerm.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)\s*$/);
+      let latitude;
+      let longitude;
+      let regionName = searchTerm;
+      if (coordinateMatch) {
+        latitude = Number(coordinateMatch[1]);
+        longitude = Number(coordinateMatch[2]);
+        regionName = await reverseGeocodeCity(latitude, longitude) || searchTerm;
+      } else {
+        const url = new URL("https://nominatim.openstreetmap.org/search");
+        url.searchParams.set("format", "jsonv2");
+        url.searchParams.set("q", searchTerm);
+        url.searchParams.set("limit", "1");
+        url.searchParams.set("addressdetails", "1");
+        const response = await fetch(url.toString(), { headers: { "Accept-Language": "pt-BR,pt;q=0.9" } });
+        if (!response.ok) throw new Error("Busca indisponível");
+        const [result] = await response.json();
+        if (!result) throw new Error("Local não encontrado");
+        latitude = Number(result.lat);
+        longitude = Number(result.lon);
+        const address = result.address ?? {};
+        regionName = address.city || address.town || address.municipality || address.village || result.name || searchTerm;
+      }
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new Error("Coordenadas inválidas");
+      const detectedRegion = createRegion(
+        getRegionNameAtPoint(boundaryData, latitude, longitude) || regionName,
+        [latitude, longitude],
+        LOCAL_ZOOM,
+      );
+      setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
+      setSelectedRegionId(detectedRegion.id);
+      setMapFocus({ id: `search-${Date.now()}`, center: detectedRegion.center, zoom: detectedRegion.zoom });
+      setDataStatus(`Local encontrado: ${detectedRegion.name}.`);
+    } catch {
+      setDataStatus("Não foi possível encontrar esse local. Tente cidade, estado ou latitude e longitude.");
+    }
+  }
+
   async function detectUserRegion() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setDataStatus("Seu navegador não oferece suporte à localização.");
@@ -775,7 +818,22 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar
+      {!isMobileViewport ? (
+        <DesktopWorkspace
+          selectedRegion={selectedRegion}
+          regionSummary={regionSummary}
+          areas={areas}
+          occurrenceCount={occurrenceRecords.length}
+          isLocatingUser={isLocatingUser}
+          onLocateUser={locateUser}
+          onSearch={searchLocation}
+          onOpenAbout={() => setOpenCard("help")}
+          onOpenArea={() => setOpenCard("area")}
+          onOpenOccurrence={openOccurrenceFlow}
+          onOpenLayers={() => setOpenCard("layers")}
+          onOpenReports={() => setOpenCard("status")}
+        />
+      ) : <Sidebar
         isMobileViewport={isMobileViewport}
         openCard={openCard}
         onToggle={(cardName) => setOpenCard((current) => (current === cardName ? null : cardName))}
@@ -813,9 +871,9 @@ export default function App() {
         onCancelArea={() => { resetAreaDraft(); setOpenCard(null); }}
         occurrenceLocation={occurrenceLocation}
         onCancelOccurrence={() => { resetOccurrenceDraft(); setOpenCard(null); }}
-      />
+      />}
       <main className="map-stage">
-        <MobileMapActions
+        {isMobileViewport ? <MobileMapActions
           isDrawingArea={isDrawingArea}
           onOpenArea={() => setOpenCard("area")}
           onOpenOccurrence={openOccurrenceFlow}
@@ -826,7 +884,7 @@ export default function App() {
           onLocateUser={locateUser}
           isLocatingUser={isLocatingUser}
           hasUserLocation={Boolean(userLocation)}
-        />
+        /> : null}
         {showMobileTips ? <MobileFirstVisitTips onDismiss={dismissMobileTips} /> : null}
         <StatusChangeToast notice={statusChangeNotice} onClose={() => setStatusChangeNotice(null)} />
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
@@ -1276,6 +1334,130 @@ function AreaLayer(props) {
       </Marker>
     );
   });
+}
+
+function DesktopWorkspace({
+  selectedRegion,
+  regionSummary,
+  areas,
+  occurrenceCount,
+  isLocatingUser,
+  onLocateUser,
+  onSearch,
+  onOpenAbout,
+  onOpenArea,
+  onOpenOccurrence,
+  onOpenLayers,
+  onOpenReports,
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
+  const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
+    + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
+  const layerLabels = [
+    "Unidades de Conservação",
+    "Áreas de Risco",
+    "Ocorrências Ambientais",
+    "Cobertura Vegetal",
+    "Hidrografia",
+    "Limites territoriais",
+  ];
+
+  return (
+    <div className="desktop-workspace">
+      <header className="gis-header">
+        <div className="gis-brand">
+          <span className="gis-brand__mark"><LeafIcon /></span>
+          <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
+        </div>
+        <form className="gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
+          <SearchIcon />
+          <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Digite um local, cidade, estado ou coordenadas..." aria-label="Buscar local" />
+          <button type="submit" aria-label="Buscar"><TargetIcon /></button>
+        </form>
+        <button type="button" className="gis-about" onClick={onOpenAbout}><InfoIcon /> Sobre o projeto</button>
+      </header>
+
+      <section className="welcome-panel">
+        <span>Bem-vindo ao</span>
+        <h1>Mapa Ambiental</h1>
+        <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
+        <div className="welcome-grid">
+          <FeatureMiniCard icon={<MapPinIcon />} title="Mapeamento" text="Áreas em tempo real" />
+          <FeatureMiniCard icon={<StatusIcon />} title="Monitoramento" text="Acompanhamento contínuo" />
+          <FeatureMiniCard icon={<AlertIcon />} title="Ocorrências" text="Registros de impactos" />
+          <FeatureMiniCard icon={<LeafIcon />} title="Preservação" text="Ações e conservação" />
+        </div>
+      </section>
+
+      <div className="gis-region-controls">
+        <button type="button" className="gis-region-pill" onClick={onLocateUser}><MapPinIcon /><span>{selectedRegion.name}</span><span className="gis-chevron">⌄</span></button>
+        <button type="button" className="gis-location-pill" onClick={onLocateUser} disabled={isLocatingUser}><TargetIcon />{isLocatingUser ? "Localizando..." : "Minha localização"}</button>
+      </div>
+
+      <aside className="gis-right-rail">
+        <section className="gis-white-panel layers-overview">
+          <button type="button" className="gis-panel-title" onClick={onOpenLayers}><LayersIcon /><strong>Camadas</strong><span>⌃</span></button>
+          <div className="gis-layer-list">
+            {layerLabels.map((label, index) => (
+              <button type="button" key={label} onClick={onOpenLayers}><span>{index === 2 ? <FlameIcon /> : index === 1 ? <AlertIcon /> : <LeafIcon />}</span><span>{label}</span><i className={`gis-switch${index === 4 ? "" : " is-on"}`} /></button>
+            ))}
+          </div>
+        </section>
+        <section className="gis-white-panel summary-overview">
+          <h2>Resumo geral</h2>
+          <SummaryRow tone="green" icon={<LeafIcon />} label="Áreas preservadas" value={preserved} />
+          <SummaryRow tone="yellow" icon={<AlertIcon />} label="Áreas de atenção" value={attention} />
+          <SummaryRow tone="red" icon={<FlameIcon />} label="Ocorrências registradas" value={occurrenceCount} />
+        </section>
+      </aside>
+
+      <section className="gis-legend" aria-label="Legenda do mapa">
+        <strong>LEGENDA</strong>
+        <span><LeafIcon /> Área preservada</span>
+        <span><AlertIcon /> Área de atenção</span>
+        <span><FlameIcon /> Ocorrência registrada</span>
+        <span><i className="boundary-symbol" /> Limite territorial</span>
+      </section>
+
+      <nav className="gis-primary-actions" aria-label="Ações principais">
+        <DesktopAction tone="green" icon={<AreaIcon />} title="Nova área" text="Registrar área" onClick={onOpenArea} />
+        <DesktopAction tone="blue" icon={<AlertIcon />} title="Ocorrência" text="Registrar impacto" onClick={onOpenOccurrence} />
+        <DesktopAction tone="purple" icon={<LayersIcon />} title="Camadas" text="Gerenciar camadas" onClick={onOpenLayers} />
+        <DesktopAction tone="teal" icon={<StatusIcon />} title="Relatórios" text="Ver análises" onClick={onOpenReports} />
+      </nav>
+
+      <footer className="gis-footer">
+        <div><LeafIcon /><span>Desenvolvido pelo <strong>Projeto Mapa Ambiental</strong><small>Ligado à <strong>II HACKEPT</strong> · Maratona de Inovação dos Centros Educa Mais e EJATEC 2026</small></span></div>
+        <div><StatusIcon /><span>Plataforma colaborativa para a gestão ambiental<small>Dados seguros e atualizados</small></span></div>
+        <div><span>Conectando pessoas, dados e ações em prol do meio ambiente.</span><LeafIcon /></div>
+      </footer>
+    </div>
+  );
+}
+
+function FeatureMiniCard({ icon, title, text }) {
+  return <article>{icon}<span><strong>{title}</strong><small>{text}</small></span></article>;
+}
+
+function SummaryRow({ tone, icon, label, value }) {
+  return <div className={`summary-row summary-row--${tone}`}>{icon}<span>{label}</span><strong>{value}</strong></div>;
+}
+
+function DesktopAction({ tone, icon, title, text, onClick }) {
+  return <button type="button" className={`desktop-action desktop-action--${tone}`} onClick={onClick}>{icon}<span><strong>{title}</strong><small>{text}</small></span></button>;
+}
+
+function SearchIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>;
+}
+
+function TargetIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>;
+}
+
+function InfoIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></svg>;
 }
 
 function Sidebar(props) {
