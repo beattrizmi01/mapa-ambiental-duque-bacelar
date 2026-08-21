@@ -1342,7 +1342,7 @@ function MobileWorkspace({
         <form className="mobile-gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
           <SearchIcon />
           <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar localidade..." aria-label="Buscar localidade" />
-          <button type="submit" aria-label="Buscar"><TargetIcon /></button>
+          <button type="submit" aria-label="Buscar localidade" title="Buscar localidade"><SearchIcon /></button>
         </form>
       </header>
 
