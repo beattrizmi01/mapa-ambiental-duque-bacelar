@@ -1399,7 +1399,7 @@ function DesktopWorkspace({
 
       <aside className="gis-right-rail">
         <section className={`gis-white-panel layers-overview${layersExpanded ? " is-expanded" : " is-collapsed"}`}>
-          <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Camadas</strong><span className="layers-chevron">⌃</span></button>
+          <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Ocorrências</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
             {layerOptions.map((option) => (
               <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span>{option.icon}</span><span>{option.label}</span><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
@@ -1425,7 +1425,7 @@ function DesktopWorkspace({
       <nav className="gis-primary-actions" aria-label="Ações principais">
         <DesktopAction tone="green" icon={<AreaIcon />} title="Nova área" text="Registrar área" onClick={onOpenArea} />
         <DesktopAction tone="blue" icon={<AlertIcon />} title="Ocorrência" text="Registrar impacto" onClick={onOpenOccurrence} />
-        <DesktopAction tone="purple" icon={<LayersIcon />} title="Camadas" text="Gerenciar camadas" onClick={() => setLayersExpanded(true)} />
+        <DesktopAction tone="purple" icon={<LayersIcon />} title="Ocorrências" text="Filtrar visualização" onClick={() => setLayersExpanded(true)} />
         <DesktopAction tone="teal" icon={<StatusIcon />} title="Relatórios" text="Ver análises" onClick={onOpenReports} />
       </nav>
 
