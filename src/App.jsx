@@ -1345,7 +1345,7 @@ function DesktopWorkspace({
       </section> : null}
 
       <div className="gis-region-controls">
-        <button type="button" className="gis-region-pill" onClick={onLocateUser}><MapPinIcon /><span>{selectedRegion.name}</span><span className="gis-chevron">⌄</span></button>
+        <button type="button" className="gis-region-pill" onClick={onLocateUser}><MapPinIcon /><span>{selectedRegion.name}</span><span className="gis-chevron"><ChevronDownIcon /></span></button>
         <button type="button" className="gis-location-pill" onClick={onLocateUser} disabled={isLocatingUser}><TargetIcon />{isLocatingUser ? "Localizando..." : "Minha localização"}</button>
       </div>
 
@@ -1425,6 +1425,10 @@ function InfoIcon() {
 
 function CloseIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m6 6 12 12M18 6 6 18" /></svg>;
+}
+
+function ChevronDownIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m7 10 5 5 5-5" /></svg>;
 }
 
 function Sidebar(props) {

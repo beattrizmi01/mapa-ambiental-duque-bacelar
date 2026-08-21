@@ -747,6 +747,20 @@ body {
   transition: transform 180ms ease;
 }
 
+.gis-chevron {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.gis-chevron svg {
+  width: 18px;
+  height: 18px;
+}
+
 .layers-overview.is-collapsed .layers-chevron {
   transform: rotate(180deg);
 }
