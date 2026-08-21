@@ -363,21 +363,30 @@ body {
   html, body, #root, .app-shell {
     width: 100%;
     height: 100%;
-    height: 100dvh;
+    height: 100svh;
     overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  html, body {
+    position: fixed;
+    inset: 0;
   }
 
   .map-stage, .leaflet-map {
     position: fixed;
     inset: 0;
     width: 100vw;
-    height: 100dvh;
+    height: 100svh;
     min-height: 0;
   }
 
   .mobile-workspace {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100svh;
     z-index: 1300;
     overflow: hidden;
     pointer-events: none;
@@ -401,7 +410,7 @@ body {
   }
 
   .mobile-gis-header {
-    position: fixed;
+    position: absolute;
     z-index: 5;
     top: 0;
     left: 0;
@@ -455,7 +464,7 @@ body {
   .mobile-gis-search button { width: 32px; height: 32px; padding: 5px; color: #73cf2f; background: transparent; border: 0; }
 
   .mobile-region-bar {
-    position: fixed;
+    position: absolute;
     z-index: 4;
     top: calc(144px + env(safe-area-inset-top));
     left: 12px;
@@ -474,7 +483,7 @@ body {
   .mobile-location-button { background: #59b52f; border: 1px solid #70ce3e; }
 
   .mobile-location-notice {
-    position: fixed;
+    position: absolute;
     z-index: 5;
     top: calc(196px + env(safe-area-inset-top));
     left: 12px;
@@ -496,7 +505,7 @@ body {
   @keyframes location-spin { to { transform: rotate(360deg); } }
 
   .mobile-map-tools {
-    position: fixed;
+    position: absolute;
     z-index: 4;
     top: calc(300px + env(safe-area-inset-top));
     right: 12px;
@@ -531,7 +540,7 @@ body {
   .mobile-welcome-card > svg { width: 18px; transform: rotate(180deg); }
 
   .mobile-welcome-panel {
-    position: fixed;
+    position: absolute;
     z-index: 4;
     left: 12px;
     right: 12px;
@@ -558,7 +567,7 @@ body {
   .mobile-welcome-panel__grid article small { color: rgba(255, 255, 255, .78); font-size: 8.5px; line-height: 1.2; }
 
   .mobile-bottom-nav {
-    position: fixed;
+    position: absolute;
     z-index: 6;
     left: 0;
     right: 0;
@@ -598,12 +607,16 @@ body {
   }
 
   body > .bottom-sheet-backdrop .bottom-sheet {
-    max-height: calc(100dvh - 92px - env(safe-area-inset-bottom));
+    max-height: calc(100svh - 92px - env(safe-area-inset-bottom));
   }
 
+  body > .bottom-sheet-backdrop .bottom-sheet__content { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
   body > .bottom-sheet-backdrop .bottom-sheet--large .bottom-sheet__content {
-    max-height: calc(100dvh - 160px - env(safe-area-inset-bottom));
+    max-height: calc(100svh - 160px - env(safe-area-inset-bottom));
     padding-bottom: 8px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .bottom-sheet--large .dark-form .form-actions {
