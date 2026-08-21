@@ -372,21 +372,30 @@ body {
 
 /* Mantém o seletor de área e suas ações inteiros acima da navegação móvel. */
 @media (max-width: 900px) {
+  .bottom-sheet-backdrop {
+    inset: 0 0 calc(78px + env(safe-area-inset-bottom));
+    padding: 8px 6px;
+  }
+
   body > .bottom-sheet-backdrop {
     bottom: calc(78px + env(safe-area-inset-bottom));
     padding-bottom: 8px;
   }
 
+  .bottom-sheet-backdrop .bottom-sheet,
   body > .bottom-sheet-backdrop .bottom-sheet {
     display: flex;
     flex-direction: column;
+    min-height: 0;
     max-height: calc(100% - 8px);
   }
 
+  .bottom-sheet-backdrop .bottom-sheet__header,
   body > .bottom-sheet-backdrop .bottom-sheet__header {
     flex: 0 0 auto;
   }
 
+  .bottom-sheet-backdrop .bottom-sheet__content,
   body > .bottom-sheet-backdrop .bottom-sheet__content {
     flex: 1 1 auto;
     min-height: 0;
