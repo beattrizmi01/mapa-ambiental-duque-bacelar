@@ -2493,6 +2493,9 @@ body {
   margin-top: 10px;
 }
 
+.detail-card__back-report { width: 100%; min-height: 44px; margin-bottom: 12px; padding: 10px 14px; color: #e8fff1; background: rgba(31, 126, 74, .3); border: 1px solid rgba(91, 222, 151, .42); border-radius: 13px; font-weight: 850; cursor: pointer; }
+.detail-card__back-report:hover, .detail-card__back-report:focus-visible { background: rgba(42, 166, 96, .42); }
+
 .detail-card.is-expanded .detail-card__extended {
   display: block;
 }

@@ -115,6 +115,7 @@ export default function App() {
   const [recentlyUpdatedAreaId, setRecentlyUpdatedAreaId] = useState(null);
   const [hoveredAreaId, setHoveredAreaId] = useState(null);
   const [activeAreaId, setActiveAreaId] = useState(null);
+  const [detailOrigin, setDetailOrigin] = useState(null);
   const [mapFocus, setMapFocus] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [searchedLocation, setSearchedLocation] = useState(null);
@@ -553,6 +554,7 @@ export default function App() {
 
   function openAreaFromStatus(area) {
     setOpenCard(null);
+    setDetailOrigin("status");
     setActiveAreaId(area.id);
     setHoveredAreaId(null);
     setOccurrenceForm((current) => ({ ...current, areaId: area.id }));
@@ -1082,6 +1084,12 @@ export default function App() {
             drawingEnabled={isDrawingArea}
             hoveredAreaId={hoveredAreaId}
             activeAreaId={activeAreaId}
+            onReturnToReports={detailOrigin === "status" ? () => {
+              setActiveAreaId(null);
+              setHoveredAreaId(null);
+              setDetailOrigin(null);
+              setOpenCard("status");
+            } : null}
             onHoverArea={(areaId) => {
               setHoveredAreaId(areaId);
               loadAreaImage(areaId);
@@ -1090,6 +1098,7 @@ export default function App() {
               setHoveredAreaId((current) => (current === areaId ? null : current));
             }}
             onToggleArea={(areaId) => {
+              setDetailOrigin(null);
               setActiveAreaId((current) => current === areaId ? null : areaId);
               setHoveredAreaId(null);
               setOccurrenceForm((current) => ({ ...current, areaId }));
@@ -1265,7 +1274,7 @@ function StatusChangeToast({ notice, onClose }) {
   );
 }
 
-function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect }) {
+function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect, onReturnToReports }) {
   const polygonPositions = area.polygonCoords;
   return (
     <>
@@ -1339,7 +1348,7 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
           autoPanPaddingBottomRight={L.point(150, 130)}
           eventHandlers={{ remove: onClose }}
         >
-          <DetailCard area={area} history={history} occurrences={occurrences} onClose={onClose} />
+          <DetailCard area={area} history={history} occurrences={occurrences} onClose={onClose} onReturnToReports={onReturnToReports} />
         </Popup>
       ) : null}
     </>
@@ -1360,6 +1369,7 @@ function AreaLayer(props) {
     onToggleArea,
     onCloseArea,
     onAreaPointSelect,
+    onReturnToReports,
   } = props;
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
@@ -1397,6 +1407,7 @@ function AreaLayer(props) {
         onToggle={() => onToggleArea(area.id)}
         onClose={() => onCloseArea(area.id)}
         onAreaPointSelect={(point) => onAreaPointSelect(area, point)}
+        onReturnToReports={onReturnToReports}
       />
     ));
   }
@@ -1419,6 +1430,7 @@ function AreaLayer(props) {
           onToggle={() => onToggleArea(area.id)}
           onClose={() => onCloseArea(area.id)}
           onAreaPointSelect={(point) => onAreaPointSelect(area, point)}
+          onReturnToReports={onReturnToReports}
         />
       );
     }
@@ -2631,7 +2643,7 @@ function preloadImageSource(source) {
   return preloadPromise;
 }
 
-function DetailCard({ area, history = [], occurrences = [], onClose }) {
+function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToReports }) {
   const latestChange = history[0] ?? null;
   const [expanded, setExpanded] = useState(false);
   const isMobileCard = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
@@ -2658,6 +2670,7 @@ function DetailCard({ area, history = [], occurrences = [], onClose }) {
           {expanded ? "Recolher cartão ↑" : "Expandir cartão ↗"}
         </button>
         <div className="detail-card__extended">
+        {onReturnToReports ? <button type="button" className="detail-card__back-report" onClick={onReturnToReports}>← Voltar aos relatórios</button> : null}
         {latestChange ? (
           <div className="area-change-card">
             <span>Última mudança</span>
