@@ -373,13 +373,14 @@ body {
 /* Mantém o seletor de área e suas ações inteiros acima da navegação móvel. */
 @media (max-width: 900px) {
   body > .bottom-sheet-backdrop {
-    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    padding-bottom: 8px;
   }
 
   body > .bottom-sheet-backdrop .bottom-sheet {
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 86px - env(safe-area-inset-bottom));
+    max-height: calc(100% - 8px);
   }
 
   body > .bottom-sheet-backdrop .bottom-sheet__header {
@@ -401,7 +402,7 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-inline: -2px;
-    padding: 12px 2px calc(12px + env(safe-area-inset-bottom));
+    padding: 12px 2px 14px;
     background: linear-gradient(180deg, rgba(10, 18, 31, 0), #0a121f 22%);
   }
 
