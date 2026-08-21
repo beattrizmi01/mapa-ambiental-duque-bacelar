@@ -622,6 +622,24 @@ body {
     padding: 13px 8px;
     line-height: 1.15;
   }
+
+  .bottom-sheet--large .form-actions--occurrence {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-sheet--large .form-actions--occurrence .btn {
+    white-space: normal;
+  }
+
+  .occurrence-guide__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .occurrence-guide__actions .btn {
+    width: 100%;
+    min-height: 48px;
+  }
 }
 
 @media (max-width: 370px) {

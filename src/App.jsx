@@ -1949,7 +1949,7 @@ function OccurrenceFormPanel(props) {
       {occurrenceErrorMessage ? <div className="form-feedback form-feedback--error">{occurrenceErrorMessage}</div> : null}
       {occurrenceSuccessMessage ? <div className="form-feedback form-feedback--success">{occurrenceSuccessMessage}</div> : null}
       <UploadBox preview={occurrencePreview} onPreviewChange={setOccurrencePreview} />
-      <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingOccurrence}>{isSavingOccurrence ? "Registrando..." : "Registrar"}</button><button className="btn btn--red" type="button" onClick={onCancelOccurrence} disabled={isSavingOccurrence}>Cancelar</button></div>
+      <div className="form-actions form-actions--occurrence"><button className="btn btn--green" type="submit" disabled={isSavingOccurrence}>{isSavingOccurrence ? "Registrando ocorrência..." : "Registrar ocorrência"}</button><button className="btn btn--red" type="button" onClick={onCancelOccurrence} disabled={isSavingOccurrence}>Cancelar</button></div>
     </form>
   );
 }
