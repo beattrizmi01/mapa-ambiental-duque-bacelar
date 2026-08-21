@@ -383,6 +383,18 @@ body {
     pointer-events: none;
   }
 
+  .mobile-workspace--overlay-open {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .app-shell--mobile-overlay-open .leaflet-control-container,
+  .app-shell--mobile-overlay-open .leaflet-popup-pane,
+  .app-shell--mobile-overlay-open .leaflet-tooltip-pane {
+    visibility: hidden;
+  }
+
   .mobile-gis-header {
     position: fixed;
     z-index: 5;

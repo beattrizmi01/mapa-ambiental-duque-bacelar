@@ -815,8 +815,9 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${isMobileViewport && openCard ? " app-shell--mobile-overlay-open" : ""}`}>
       {isMobileViewport ? <MobileWorkspace
+        overlayOpen={Boolean(openCard)}
         selectedRegion={selectedRegion}
         isLocatingUser={isLocatingUser}
         onLocateUser={locateUser}
@@ -1310,6 +1311,7 @@ function AreaLayer(props) {
 }
 
 function MobileWorkspace({
+  overlayOpen,
   selectedRegion,
   isLocatingUser,
   onLocateUser,
@@ -1333,7 +1335,7 @@ function MobileWorkspace({
   }
 
   return (
-    <div className="mobile-workspace">
+    <div className={`mobile-workspace${overlayOpen ? " mobile-workspace--overlay-open" : ""}`} aria-hidden={overlayOpen || undefined}>
       <header className="mobile-gis-header">
         <div className="mobile-gis-brand">
           <span className="mobile-gis-brand__mark"><LeafIcon /></span>
