@@ -62,6 +62,17 @@ const CATEGORIES = [
   "Educação ambiental",
   "Outro",
 ];
+const CATEGORY_HINTS = {
+  "Vegetação nativa": "matas, florestas e cerrado",
+  "Fauna": "animais silvestres e habitats",
+  "Recursos hídricos": "rios, lagos e nascentes",
+  "Áreas de preservação": "APPs, reservas e unidades protegidas",
+  "Áreas degradadas": "desmatamento, erosão e solo exposto",
+  "Impactos ambientais": "poluição, queimadas e descarte irregular",
+  "Registros científicos": "pesquisas, coletas e observações",
+  "Educação ambiental": "ações, projetos e campanhas",
+  "Outro": "categoria não listada",
+};
 const RESPONSIBLE_ROLES = [
   "Professor(a)",
   "Pesquisador(a)",
@@ -2298,7 +2309,7 @@ function CategoriaSelect({ value, onChange, required = false }) {
         <option value="">Selecione uma categoria</option>
         {CATEGORIES.map((category) => (
           <option key={category} value={category}>
-            {category}
+            {category} ({CATEGORY_HINTS[category]})
           </option>
         ))}
       </select>
