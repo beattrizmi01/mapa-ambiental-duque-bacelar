@@ -806,6 +806,33 @@ export default function App() {
             area: updatedArea,
             status_changed: statusWasUpdated,
           };
+        } else if (insertError && isMissingOccurrencesTable(insertError)) {
+          const compatibilityOccurrenceId = createId();
+          const occurrenceArchive = [
+            targetArea.description,
+            `--- Ocorrência registrada em ${new Date(reviewTimestamp).toLocaleString("pt-BR")} ---`,
+            patch.description,
+          ].filter(Boolean).join("\n\n");
+          const { data: updatedRow, error: compatibilityError } = await supabase
+            .from("areas")
+            .update({
+              status: statusWasUpdated ? patch.status : targetArea.status,
+              impact: patch.impact,
+              description: occurrenceArchive,
+              image_url: occurrencePreview ?? targetArea.image,
+            })
+            .eq("id", occurrenceForm.areaId)
+            .select()
+            .single();
+          occurrenceError = compatibilityError;
+          if (!compatibilityError) {
+            occurrenceResult = {
+              occurrence_id: compatibilityOccurrenceId,
+              area: updatedRow,
+              status_changed: statusWasUpdated,
+              compatibility_mode: true,
+            };
+          }
         }
       }
 
@@ -830,7 +857,9 @@ export default function App() {
 
       setDataMode("supabase");
       setDataStatus(
-        statusWasUpdated
+        occurrenceResult?.compatibility_mode
+          ? "Ocorrência salva no Supabase e vinculada diretamente ao histórico da área."
+          : statusWasUpdated
           ? `Status da área alterado de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`
           : "Ocorrência sincronizada sem alterar o status da área.",
       );
@@ -886,7 +915,7 @@ export default function App() {
       if (statusWasUpdated) {
         setOccurrenceSuccessMessage(`Área ${targetArea.name} atualizada de ${statusUpdateLabel(targetArea.status)} para ${statusUpdateLabel(patch.status)}.`);
       } else {
-        setOccurrenceSuccessMessage("Ocorrência registrada com sucesso.");
+        setOccurrenceSuccessMessage(occurrenceResult?.compatibility_mode ? "Ocorrência salva e vinculada à área com sucesso." : "Ocorrência registrada com sucesso.");
       }
     } else {
       setAreas((current) =>
@@ -3163,6 +3192,12 @@ function isMissingOccurrenceRpc(error) {
   const message = String(error?.message ?? "").toLowerCase();
   return error?.code === "PGRST202"
     || (message.includes("could not find the function") && message.includes("register_occurrence_with_status"));
+}
+
+function isMissingOccurrencesTable(error) {
+  const message = String(error?.message ?? "").toLowerCase();
+  return error?.code === "PGRST205"
+    || (message.includes("could not find the table") && message.includes("occurrences"));
 }
 
 function getMarkerSymbol(status) {
