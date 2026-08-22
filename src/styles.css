@@ -6486,3 +6486,37 @@ body {
     margin-top: 2px;
   }
 }
+
+/* Nome institucional completo sem cortes nos cabeçalhos. */
+@media (min-width: 901px) {
+  .gis-brand strong {
+    max-width: 100%;
+    font-size: clamp(15px, 1.15vw, 21px);
+    line-height: 1.08;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 900px) {
+  .mobile-gis-brand strong {
+    overflow: visible;
+    font-size: clamp(13px, 3.7vw, 17px);
+    line-height: 1.08;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .platform-brand,
+  .platform-brand strong {
+    overflow: visible;
+    font-size: clamp(.72rem, 3.2vw, .9rem);
+    line-height: 1.08;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .mobile-welcome-panel h2 {
+    max-width: calc(100% - 40px);
+    line-height: 1.12;
+  }
+}

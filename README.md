@@ -1,4 +1,4 @@
-# Mapa Ambiental de Duque Bacelar
+# Mapa de Atenção Ambiental
 
 Aplicacao React + Vite com mapa interativo para registrar areas ambientais e ocorrencias em Duque Bacelar. O projeto funciona localmente com armazenamento no navegador e pode sincronizar dados com Supabase quando as variaveis de ambiente estiverem configuradas.
 

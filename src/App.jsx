@@ -1483,7 +1483,7 @@ function MobileWorkspace({
       <header className="mobile-gis-header">
         <button type="button" className="mobile-gis-brand" onClick={() => { setWelcomeVisible(true); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
           <span className="mobile-gis-brand__mark"><LeafIcon /></span>
-          <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
+          <span><strong>MAPA DE ATENÇÃO AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
         </button>
         <button type="button" className="mobile-about-button" onClick={onOpenAbout} aria-label="Sobre o projeto"><InfoIcon /></button>
         <form className="mobile-gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
@@ -1509,7 +1509,7 @@ function MobileWorkspace({
       {welcomeVisible ? <section className="mobile-welcome-panel">
         <button type="button" className="mobile-welcome-panel__close" onClick={() => setWelcomeVisible(false)} aria-label="Fechar bloco informativo"><CloseIcon /></button>
         <span>Bem-vindo ao</span>
-        <h2>Mapa Ambiental</h2>
+        <h2>Mapa de Atenção Ambiental</h2>
         <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
         <div className="mobile-welcome-panel__grid">
           <FeatureMiniCard icon={<MapPinIcon />} title="Mapeamento" text="Áreas em tempo real" />
@@ -1539,7 +1539,7 @@ function MaximizeIcon() {
 
 function MobileAboutContent() {
   return <div className="mobile-about-content">
-    <strong>Mapa Ambiental</strong>
+    <strong>Mapa de Atenção Ambiental</strong>
     <p>Plataforma colaborativa para mapear, registrar e monitorar áreas ambientais e ocorrências em diferentes localidades.</p>
     <ul>
       <li>Cadastro e acompanhamento de áreas ambientais</li>
@@ -1595,7 +1595,7 @@ function DesktopWorkspace({
       <header className="gis-header">
         <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setWelcomeMinimized(false); setLegendVisible(true); setAboutExpanded(false); setLayersExpanded(true); setSummaryExpanded(true); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
           <span className="gis-brand__mark"><LeafIcon /></span>
-          <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
+          <span><strong>MAPA DE ATENÇÃO AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
         </button>
         <form className="gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
           <SearchIcon />
@@ -1605,17 +1605,17 @@ function DesktopWorkspace({
         <button type="button" className="gis-about" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /> Sobre o projeto</button>
       </header>
 
-      {welcomeVisible ? welcomeMinimized ? <button type="button" className="welcome-panel-minimized" onClick={() => setWelcomeMinimized(false)} aria-label="Expandir Mapa Ambiental" title="Expandir Mapa Ambiental">
+      {welcomeVisible ? welcomeMinimized ? <button type="button" className="welcome-panel-minimized" onClick={() => setWelcomeMinimized(false)} aria-label="Expandir Mapa de Atenção Ambiental" title="Expandir Mapa de Atenção Ambiental">
         <LeafIcon />
-        <span><strong>Mapa Ambiental</strong><small>Mostrar informações</small></span>
+        <span><strong>Mapa de Atenção Ambiental</strong><small>Mostrar informações</small></span>
         <ChevronDownIcon />
       </button> : <section className="welcome-panel">
         <div className="welcome-panel__controls">
-          <button type="button" className="welcome-panel__minimize" onClick={() => setWelcomeMinimized(true)} aria-label="Minimizar Mapa Ambiental" title="Minimizar">−</button>
+          <button type="button" className="welcome-panel__minimize" onClick={() => setWelcomeMinimized(true)} aria-label="Minimizar Mapa de Atenção Ambiental" title="Minimizar">−</button>
           <button type="button" className="welcome-panel__close" onClick={() => setWelcomeVisible(false)} aria-label="Fechar mensagem de boas-vindas" title="Fechar"><CloseIcon /></button>
         </div>
         <span>Bem-vindo ao</span>
-        <h1>Mapa Ambiental</h1>
+        <h1>Mapa de Atenção Ambiental</h1>
         <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
         <div className="welcome-grid">
           <FeatureMiniCard icon={<MapPinIcon />} title="Mapeamento" text="Áreas em tempo real" />
@@ -1637,7 +1637,7 @@ function DesktopWorkspace({
             <button type="button" onClick={() => setAboutExpanded(false)} aria-label="Fechar Sobre o projeto" title="Fechar"><CloseIcon /></button>
           </div>
           <div className="about-project-content">
-            <strong>Mapa Ambiental</strong>
+            <strong>Mapa de Atenção Ambiental</strong>
             <p>Plataforma colaborativa para mapear, registrar e monitorar áreas ambientais e ocorrências em diferentes localidades.</p>
             <ul>
               <li>Cadastro e acompanhamento de áreas ambientais</li>
@@ -1771,7 +1771,7 @@ function CompactHeader({
         </span>
         <div className="compact-header__main">
           <span className="platform-brand">
-            <strong>MAPA AMBIENTAL</strong>
+            <strong>MAPA DE ATENÇÃO AMBIENTAL</strong>
           </span>
           <button
             type="button"
