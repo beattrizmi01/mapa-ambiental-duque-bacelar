@@ -6439,3 +6439,50 @@ body {
     white-space: normal;
   }
 }
+
+/* Cartão de área no desktop: imagem e informações em colunas bem definidas. */
+@media (min-width: 901px) {
+  .detail-card.is-collapsed {
+    width: min(650px, calc(100vw - 48px));
+    grid-template-columns: minmax(220px, 40%) minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .detail-card.is-collapsed > img {
+    min-height: 280px;
+    height: 100%;
+  }
+
+  .detail-card.is-collapsed .detail-card__body {
+    width: 100%;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 50px 20px 22px;
+  }
+
+  .detail-card.is-collapsed .detail-card__body h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .detail-card.is-collapsed .meta-row {
+    min-width: 0;
+    gap: 12px;
+  }
+
+  .detail-card.is-collapsed .meta-row span {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .detail-card.is-collapsed .area-status-block,
+  .detail-card.is-collapsed .detail-card__expand {
+    margin-top: 2px;
+  }
+}
