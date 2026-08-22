@@ -6406,3 +6406,36 @@ body {
     white-space: normal;
   }
 }
+
+/* Formulário de ocorrência: ações sempre visíveis acima da navegação mobile. */
+@media (max-width: 560px) {
+  body > .bottom-sheet-backdrop .bottom-sheet--large:has(.form-actions--occurrence) {
+    position: relative;
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet--large:has(.form-actions--occurrence) .bottom-sheet__content {
+    padding-bottom: calc(148px + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(148px + env(safe-area-inset-bottom));
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet--large .form-actions--occurrence {
+    position: absolute;
+    z-index: 30;
+    right: 14px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 14px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin: 0;
+    padding: 12px 0 0;
+    background: linear-gradient(180deg, rgba(10,18,31,0), rgba(10,18,31,.98) 18%, #0a121f 100%);
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet--large .form-actions--occurrence .btn {
+    width: 100%;
+    min-height: 54px;
+    padding: 13px 10px;
+    white-space: normal;
+  }
+}
