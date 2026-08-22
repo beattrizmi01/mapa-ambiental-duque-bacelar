@@ -1632,6 +1632,10 @@ function DesktopWorkspace({
 
       <aside className="gis-right-rail">
         {aboutExpanded ? <section className="gis-white-panel about-project-panel">
+          <div className="about-project-panel__header">
+            <strong>Sobre o projeto</strong>
+            <button type="button" onClick={() => setAboutExpanded(false)} aria-label="Fechar Sobre o projeto" title="Fechar"><CloseIcon /></button>
+          </div>
           <div className="about-project-content">
             <strong>Mapa Ambiental</strong>
             <p>Plataforma colaborativa para mapear, registrar e monitorar áreas ambientais e ocorrências em diferentes localidades.</p>
