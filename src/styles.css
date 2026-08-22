@@ -6520,3 +6520,40 @@ body {
     line-height: 1.12;
   }
 }
+
+/* Seleção para ocorrência: mantém o botão de continuidade sempre visível. */
+@media (max-width: 560px) {
+  body > .bottom-sheet-backdrop .bottom-sheet:has(.occurrence-guide) {
+    position: relative;
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet__content:has(.occurrence-guide) {
+    padding-bottom: calc(138px + env(safe-area-inset-bottom));
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide__actions {
+    position: absolute;
+    z-index: 32;
+    right: 20px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin: 0;
+    padding: 12px 0 0;
+    background: linear-gradient(180deg, rgba(10,18,31,0), rgba(10,18,31,.98) 18%, #0a121f 100%);
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide__actions .btn:first-child {
+    grid-column: 1 / -1;
+    min-height: 56px;
+    font-size: .95rem;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide__actions .btn:not(:first-child) {
+    min-height: 48px;
+    padding-inline: 7px;
+    font-size: .78rem;
+  }
+}
