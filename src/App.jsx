@@ -1286,7 +1286,7 @@ function StatusChangeToast({ notice, onClose }) {
   );
 }
 
-function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect, onReturnToReports }) {
+function AreaPolygonFeature({ area, drawingEnabled, isHovered, isActive, onHover, onLeave, onAreaPointSelect }) {
   const polygonPositions = area.polygonCoords;
   return (
     <>
@@ -1326,6 +1326,22 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
             />
           ))
         : null}
+    </>
+  );
+}
+
+function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEnabled, isHovered, isActive, onHover, onLeave, onToggle, onClose, onAreaPointSelect, onReturnToReports, showPolygon = true }) {
+  return (
+    <>
+      {showPolygon ? <AreaPolygonFeature
+        area={area}
+        drawingEnabled={drawingEnabled}
+        isHovered={isHovered}
+        isActive={isActive}
+        onHover={onHover}
+        onLeave={onLeave}
+        onAreaPointSelect={onAreaPointSelect}
+      /> : null}
       {!drawingEnabled ? (
         <Marker
           position={[area.latitude, area.longitude]}
@@ -1409,7 +1425,20 @@ function AreaLayer(props) {
     ));
   }
 
-  return clusters.map((cluster) => {
+  return <>
+    {areas.map((area) => (
+      <AreaPolygonFeature
+        key={`polygon-${area.id}`}
+        area={area}
+        drawingEnabled={drawingEnabled}
+        isHovered={hoveredAreaId === area.id}
+        isActive={activeAreaId === area.id}
+        onHover={() => onHoverArea(area.id)}
+        onLeave={() => onLeaveArea(area.id)}
+        onAreaPointSelect={(point) => onAreaPointSelect(area, point)}
+      />
+    ))}
+    {clusters.map((cluster) => {
     if (cluster.areas.length === 1) {
       const area = cluster.areas[0];
       return (
@@ -1428,6 +1457,7 @@ function AreaLayer(props) {
           onClose={() => onCloseArea(area.id)}
           onAreaPointSelect={(point) => onAreaPointSelect(area, point)}
           onReturnToReports={onReturnToReports}
+          showPolygon={false}
         />
       );
     }
@@ -1448,7 +1478,8 @@ function AreaLayer(props) {
         </Tooltip>
       </Marker>
     );
-  });
+    })}
+  </>;
 }
 
 function MobileWorkspace({
