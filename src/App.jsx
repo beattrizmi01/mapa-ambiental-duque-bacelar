@@ -152,8 +152,8 @@ export default function App() {
     [areas, occurrenceRecords],
   );
   const visibleAreas = useMemo(
-    () => filterAreasByLayers(areas, layerFilters),
-    [areas, layerFilters],
+    () => filterAreasByLayers(regionAreas, layerFilters),
+    [regionAreas, layerFilters],
   );
   const visibleOccurrenceRecords = occurrenceRecords;
   const hasRegionData = regionAreas.length > 0;
@@ -972,7 +972,7 @@ export default function App() {
         selectedRegion={selectedRegion}
         hasActiveMapAction={Boolean(openCard) || isDrawingArea || draftPolygonCoords.length > 0}
         regionSummary={regionSummary}
-        occurrenceCount={occurrenceRecords.length}
+        occurrenceCount={regionOccurrenceCount}
         layerFilters={layerFilters}
         onToggleLayer={toggleLayerFilter}
         isLocatingUser={isLocatingUser}
@@ -1184,7 +1184,7 @@ export default function App() {
           title="Relatórios ambientais"
           onClose={() => setOpenCard(null)}
         >
-          <StatusContent areas={areas} onSelectArea={openAreaFromStatus} />
+          <StatusContent areas={regionAreas} onSelectArea={openAreaFromStatus} />
         </BottomSheet>
         <BottomSheet
           isOpen={openCard === "layers"}
@@ -1883,7 +1883,7 @@ function ClipboardIcon() {
 
 function createRegionSummary(areas, occurrenceCount) {
   const total = areas.length;
-  const countByStatus = (status) => areas.filter((area) => area.status === status).length;
+  const countByStatus = (status) => areas.filter((area) => normalizeAreaStatus(area.status) === status).length;
   const percentage = (value) => (total ? `${Math.round((value / total) * 100)}%` : "0%");
   const preserved = countByStatus("preservado");
   const attention = countByStatus("atencao");
@@ -2129,7 +2129,7 @@ function StatusContent({ areas, onSelectArea }) {
     { status: "atencao", label: "Em atenção", swatch: "yellow" },
     { status: "critico", label: "Críticas", swatch: "red" },
   ].map((item) => {
-    const filteredAreas = areas.filter((area) => area.status === item.status);
+    const filteredAreas = areas.filter((area) => normalizeAreaStatus(area.status) === item.status);
     return { ...item, filteredAreas, count: filteredAreas.length, percentage: total ? Math.round((filteredAreas.length / total) * 100) : 0 };
   });
   const preservedEnd = statusItems[0].percentage;
@@ -2855,7 +2855,7 @@ function mapSupabaseAreaToApp(row) {
     name: row.name ?? "Área sem nome",
     category: row.category ?? "Sem categoria",
     region: row.region || REGIONS[0].name,
-    status: row.status ?? "atencao",
+    status: normalizeAreaStatus(row.status),
     impact: row.impact ?? "Sem impacto informado",
     description: row.description ?? "Sem descrição informada",
     polygonCoords,
@@ -2992,7 +2992,7 @@ function BoundaryIcon() {
 }
 
 function filterAreasByLayers(areas, filters) {
-  return areas.filter((area) => filters[area.status] !== false);
+  return areas.filter((area) => filters[normalizeAreaStatus(area.status)] !== false);
 }
 
 function regionHasAreas(areas, regionName) {
@@ -3300,9 +3300,21 @@ function computeCentroid(coords) {
 }
 
 function statusLabel(status) {
-  if (status === "preservado") return "Preservado";
-  if (status === "atencao") return "Atenção";
+  const normalizedStatus = normalizeAreaStatus(status);
+  if (normalizedStatus === "preservado") return "Preservado";
+  if (normalizedStatus === "atencao") return "Atenção";
   return "Crítico";
+}
+
+function normalizeAreaStatus(status) {
+  const normalized = String(status ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+  if (normalized.includes("preserv") || normalized === "bom") return "preservado";
+  if (normalized.includes("critic") || normalized.includes("degrad") || normalized === "ruim") return "critico";
+  return "atencao";
 }
 
 function areaStatusObservationPlaceholder(status) {
