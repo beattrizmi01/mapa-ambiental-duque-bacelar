@@ -434,29 +434,15 @@ export default function App() {
   }
 
   async function detectUserRegion() {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setDataStatus("Seu navegador não oferece suporte à localização.");
-      setLocationNotice("Este navegador não oferece suporte à localização.");
-      return false;
-    }
-
-    if (typeof window !== "undefined" && !window.isSecureContext) {
-      setDataStatus("A localização exige uma conexão segura (HTTPS).");
-      setLocationNotice("A localização só funciona em uma conexão segura (HTTPS).");
-      return false;
-    }
+    const canUseDeviceGps = typeof navigator !== "undefined"
+      && Boolean(navigator.geolocation)
+      && (typeof window === "undefined" || window.isSecureContext);
 
     setIsLocatingUser(true);
     setDataStatus("Buscando sua localização atual...");
     setLocationNotice("Solicitando a localização do dispositivo...");
 
-    try {
-      const position = await getBrowserPosition();
-      const nextLocation = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-      };
+    async function displayDetectedLocation(nextLocation, suggestedCity = "") {
       const boundaryRegionName = getRegionNameAtPoint(
         boundaryData,
         nextLocation.latitude,
@@ -466,15 +452,15 @@ export default function App() {
       setMapFocus({
         id: `user-location-${Date.now()}`,
         center: [nextLocation.latitude, nextLocation.longitude],
-        zoom: LOCAL_ZOOM,
+        zoom: nextLocation.approximate ? 12 : LOCAL_ZOOM,
       });
-      let cityName = "";
+      let cityName = suggestedCity;
       try {
-        cityName = boundaryRegionName || await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
+        cityName = boundaryRegionName || cityName || await reverseGeocodeCity(nextLocation.latitude, nextLocation.longitude);
       } catch {
         // A localização continua válida mesmo se o serviço de nome da cidade falhar.
       }
-      const detectedRegion = createRegion(cityName || REGIONS[0].name, [nextLocation.latitude, nextLocation.longitude], LOCAL_ZOOM);
+      const detectedRegion = createRegion(cityName || selectedRegion.name, [nextLocation.latitude, nextLocation.longitude], nextLocation.approximate ? 12 : LOCAL_ZOOM);
       setAvailableRegions((current) => mergeRegions(current, [detectedRegion]));
       setSelectedRegionId(detectedRegion.id);
       setMapFocus({
@@ -487,23 +473,28 @@ export default function App() {
           ? `Região detectada: ${detectedRegion.name}. Dados carregados.`
           : `Região detectada: ${detectedRegion.name}. Ainda não há áreas monitoradas nesta região.`,
       );
-      setLocationNotice(`Localização encontrada: ${detectedRegion.name}.`);
+      setLocationNotice(`${nextLocation.approximate ? "Localização aproximada" : "Localização encontrada"}: ${detectedRegion.name}.`);
       return true;
+    }
+
+    try {
+      if (!canUseDeviceGps) throw new Error("GPS_UNAVAILABLE");
+      const position = await getBrowserPosition();
+      const nextLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      };
+      return await displayDetectedLocation(nextLocation);
     } catch (error) {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
       setUserLocation(null);
-      setDataStatus(
-        denied
-          ? "Permissão de localização negada. Autorize a localização precisa do dispositivo para identificar sua região."
-          : "Não foi possível detectar sua localização. Região atual mantida.",
-      );
-      setLocationNotice(
-        denied
-          ? "Permissão negada. Autorize a localização nas configurações deste site."
-          : error?.code === 3
-            ? "O GPS demorou para responder. Verifique se a localização está ativada e tente novamente."
-            : "Não foi possível obter a localização. Verifique o GPS e tente novamente.",
-      );
+      setDataStatus("Não foi possível detectar sua localização. Região atual mantida.");
+      setLocationNotice(denied
+        ? "Localização bloqueada pelo navegador. Libere a localização deste site e tente novamente."
+        : error?.code === 3
+          ? "O GPS demorou para responder. Verifique se a localização está ativada e tente novamente."
+          : "Não foi possível obter a localização. Verifique se o GPS está ativado.");
       return false;
     } finally {
       setIsLocatingUser(false);
@@ -995,6 +986,7 @@ export default function App() {
       />}
       <main className="map-stage">
         <StatusChangeToast notice={statusChangeNotice} onClose={() => setStatusChangeNotice(null)} />
+        {!isMobileViewport && locationNotice ? <div className={`desktop-location-notice${isLocatingUser ? " is-loading" : ""}`} role="status" aria-live="polite">{locationNotice}</div> : null}
         {(isDrawingArea || draftPolygonCoords.length > 0) ? (
           <div className="mobile-drawing-bar">
             <button

@@ -2559,6 +2559,27 @@ body {
   white-space: nowrap;
 }
 
+.desktop-location-notice {
+  position: fixed;
+  z-index: 1460;
+  top: 106px;
+  left: 50%;
+  width: min(620px, calc(100vw - 40px));
+  padding: 12px 18px;
+  color: #fff;
+  background: rgba(3, 31, 38, .97);
+  border: 1px solid rgba(89, 202, 248, .58);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .3);
+  font-weight: 750;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.desktop-location-notice.is-loading {
+  border-color: rgba(118, 212, 56, .7);
+}
+
 .environment-marker svg {
   width: 25px;
   height: 25px;
