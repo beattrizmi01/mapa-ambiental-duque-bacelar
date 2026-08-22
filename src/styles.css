@@ -2171,14 +2171,23 @@ body {
 }
 
 .selected-location-pin {
-  display: block;
-  width: 26px;
-  height: 26px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(97, 236, 152, 0.95) 0%, rgba(47, 179, 111, 0.96) 46%, rgba(17, 77, 42, 0.98) 100%);
+  background: #159bd7;
   border: 3px solid rgba(236, 255, 243, 0.98);
-  box-shadow: 0 0 0 8px rgba(47, 179, 111, 0.18), 0 0 22px rgba(47, 179, 111, 0.45);
+  box-shadow: 0 0 0 9px rgba(21, 155, 215, 0.22), 0 0 25px rgba(21, 155, 215, 0.72);
   animation: selectedPulse 1.8s ease-out infinite;
+}
+
+.selected-location-pin > span {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #063c55;
 }
 
 .leaflet-tooltip.selection-tooltip {
@@ -2539,6 +2548,15 @@ body {
   border-radius: 50%;
   background: rgba(3, 24, 29, 0.88);
   box-shadow: 0 9px 22px rgba(2, 8, 17, 0.38);
+}
+
+.leaflet-tooltip.user-location-tooltip {
+  z-index: 1300;
+  color: #fff;
+  background: rgba(3, 39, 55, .97);
+  border-color: rgba(79, 202, 255, .72);
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .environment-marker svg {

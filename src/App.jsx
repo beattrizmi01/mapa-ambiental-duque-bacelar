@@ -2550,10 +2550,11 @@ function UserLocationLayer({ location }) {
       <Marker
         position={[location.latitude, location.longitude]}
         icon={getUserLocationIcon()}
+        zIndexOffset={1200}
         interactive={false}
       >
-        <Tooltip permanent direction="top" offset={[0, -18]} className="selection-tooltip">
-          {location.approximate ? "Localização aproximada" : "Você está aqui"}
+        <Tooltip permanent direction="top" offset={[0, -24]} className="selection-tooltip user-location-tooltip">
+          Minha localização
         </Tooltip>
       </Marker>
     </>
@@ -3208,9 +3209,9 @@ function getMarkerSymbol(status) {
 function getUserLocationIcon() {
   return L.divIcon({
     className: "selected-location-icon",
-    html: '<span class="selected-location-pin"></span>',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
+    html: '<span class="selected-location-pin"><span></span></span>',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
   });
 }
 
