@@ -462,11 +462,6 @@ export default function App() {
         nextLocation.latitude,
         nextLocation.longitude,
       );
-      if (!boundaryRegionName && Number(nextLocation.accuracy) > 3000) {
-        const inaccurateError = new Error("A localização fornecida pelo dispositivo é muito imprecisa.");
-        inaccurateError.code = "LOCATION_INACCURATE";
-        throw inaccurateError;
-      }
       setUserLocation(nextLocation);
       setMapFocus({
         id: `user-location-${Date.now()}`,
@@ -496,24 +491,18 @@ export default function App() {
       return true;
     } catch (error) {
       const denied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
-      const inaccurate = error?.code === "LOCATION_INACCURATE";
       setUserLocation(null);
-      setSelectedRegionId(REGIONS[0].id);
       setDataStatus(
         denied
           ? "Permissão de localização negada. Autorize a localização precisa do dispositivo para identificar sua região."
-          : inaccurate
-            ? "A posição fornecida pelo dispositivo está imprecisa. Ative a localização precisa e tente novamente."
           : "Não foi possível detectar sua localização. Região atual mantida.",
       );
       setLocationNotice(
         denied
           ? "Permissão negada. Autorize a localização nas configurações deste site."
-          : inaccurate
-            ? "Localização imprecisa. Ative a localização precisa e tente novamente."
-            : error?.code === 3
-              ? "O GPS demorou para responder. Verifique se a localização está ativada e tente novamente."
-              : "Não foi possível obter a localização. Verifique o GPS e tente novamente.",
+          : error?.code === 3
+            ? "O GPS demorou para responder. Verifique se a localização está ativada e tente novamente."
+            : "Não foi possível obter a localização. Verifique o GPS e tente novamente.",
       );
       return false;
     } finally {
@@ -3052,17 +3041,17 @@ function getBrowserPosition() {
   });
 
   return requestPosition({
-    enableHighAccuracy: false,
-    timeout: 8000,
-    maximumAge: 120000,
+    enableHighAccuracy: true,
+    timeout: 20000,
+    maximumAge: 0,
   }).catch((error) => {
     const permissionDenied = error?.code === error?.PERMISSION_DENIED || error?.code === 1;
     if (permissionDenied) throw error;
 
     return requestPosition({
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0,
+      enableHighAccuracy: false,
+      timeout: 12000,
+      maximumAge: 30000,
     });
   });
 }
