@@ -3259,10 +3259,12 @@ function getAreaPolygonStyle(status, isHighlighted) {
 
   return {
     color,
-    weight: isHighlighted ? 4 : 0,
-    opacity: isHighlighted ? 1 : 0,
+    weight: isHighlighted ? 4 : 2.5,
+    opacity: isHighlighted ? 1 : 0.9,
     fillColor: color,
-    fillOpacity: isHighlighted ? 0.22 : 0.12,
+    fillOpacity: isHighlighted ? 0.48 : 0.34,
+    lineCap: "round",
+    lineJoin: "round",
   };
 }
 
