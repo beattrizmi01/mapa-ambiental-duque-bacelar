@@ -896,10 +896,67 @@ body {
   .mobile-welcome-sheet__grid article { min-width: 0; min-height: 82px; display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; padding: 12px; color: #fff; background: #07362f; border-radius: 14px; }
   .mobile-welcome-sheet__grid svg { width: 25px; color: #78d62f; }
   .mobile-welcome-sheet__grid strong, .mobile-welcome-sheet__grid small { overflow-wrap: anywhere; }
-  .mobile-about-content { color: #334148; line-height: 1.5; }
-  .mobile-about-content > strong { color: #24713a; font-size: 21px; }
-  .mobile-about-content ul { padding-left: 20px; }
-.mobile-about-content small { display: block; padding-top: 14px; border-top: 1px solid #d9e0df; }
+  .mobile-about-content {
+    display: grid;
+    gap: 18px;
+    padding: 4px 2px 18px;
+    color: #dbe7f2;
+    line-height: 1.6;
+  }
+  .mobile-about-content > strong {
+    color: #6fdb91;
+    font-size: 24px;
+    line-height: 1.2;
+  }
+  .mobile-about-content p {
+    margin: 0;
+    color: #c0cedc;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .mobile-about-content ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mobile-about-content li {
+    position: relative;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 11px 14px 11px 42px;
+    color: #e7f1f8;
+    background: rgba(255, 255, 255, .045);
+    border: 1px solid rgba(150, 176, 202, .16);
+    border-radius: 14px;
+    line-height: 1.4;
+  }
+  .mobile-about-content li::before {
+    content: "✓";
+    position: absolute;
+    left: 14px;
+    display: grid;
+    place-items: center;
+    width: 19px;
+    height: 19px;
+    color: #062619;
+    background: #62d58b;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 900;
+  }
+  .mobile-about-content small {
+    display: block;
+    padding: 16px 14px;
+    color: #9eb0c1;
+    background: rgba(4, 11, 20, .34);
+    border: 1px solid rgba(150, 176, 202, .12);
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
 
 .location-permission-help { display: grid; gap: 14px; color: #dbe6f0; line-height: 1.45; }
 .location-permission-help > p { margin: 0; padding: 12px 13px; color: #ffe6a5; background: rgba(232, 186, 57, .1); border: 1px solid rgba(232, 186, 57, .28); border-radius: 14px; }
