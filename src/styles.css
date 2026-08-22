@@ -256,6 +256,7 @@ body {
   .summary-row--green { color: #397b2e; border-color: #c9e3c1; background: #edf6ea; }
   .summary-row--yellow { color: #c36b00; border-color: #f2d7a7; background: #fff8e9; }
   .summary-row--red { color: #d22532; border-color: #f1c2c5; background: #fff0f1; }
+  .summary-row--blue { color: #1570a6; border-color: #bcdbea; background: #eef8fd; }
   .about-project-content { padding: 17px 20px 19px; }
   .about-project-content > strong { color: #246e31; font-size: 18px; }
   .about-project-content p { margin: 8px 0 11px; color: #354346; font-size: 12.5px; line-height: 1.5; }

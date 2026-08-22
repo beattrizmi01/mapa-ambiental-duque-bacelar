@@ -1587,8 +1587,8 @@ function DesktopWorkspace({
   const [layersExpanded, setLayersExpanded] = useState(true);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
-  const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
-    + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
+  const attention = regionSummary.find((item) => item.key === "atencao")?.value ?? 0;
+  const critical = regionSummary.find((item) => item.key === "critico")?.value ?? 0;
   const layerOptions = [
     { key: "preservado", label: "Áreas preservadas", count: preserved, icon: <span className="legend-swatch legend-swatch--green" />, tone: "green" },
     { key: "atencao", label: "Áreas em atenção", count: regionSummary.find((item) => item.key === "atencao")?.value ?? 0, icon: <span className="legend-swatch legend-swatch--yellow" />, tone: "yellow" },
@@ -1662,7 +1662,8 @@ function DesktopWorkspace({
           {summaryExpanded ? <div className="summary-overview__content">
             <SummaryRow tone="green" icon={<LeafIcon />} label="Áreas preservadas" value={preserved} />
             <SummaryRow tone="yellow" icon={<AlertIcon />} label="Áreas de atenção" value={attention} />
-            <SummaryRow tone="red" icon={<FlameIcon />} label="Ocorrências registradas" value={occurrenceCount} />
+            <SummaryRow tone="red" icon={<FlameIcon />} label="Áreas críticas" value={critical} />
+            <SummaryRow tone="blue" icon={<ClipboardIcon />} label="Ocorrências registradas" value={occurrenceCount} />
           </div> : null}
         </section>
       </aside>
