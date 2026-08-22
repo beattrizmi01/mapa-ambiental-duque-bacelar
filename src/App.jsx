@@ -990,6 +990,7 @@ export default function App() {
         onOpenFilters={() => setOpenCard("layers")}
       /> : <DesktopWorkspace
         selectedRegion={selectedRegion}
+        hasActiveMapAction={Boolean(openCard) || isDrawingArea || draftPolygonCoords.length > 0}
         regionSummary={regionSummary}
         occurrenceCount={occurrenceRecords.length}
         layerFilters={layerFilters}
@@ -1584,6 +1585,7 @@ function MobileAboutContent() {
 
 function DesktopWorkspace({
   selectedRegion,
+  hasActiveMapAction,
   regionSummary,
   occurrenceCount,
   layerFilters,
@@ -1600,8 +1602,8 @@ function DesktopWorkspace({
   const [searchQuery, setSearchQuery] = useState("");
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [welcomeVisible, setWelcomeVisible] = useState(true);
-  const [layersExpanded, setLayersExpanded] = useState(false);
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [layersExpanded, setLayersExpanded] = useState(true);
+  const [summaryExpanded, setSummaryExpanded] = useState(true);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
   const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
     + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
@@ -1611,10 +1613,18 @@ function DesktopWorkspace({
     { key: "critico", label: "Áreas críticas", icon: <span className="legend-swatch legend-swatch--red" />, tone: "red" },
   ];
 
+  useEffect(() => {
+    if (!hasActiveMapAction) return;
+    setWelcomeVisible(false);
+    setLayersExpanded(false);
+    setSummaryExpanded(false);
+    setAboutExpanded(false);
+  }, [hasActiveMapAction]);
+
   return (
     <div className="desktop-workspace">
       <header className="gis-header">
-        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setAboutExpanded(false); setLayersExpanded(false); setSummaryExpanded(false); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
+        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setAboutExpanded(false); setLayersExpanded(true); setSummaryExpanded(true); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
           <span className="gis-brand__mark"><LeafIcon /></span>
           <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
         </button>
