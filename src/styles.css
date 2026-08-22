@@ -239,7 +239,7 @@ body {
   .gis-panel-title svg { width: 23px; }
   .gis-panel-title strong { font-size: 17px; }
   .gis-layer-list { padding: 5px 0 8px; }
-  .gis-layer-list button { width: 100%; min-height: 43px; display: grid; grid-template-columns: 22px 1fr 34px; align-items: center; gap: 12px; padding: 0 18px 0 22px; border: 0; color: #1b292c; background: transparent; font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
+  .gis-layer-list button { width: 100%; min-height: 43px; display: grid; grid-template-columns: 22px minmax(0, 1fr) 28px 34px; align-items: center; gap: 10px; padding: 0 18px 0 22px; border: 0; color: #1b292c; background: transparent; font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
   .gis-layer-list button:hover { background: #edf3ed; }
   .gis-layer-list svg { width: 19px; height: 19px; }
   .gis-switch { position: relative; width: 34px; height: 19px; border-radius: 20px; background: #cdd2d1; }
@@ -1086,7 +1086,7 @@ body {
   .gis-panel-title svg { width: 24px; height: 24px; }
   .gis-panel-title strong { font-size: 16px; }
   .gis-layer-list { padding: 5px 0 9px; }
-  .gis-layer-list button { width: 100%; min-height: 48px; display: grid; grid-template-columns: 22px 1fr 38px; align-items: center; gap: 11px; padding: 0 18px; border: 0; background: transparent; color: #1b292c; font: inherit; font-size: 13px; text-align: left; }
+  .gis-layer-list button { width: 100%; min-height: 48px; display: grid; grid-template-columns: 22px minmax(0,1fr) 28px 38px; align-items: center; gap: 9px; padding: 0 18px; border: 0; background: transparent; color: #1b292c; font: inherit; font-size: 13px; text-align: left; }
   .gis-layer-list svg { width: 19px; height: 19px; }
   .gis-switch { position: relative; width: 36px; height: 21px; border-radius: 22px; background: #cdd2d1; }
   .gis-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 17px; height: 17px; border-radius: 50%; background: #fff; }
@@ -1422,7 +1422,7 @@ body {
   width: 100%;
   min-height: 48px;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 38px;
+  grid-template-columns: 28px minmax(0, 1fr) 30px 38px;
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
@@ -1437,6 +1437,24 @@ body {
 
 .layer-sheet__filter-label {
   min-width: 0;
+}
+
+.filter-count {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: #173326;
+  background: rgba(79, 174, 95, .16);
+  font-size: .78rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.layer-sheet .filter-count {
+  color: #dff7e8;
+  background: rgba(73, 190, 120, .18);
 }
 
 .filter-icon {

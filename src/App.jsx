@@ -1196,6 +1196,7 @@ export default function App() {
             onChangeBaseMap={setActiveBaseMap}
             layerFilters={layerFilters}
             onToggleLayer={toggleLayerFilter}
+            regionSummary={regionSummary}
           />
         </BottomSheet>
         <BottomSheet
@@ -1589,9 +1590,9 @@ function DesktopWorkspace({
   const attention = (regionSummary.find((item) => item.key === "atencao")?.value ?? 0)
     + (regionSummary.find((item) => item.key === "critico")?.value ?? 0);
   const layerOptions = [
-    { key: "preservado", label: "Áreas preservadas", icon: <span className="legend-swatch legend-swatch--green" />, tone: "green" },
-    { key: "atencao", label: "Áreas em atenção", icon: <span className="legend-swatch legend-swatch--yellow" />, tone: "yellow" },
-    { key: "critico", label: "Áreas críticas", icon: <span className="legend-swatch legend-swatch--red" />, tone: "red" },
+    { key: "preservado", label: "Áreas preservadas", count: preserved, icon: <span className="legend-swatch legend-swatch--green" />, tone: "green" },
+    { key: "atencao", label: "Áreas em atenção", count: regionSummary.find((item) => item.key === "atencao")?.value ?? 0, icon: <span className="legend-swatch legend-swatch--yellow" />, tone: "yellow" },
+    { key: "critico", label: "Áreas críticas", count: regionSummary.find((item) => item.key === "critico")?.value ?? 0, icon: <span className="legend-swatch legend-swatch--red" />, tone: "red" },
   ];
 
   useEffect(() => {
@@ -1652,7 +1653,7 @@ function DesktopWorkspace({
           <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Filtros do mapa</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
             {layerOptions.map((option) => (
-              <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span className={`filter-icon filter-icon--${option.tone}`}>{option.icon}</span><span>{option.label}</span><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
+              <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span className={`filter-icon filter-icon--${option.tone}`}>{option.icon}</span><span>{option.label}</span><strong className="filter-count" aria-label={`${option.count} áreas`}>{option.count}</strong><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
             ))}
           </div> : null}
         </section>
@@ -2407,12 +2408,12 @@ function BottomSheet({ isOpen, title, onClose, children, large = false }) {
   );
 }
 
-function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLayer }) {
+function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLayer, regionSummary = [] }) {
   const filters = [
     { key: "preservado", label: "Áreas preservadas", icon: <span className="legend-swatch legend-swatch--green" />, tone: "green" },
     { key: "atencao", label: "Áreas em atenção", icon: <span className="legend-swatch legend-swatch--yellow" />, tone: "yellow" },
     { key: "critico", label: "Áreas críticas", icon: <span className="legend-swatch legend-swatch--red" />, tone: "red" },
-  ];
+  ].map((filter) => ({ ...filter, count: regionSummary.find((item) => item.key === filter.key)?.value ?? 0 }));
   return (
     <div className="layer-sheet">
       <button type="button" className={`layer-sheet__option${activeBaseMap === "satellite" ? " is-active" : ""}`} onClick={() => onChangeBaseMap("satellite")}>
@@ -2426,7 +2427,7 @@ function LayerSheet({ activeBaseMap, onChangeBaseMap, layerFilters, onToggleLaye
       <div className="layer-sheet__filters">
         {filters.map((filter) => (
           <button type="button" key={filter.key} className="layer-sheet__filter" onClick={() => onToggleLayer(filter.key)} aria-pressed={layerFilters[filter.key]}>
-            <span className={`filter-icon filter-icon--${filter.tone}`}>{filter.icon}</span><span className="layer-sheet__filter-label">{filter.label}</span><i className={`gis-switch${layerFilters[filter.key] ? " is-on" : ""}`} />
+            <span className={`filter-icon filter-icon--${filter.tone}`}>{filter.icon}</span><span className="layer-sheet__filter-label">{filter.label}</span><strong className="filter-count" aria-label={`${filter.count} áreas`}>{filter.count}</strong><i className={`gis-switch${layerFilters[filter.key] ? " is-on" : ""}`} />
           </button>
         ))}
       </div>
