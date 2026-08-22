@@ -6329,9 +6329,25 @@ body {
   }
 
   body > .bottom-sheet-backdrop .legend-list { gap: 18px; padding-bottom: 8px; }
-  body > .bottom-sheet-backdrop .legend-item { gap: 14px; }
-  body > .bottom-sheet-backdrop .legend-item__copy { gap: 5px; }
-  body > .bottom-sheet-backdrop .legend-item__copy small { line-height: 1.5; }
+  body > .bottom-sheet-backdrop .legend-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(150,176,202,.12);
+    border-radius: 14px;
+  }
+  body > .bottom-sheet-backdrop .legend-item__copy { width: 100%; gap: 6px; }
+  body > .bottom-sheet-backdrop .legend-item__copy small {
+    width: 100%;
+    line-height: 1.55;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+  }
 }
 
 /* Seleção de área no mobile: cartões legíveis e ações sempre completas. */
