@@ -6319,3 +6319,17 @@ body {
   .mobile-fab-dock { left: 50%; right: auto; width: min(520px,calc(100vw - 120px)); transform: translateX(-50%); }
   .mobile-fab { min-height: 48px; grid-template-columns: 22px 1fr; }
 }
+
+/* Legenda móvel: respiro final e rolagem acima da barra de ações. */
+@media (max-width: 900px) {
+  body > .bottom-sheet-backdrop .bottom-sheet__content:has(.legend-list) {
+    overflow-y: auto;
+    padding: 4px 18px calc(42px + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(42px + env(safe-area-inset-bottom));
+  }
+
+  body > .bottom-sheet-backdrop .legend-list { gap: 18px; padding-bottom: 8px; }
+  body > .bottom-sheet-backdrop .legend-item { gap: 14px; }
+  body > .bottom-sheet-backdrop .legend-item__copy { gap: 5px; }
+  body > .bottom-sheet-backdrop .legend-item__copy small { line-height: 1.5; }
+}
