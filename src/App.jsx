@@ -1569,6 +1569,8 @@ function DesktopWorkspace({
   const [searchQuery, setSearchQuery] = useState("");
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [welcomeVisible, setWelcomeVisible] = useState(true);
+  const [welcomeMinimized, setWelcomeMinimized] = useState(false);
+  const [legendVisible, setLegendVisible] = useState(true);
   const [layersExpanded, setLayersExpanded] = useState(true);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const preserved = regionSummary.find((item) => item.key === "preservado")?.value ?? 0;
@@ -1591,7 +1593,7 @@ function DesktopWorkspace({
   return (
     <div className="desktop-workspace">
       <header className="gis-header">
-        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setAboutExpanded(false); setLayersExpanded(true); setSummaryExpanded(true); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
+        <button type="button" className="gis-brand" onClick={() => { setWelcomeVisible(true); setWelcomeMinimized(false); setLegendVisible(true); setAboutExpanded(false); setLayersExpanded(true); setSummaryExpanded(true); onGoHome(); }} aria-label="Voltar ao início" title="Voltar ao início">
           <span className="gis-brand__mark"><LeafIcon /></span>
           <span><strong>MAPA AMBIENTAL</strong><small>MAPEIE. PROTEJA. PRESERVE.</small></span>
         </button>
@@ -1603,8 +1605,15 @@ function DesktopWorkspace({
         <button type="button" className="gis-about" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /> Sobre o projeto</button>
       </header>
 
-      {welcomeVisible ? <section className="welcome-panel">
-        <button type="button" className="welcome-panel__close" onClick={() => setWelcomeVisible(false)} aria-label="Fechar mensagem de boas-vindas"><CloseIcon /></button>
+      {welcomeVisible ? welcomeMinimized ? <button type="button" className="welcome-panel-minimized" onClick={() => setWelcomeMinimized(false)} aria-label="Expandir Mapa Ambiental" title="Expandir Mapa Ambiental">
+        <LeafIcon />
+        <span><strong>Mapa Ambiental</strong><small>Mostrar informações</small></span>
+        <ChevronDownIcon />
+      </button> : <section className="welcome-panel">
+        <div className="welcome-panel__controls">
+          <button type="button" className="welcome-panel__minimize" onClick={() => setWelcomeMinimized(true)} aria-label="Minimizar Mapa Ambiental" title="Minimizar">−</button>
+          <button type="button" className="welcome-panel__close" onClick={() => setWelcomeVisible(false)} aria-label="Fechar mensagem de boas-vindas" title="Fechar"><CloseIcon /></button>
+        </div>
         <span>Bem-vindo ao</span>
         <h1>Mapa Ambiental</h1>
         <p>Explore, registre e monitore áreas ambientais em qualquer lugar do Brasil.</p>
@@ -1653,18 +1662,19 @@ function DesktopWorkspace({
         </section>
       </aside>
 
-      <section className="gis-legend" aria-label="Legenda do mapa">
+      {legendVisible ? <section className="gis-legend" aria-label="Legenda do mapa">
         <strong>LEGENDA</strong>
         <span><LeafIcon /> Área preservada</span>
         <span><AlertIcon /> Área de atenção</span>
         <span><FlameIcon /> Ocorrência registrada</span>
         <span><i className="boundary-symbol" /> Limite territorial</span>
-      </section>
+        <button type="button" className="gis-legend__close" onClick={() => setLegendVisible(false)} aria-label="Fechar legenda" title="Fechar legenda"><CloseIcon /></button>
+      </section> : null}
 
       <nav className="gis-primary-actions" aria-label="Ações principais">
         <DesktopAction tone="green" icon={<AreaIcon />} title="Nova área" text="Registrar área" onClick={onOpenArea} />
         <DesktopAction tone="blue" icon={<AlertIcon />} title="Ocorrência" text="Registrar impacto" onClick={onOpenOccurrence} />
-        <DesktopAction tone="purple" icon={<LegendIcon />} title="Legenda" text="Consultar símbolos" onClick={onOpenLegend} />
+        <DesktopAction tone="purple" icon={<LegendIcon />} title="Legenda" text="Consultar símbolos" onClick={() => { setLegendVisible(true); onOpenLegend(); }} />
         <DesktopAction tone="teal" icon={<StatusIcon />} title="Relatórios" text="Ver análises" onClick={onOpenReports} />
       </nav>
 

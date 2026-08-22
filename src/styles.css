@@ -197,6 +197,10 @@ body {
     border-left: 3px solid #70bf30; box-shadow: 0 12px 30px rgba(0,0,0,.26);
     animation: welcome-panel-in 520ms cubic-bezier(.2,.8,.2,1) both;
   }
+  .welcome-panel__controls { position: absolute; top: 13px; right: 13px; display: flex; align-items: center; gap: 7px; }
+  .welcome-panel__controls .welcome-panel__close { position: static; top: auto; right: auto; }
+  .welcome-panel__minimize { width: 32px; height: 32px; display: grid; place-items: center; padding: 0 0 5px; border: 1px solid rgba(255,255,255,.2); border-radius: 10px; color: #dce8e5; background: rgba(255,255,255,.06); font-size: 23px; line-height: 1; cursor: pointer; transition: background-color 160ms ease, transform 160ms ease; }
+  .welcome-panel__minimize:hover, .welcome-panel__minimize:focus-visible { background: rgba(255,255,255,.14); transform: scale(1.04); outline: 2px solid rgba(115,198,47,.5); }
   .welcome-panel__close { position: absolute; top: 13px; right: 13px; width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: 10px; color: #dce8e5; background: rgba(255,255,255,.06); cursor: pointer; transition: background-color 160ms ease, transform 160ms ease; }
   .welcome-panel__close:hover, .welcome-panel__close:focus-visible { background: rgba(255,255,255,.14); transform: scale(1.04); outline: 2px solid rgba(115,198,47,.5); }
   .welcome-panel__close svg { width: 18px; height: 18px; }
@@ -204,6 +208,13 @@ body {
   .welcome-panel h1 { margin: 5px 0 8px; font-size: clamp(25px, 1.75vw, 31px); line-height: 1.1; }
   .welcome-panel > p { max-width: 335px; margin: 0 0 18px; font-size: 14px; line-height: 1.5; }
   .welcome-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .welcome-panel-minimized { position: absolute; top: 118px; left: 22px; width: min(300px, calc(100vw - 44px)); min-height: 64px; display: grid; grid-template-columns: 34px minmax(0,1fr) 18px; align-items: center; gap: 11px; padding: 11px 15px; border: 1px solid rgba(112,191,48,.65); border-radius: 17px; color: #fff; text-align: left; background: rgba(3,28,30,.96); box-shadow: 0 12px 30px rgba(0,0,0,.26); cursor: pointer; animation: welcome-panel-in 300ms ease both; }
+  .welcome-panel-minimized > svg:first-child { width: 29px; height: 29px; color: #78ce2e; }
+  .welcome-panel-minimized > svg:last-child { width: 17px; height: 17px; color: #dce8e5; transform: rotate(180deg); }
+  .welcome-panel-minimized span { min-width: 0; display: grid; gap: 2px; }
+  .welcome-panel-minimized strong { font-size: 15px; }
+  .welcome-panel-minimized small { color: rgba(255,255,255,.72); font-size: 11px; }
+  .welcome-panel-minimized:hover, .welcome-panel-minimized:focus-visible { border-color: #79d331; background: rgba(5,39,38,.98); outline: 2px solid rgba(115,198,47,.35); }
   .welcome-grid article {
     min-width: 0; height: 78px; display: grid; grid-template-columns: 27px minmax(0, 1fr); align-items: center; gap: 9px;
     padding: 10px 11px; border-radius: 12px; background: rgba(8, 52, 45, .72);
@@ -266,7 +277,7 @@ body {
   .gis-legend {
     position: absolute; left: 50%; bottom: 110px; transform: translateX(-50%);
     width: clamp(700px, 52vw, 960px); min-height: 58px; display: flex; align-items: center; justify-content: space-around; gap: 18px;
-    padding: 0 24px; border: 1px solid rgba(255,255,255,.15); border-radius: 17px; color: #fff; background: rgba(3,24,27,.96);
+    padding: 0 58px 0 24px; border: 1px solid rgba(255,255,255,.15); border-radius: 17px; color: #fff; background: rgba(3,24,27,.96);
     box-shadow: 0 12px 30px rgba(0,0,0,.24); font-size: 12.5px;
   }
   .gis-legend > span { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
@@ -274,6 +285,9 @@ body {
   .gis-legend span:nth-of-type(1) svg { color: #78ce2e; }
   .gis-legend span:nth-of-type(2) svg { color: #ffb800; }
   .gis-legend span:nth-of-type(3) svg { color: #ef3e3e; }
+  .gis-legend__close { position: absolute; top: 50%; right: 12px; width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.22); border-radius: 10px; color: #fff; background: rgba(255,255,255,.07); cursor: pointer; transform: translateY(-50%); transition: background-color 160ms ease, border-color 160ms ease; }
+  .gis-legend__close svg { width: 17px; height: 17px; }
+  .gis-legend__close:hover, .gis-legend__close:focus-visible { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.16); outline: 2px solid rgba(115,198,47,.45); }
   .boundary-symbol { width: 22px; height: 22px; border: 2px dashed #fff; border-radius: 4px; }
 
   .gis-primary-actions { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 14px; pointer-events: auto; }
