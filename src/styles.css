@@ -6333,3 +6333,60 @@ body {
   body > .bottom-sheet-backdrop .legend-item__copy { gap: 5px; }
   body > .bottom-sheet-backdrop .legend-item__copy small { line-height: 1.5; }
 }
+
+/* Seleção de área no mobile: cartões legíveis e ações sempre completas. */
+@media (max-width: 560px) {
+  body > .bottom-sheet-backdrop .bottom-sheet__content:has(.occurrence-guide) {
+    padding: 0 20px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide {
+    gap: 18px;
+    grid-template-rows: auto auto minmax(120px, 1fr) auto auto;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-area-list {
+    gap: 10px;
+    padding: 2px 5px 12px 0;
+    scroll-padding-block: 10px;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-area-option {
+    min-height: 88px;
+    height: auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 11px;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-area-option > span:nth-child(2) {
+    gap: 6px;
+    align-content: center;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-area-option strong,
+  body > .bottom-sheet-backdrop .occurrence-area-option small {
+    display: block;
+    overflow: visible;
+    line-height: 1.3;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding-top: 8px;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide__actions .btn:first-child {
+    grid-column: 1 / -1;
+  }
+
+  body > .bottom-sheet-backdrop .occurrence-guide__actions .btn {
+    min-height: 52px;
+    white-space: normal;
+  }
+}
