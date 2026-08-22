@@ -1110,7 +1110,7 @@ export default function App() {
             }}
             onToggleArea={(areaId) => {
               setDetailOrigin(null);
-              setActiveAreaId((current) => current === areaId ? null : areaId);
+              setActiveAreaId(areaId);
               setHoveredAreaId(null);
               setOccurrenceForm((current) => ({ ...current, areaId }));
               loadAreaImage(areaId);
@@ -1332,23 +1332,8 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
           icon={getMarkerIcon(area.status, isRecentlyUpdated)}
           eventHandlers={{
             click: onToggle,
-            mouseover: onHover,
-            mouseout: onLeave,
           }}
-        >
-          {isHovered && !isActive ? (
-            <Tooltip interactive direction="top" offset={[0, -18]} opacity={1} className="environment-tooltip">
-              <HoverCard area={area} onClose={onClose} />
-            </Tooltip>
-          ) : null}
-        </Marker>
-      ) : null}
-      {isHovered && !isActive ? (
-        <CircleMarker center={[area.latitude, area.longitude]} radius={1} opacity={0} fillOpacity={0} interactive={false}>
-          <Tooltip interactive permanent direction="top" offset={[0, -12]} opacity={1} className="environment-tooltip">
-            <HoverCard area={area} onClose={onClose} />
-          </Tooltip>
-        </CircleMarker>
+        />
       ) : null}
       {isActive ? (
         <Popup
