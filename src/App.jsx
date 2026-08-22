@@ -1613,7 +1613,7 @@ function DesktopWorkspace({
         <form className="gis-search" onSubmit={(event) => { event.preventDefault(); onSearch(searchQuery); }}>
           <SearchIcon />
           <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Digite um local, cidade, estado ou coordenadas..." aria-label="Buscar local" />
-          <button type="submit" aria-label="Buscar"><TargetIcon /></button>
+          <button type="submit" aria-label="Buscar" title="Buscar"><TargetIcon /><span>Buscar</span></button>
         </form>
         <button type="button" className="gis-about" onClick={() => setAboutExpanded((current) => !current)} aria-expanded={aboutExpanded}><InfoIcon /> Sobre o projeto</button>
       </header>
