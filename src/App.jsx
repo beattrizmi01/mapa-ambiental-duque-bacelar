@@ -1946,6 +1946,7 @@ function AreaFormPanel(props) {
 
   return (
     <form className="dark-form" onSubmit={onSubmitArea}>
+      <div className="dark-form__scroll">
       <div className="form-section-heading">
         <strong>Identificação do responsável</strong>
         <small>Informe quem está realizando este cadastro.</small>
@@ -2018,6 +2019,7 @@ function AreaFormPanel(props) {
         </div>
       </section>
       <UploadBox preview={areaPreview} onPreviewChange={setAreaPreview} required />
+      </div>
       <div className="form-actions"><button className="btn btn--green" type="submit" disabled={isSavingArea}>{isSavingArea ? "Salvando..." : "Salvar área"}</button><button className="btn btn--red" type="button" onClick={onCancelArea} disabled={isSavingArea}>Cancelar</button></div>
     </form>
   );
@@ -2029,6 +2031,7 @@ function OccurrenceFormPanel(props) {
 
   return (
     <form className="dark-form" onSubmit={onSubmitOccurrence}>
+      <div className="dark-form__scroll">
       <div className="form-section-heading">
         <strong>Identificação do responsável</strong>
         <small>Informe quem está registrando esta ocorrência.</small>
@@ -2109,6 +2112,7 @@ function OccurrenceFormPanel(props) {
       {occurrenceErrorMessage ? <div className="form-feedback form-feedback--error">{occurrenceErrorMessage}</div> : null}
       {occurrenceSuccessMessage ? <div className="form-feedback form-feedback--success">{occurrenceSuccessMessage}</div> : null}
       <UploadBox preview={occurrencePreview} onPreviewChange={setOccurrencePreview} />
+      </div>
       <div className="form-actions form-actions--occurrence"><button className="btn btn--green" type="submit" disabled={isSavingOccurrence}>{isSavingOccurrence ? "Registrando ocorrência..." : "Registrar ocorrência"}</button><button className="btn btn--red" type="button" onClick={onCancelOccurrence} disabled={isSavingOccurrence}>Cancelar</button></div>
     </form>
   );
@@ -2373,6 +2377,7 @@ function OccurrenceGuide({ areas, onSelectArea, onCreateArea, onCancel }) {
 
   return (
     <div className="occurrence-guide">
+      <div className="occurrence-guide__content">
       <div className="occurrence-guide__message">
         <AlertIcon />
         <div>
@@ -2392,6 +2397,7 @@ function OccurrenceGuide({ areas, onSelectArea, onCreateArea, onCancel }) {
         </div>
         {selectedArea ? <div className="occurrence-selected-area"><span>Área escolhida</span><strong>{selectedArea.name}</strong><small>{selectedArea.impact || selectedArea.description || "Sem observação informada."}</small></div> : null}
       </> : <p className="occurrence-guide__empty">Nenhuma área cadastrada. Cadastre uma área antes de registrar a ocorrência.</p>}
+      </div>
       <div className="occurrence-guide__actions">
         {areas.length ? <button type="button" className="btn btn--green" onClick={() => onSelectArea(selectedArea)} disabled={!selectedArea}>Continuar com esta área</button> : null}
         <button type="button" className="btn btn--ghost" onClick={onCreateArea}>Cadastrar nova área</button>
