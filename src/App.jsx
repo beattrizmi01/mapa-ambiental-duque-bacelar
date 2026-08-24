@@ -141,7 +141,9 @@ export default function App() {
     [draftPolygonCoords],
   );
   const selectedRegion = availableRegions.find((region) => region.id === selectedRegionId) ?? availableRegions[0] ?? REGIONS[0];
-  const regionAreas = useMemo(() => filterAreasByRegion(areas, selectedRegion.name), [areas, selectedRegion.name]);
+  // A região selecionada define o foco da navegação, mas não deve ocultar áreas
+  // cadastradas em localidades vizinhas ou com nomes de região diferentes.
+  const regionAreas = areas;
   const regionOccurrenceCount = useMemo(
     () => countOccurrencesForAreas(occurrenceRecords, regionAreas),
     [occurrenceRecords, regionAreas],
