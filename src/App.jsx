@@ -286,6 +286,35 @@ export default function App() {
   }, [areas]);
 
   useEffect(() => {
+    if (!hasSupabaseConfig()) return undefined;
+
+    const channel = supabase
+      .channel("areas-map-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "areas" },
+        (payload) => {
+          if (payload.eventType === "DELETE") {
+            const deletedId = String(payload.old?.id ?? "");
+            if (!deletedId) return;
+            setAreas((current) => current.filter((area) => String(area.id) !== deletedId));
+            setActiveAreaId((current) => (String(current) === deletedId ? null : current));
+            return;
+          }
+
+          const mapped = mapSupabaseAreaToApp(payload.new);
+          if (!mapped) return;
+          setAreas((current) => upsertAreaById(current, mapped));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!statusChangeNotice) return undefined;
     const timer = window.setTimeout(() => setStatusChangeNotice(null), 6200);
     return () => window.clearTimeout(timer);
@@ -642,7 +671,7 @@ export default function App() {
         const mapped = mapSupabaseAreaToApp(data) ?? draft;
         setDataMode("supabase");
         setDataStatus("Nova área salva e sincronizada com o Supabase.");
-        setAreas((current) => [mapped, ...current]);
+        setAreas((current) => upsertAreaById(current, mapped));
         setActiveAreaId(null);
         setMapFocus(createMapFocus(mapped));
         setAreaSuccessMessage("Área cadastrada com sucesso no banco de dados.");
@@ -2920,6 +2949,14 @@ function normalizeAreaShape(area) {
       statusToColor(area?.status || "atencao"),
     ),
   };
+}
+
+function upsertAreaById(areas, nextArea) {
+  const nextId = String(nextArea?.id ?? "");
+  if (!nextId) return areas;
+  const existingIndex = areas.findIndex((area) => String(area.id) === nextId);
+  if (existingIndex < 0) return [nextArea, ...areas];
+  return areas.map((area, index) => (index === existingIndex ? { ...area, ...nextArea } : area));
 }
 
 function mapStatusHistoryRowToApp(row) {
