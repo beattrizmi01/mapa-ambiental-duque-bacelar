@@ -1337,7 +1337,13 @@ function AreaPolygonFeature({ area, drawingEnabled, isHovered, isActive, onHover
                 mouseout: onLeave,
               }
         }
-      />
+      >
+        {!drawingEnabled && !isActive ? (
+          <Tooltip direction="top" offset={[0, -10]} opacity={1} className="environment-tooltip" sticky>
+            <HoverCard area={area} />
+          </Tooltip>
+        ) : null}
+      </Polygon>
       {isActive
         ? polygonPositions.map((position, index) => (
             <CircleMarker
@@ -1379,8 +1385,16 @@ function AreaFeature({ area, history, occurrences, isRecentlyUpdated, drawingEna
           icon={getMarkerIcon(area.status, isRecentlyUpdated)}
           eventHandlers={{
             click: onToggle,
+            mouseover: onHover,
+            mouseout: onLeave,
           }}
-        />
+        >
+          {!isActive ? (
+            <Tooltip direction="top" offset={[0, -18]} opacity={1} className="environment-tooltip">
+              <HoverCard area={area} />
+            </Tooltip>
+          ) : null}
+        </Marker>
       ) : null}
       {isActive ? (
         <Popup
@@ -2835,7 +2849,7 @@ function DetailCard({ area, history = [], occurrences = [], onClose, onReturnToR
 }
 
 function HoverCard({ area, onClose }) {
-  return <article className="hover-card"><button type="button" className="hover-card__close" onClick={onClose} aria-label="Fechar informações da área">×</button><img src={area.image} alt={area.name} /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
+  return <article className="hover-card">{onClose ? <button type="button" className="hover-card__close" onClick={onClose} aria-label="Fechar informações da área">×</button> : null}<img src={area.image} alt={area.name} loading="eager" decoding="async" /><div className="hover-card__body"><h3>{area.name}</h3><div className="meta-row"><span>{area.category}</span><span>{statusLabel(area.status)}</span></div>{area.createdAt ? <small>Registrado em {formatDateTime(area.createdAt)}</small> : null}{isRecentStatusChange(area) ? <span className="recent-badge">Atualizado recentemente</span> : null}<p>{area.impact}</p><span className={`impact-pill impact-pill--${area.status}`}>{statusLabel(area.status)}</span></div></article>;
 }
 
 function ResponsibleRoleSelect({ value, onChange, required = false }) {
