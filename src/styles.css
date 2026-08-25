@@ -6582,6 +6582,13 @@ body > .bottom-sheet-backdrop .bottom-sheet:has(.status-summary) {
   max-height: min(90dvh, 860px);
 }
 
+/* Os formulários longos e a seleção de área precisam de uma altura definida
+   para que a cadeia flex possa encolher e entregar a rolagem ao miolo. */
+body > .bottom-sheet-backdrop .bottom-sheet--large,
+body > .bottom-sheet-backdrop .bottom-sheet:has(.occurrence-guide) {
+  height: min(90dvh, 860px, calc(100dvh - 32px));
+}
+
 body > .bottom-sheet-backdrop .bottom-sheet__handle,
 body > .bottom-sheet-backdrop .bottom-sheet__header {
   flex: 0 0 auto;
@@ -6650,6 +6657,7 @@ body > .bottom-sheet-backdrop .dark-form__scroll {
   padding: 2px 10px 20px 0;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -6729,6 +6737,11 @@ body > .bottom-sheet-backdrop .status-summary {
     width: calc(100vw - 16px);
     max-height: calc(100dvh - 16px - env(safe-area-inset-top));
     border-radius: 22px;
+  }
+
+  body > .bottom-sheet-backdrop .bottom-sheet--large,
+  body > .bottom-sheet-backdrop .bottom-sheet:has(.occurrence-guide) {
+    height: calc(100dvh - 16px - env(safe-area-inset-top));
   }
 
   body > .bottom-sheet-backdrop .bottom-sheet__header {
