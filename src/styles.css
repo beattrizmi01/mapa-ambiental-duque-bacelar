@@ -6234,6 +6234,33 @@ body {
   }
 }
 
+.gis-basemap-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 5px 14px 8px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #e8eeea;
+}
+
+.gis-layer-list .gis-basemap-switch button {
+  min-height: 38px;
+  display: block;
+  padding: 7px 8px;
+  border-radius: 9px;
+  color: #52605c;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.gis-layer-list .gis-basemap-switch button.is-active {
+  color: #fff;
+  background: #245f37;
+  box-shadow: 0 3px 9px rgba(21, 74, 41, .22);
+}
+
 @media (min-width: 901px) {
   .map-stage {
     position: absolute;

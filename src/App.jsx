@@ -1001,6 +1001,8 @@ export default function App() {
         onOpenFilters={() => setOpenCard("layers")}
       /> : <DesktopWorkspace
         selectedRegion={selectedRegion}
+        activeBaseMap={activeBaseMap}
+        onChangeBaseMap={setActiveBaseMap}
         hasActiveMapAction={Boolean(openCard) || isDrawingArea || draftPolygonCoords.length > 0}
         regionSummary={regionSummary}
         occurrenceCount={regionOccurrenceCount}
@@ -1628,6 +1630,8 @@ function MobileAboutContent() {
 
 function DesktopWorkspace({
   selectedRegion,
+  activeBaseMap,
+  onChangeBaseMap,
   hasActiveMapAction,
   regionSummary,
   occurrenceCount,
@@ -1726,6 +1730,10 @@ function DesktopWorkspace({
         <section className={`gis-white-panel layers-overview${layersExpanded ? " is-expanded" : " is-collapsed"}`}>
           <button type="button" className="gis-panel-title" onClick={() => setLayersExpanded((current) => !current)} aria-expanded={layersExpanded}><LayersIcon /><strong>Filtros do mapa</strong><span className="layers-chevron">⌃</span></button>
           {layersExpanded ? <div className="gis-layer-list">
+            <div className="gis-basemap-switch" role="group" aria-label="Tipo de visualização do mapa">
+              <button type="button" className={activeBaseMap === "satellite" ? "is-active" : ""} onClick={() => onChangeBaseMap("satellite")} aria-pressed={activeBaseMap === "satellite"}>Satélite</button>
+              <button type="button" className={activeBaseMap === "street" ? "is-active" : ""} onClick={() => onChangeBaseMap("street")} aria-pressed={activeBaseMap === "street"}>Mapa padrão</button>
+            </div>
             {layerOptions.map((option) => (
               <button type="button" key={option.key} onClick={() => onToggleLayer(option.key)} aria-pressed={layerFilters[option.key]}><span className={`filter-icon filter-icon--${option.tone}`}>{option.icon}</span><span>{option.label}</span><strong className="filter-count" aria-label={`${option.count} áreas`}>{option.count}</strong><i className={`gis-switch${layerFilters[option.key] ? " is-on" : ""}`} /></button>
             ))}
